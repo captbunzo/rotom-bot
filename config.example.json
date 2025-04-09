@@ -1,0 +1,53 @@
+{
+	"about_token_config": "Bot token - available at https://discord.com/developers/applications/me",
+	"token": "<bot-token>",
+
+	"about_prefix_config": "Bot prefix",
+	"prefix": "!",
+
+	"environment": "<environment>",
+	"logLevel": "debug",
+	"logSql": false,
+	"collectorTimeoutSecs": 60,
+	"messagePurgeDelaySec": 75,
+	"schedulerLoopSecs": 60,
+	
+	"about_database_config": [
+		"Your database configuration. This can be anything supported by knex.",
+		"See http://knexjs.org/#Installation-client for examples."
+	],
+	"database": {
+		"client": "mysql",
+		"connection": {
+			"host": "127.0.0.1",
+			"database": "ninkasi",
+			"user": "ninkasi",
+			"password": "<password>"
+		}
+	},
+	"databaseCollation": "utf8mb4_unicode_ci",
+
+	"about_botAdminUserIds_config": "Bot Admins role ID string array",
+	"botAdminUserIds": [
+		"<user-id>",
+		"<another-user-id>"
+	],
+
+	"about_botGuildId_config": "Identify the Ninkasi guild for shared asset retrieval (i.e. custom emoji)",
+	"botGuildId": "<bot-guild-id>",
+
+	"sentry": {
+		"dsn": "<sentry-dsn>",
+		"tracesSampleRate": 1.0,
+		"triggerSampleAlerts": false
+	},
+
+	"about_intents_config": "Intents the bot needs - this is not yet used",
+	"intents": [
+		"GUILD_MEMBERS",
+		"GUILD_MESSAGES",
+		"GUILD_MESSAGE_REACTIONS",
+		"DIRECT_MESSAGES",
+		"DIRECT_MESSAGE_REACTIONS"
+	]
+}
