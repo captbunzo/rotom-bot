@@ -433,35 +433,39 @@ export default class DatabaseTable {
         this.validateFieldName(snakeName);
         
         let cleansedValue = value;
-        
-        if (value) {
+
+        if (typeof cleansedValue == 'string') {
+            cleansedValue = cleansedValue.trim();
+        }
+
+        if (cleansedValue !== null && cleansedValue.length == 0) {
+            cleansedValue = null;
+        }
+
+        if (cleansedValue) {
             switch (camelName) {
                 case 'alias':
                 case 'clanShortName':
                 case 'shortName':
                 case 'symbol':
-                    cleansedValue = value.toUpperCase();
+                    cleansedValue = cleansedValue.toUpperCase();
                     break;
                 
                 case 'commandChannelType':
                 case 'reactionMessageType':
                 case 'type':
-                    cleansedValue = value.toLowerCase();
+                    cleansedValue = cleansedValue.toLowerCase();
                     break;
                 
                 case 'logDate':
-                    cleansedValue = (typeof value == 'string' ? value : new Timestamp(null, value).getLogDate());
+                    cleansedValue = (typeof cleansedValue == 'string' ? cleansedValue : new Timestamp(null, cleansedValue).getLogDate());
                     break;
                 
                 case 'createdAt':
                     if (this.createdAt) {
                         throw new Error('Cowardly refusing to change creation timestamp!');
                     }
-                    cleansedValue = value;
                     break;
-                
-                default:
-                    cleansedValue = value;
             }
         }
         

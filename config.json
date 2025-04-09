@@ -2,6 +2,9 @@
 	"about_token_config": "Bot token - available at https://discord.com/developers/applications/me",
 	"token": "MTM0ODc3MTUwNDY0NDQyNzgyNw.Gg4J1z.UeT1nOgz-i7zfAqMC4lrTtfGh0v50hKykw_GdA",
 
+	"about_client_id": "Discord Application ID",
+	"client_id": "1348771504644427827",
+
 	"about_prefix_config": "Bot prefix",
 	"prefix": "!",
 

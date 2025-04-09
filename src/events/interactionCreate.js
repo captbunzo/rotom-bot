@@ -1,0 +1,68 @@
+
+import { Events, MessageFlags } from 'discord.js';
+
+const interactionCreate = {
+	name: Events.InteractionCreate,
+	async execute(interaction) {
+		const client = interaction.client;
+
+		if (interaction.isChatInputCommand() ) {
+			const command = interaction.client.commands.get(interaction.commandName);
+
+			if (!command) {
+				client.logger.error(`No command matching ${interaction.commandName} was found`);
+				return;
+			}
+
+			try {
+				await command.execute(interaction);
+			} catch (error) {
+				client.logger.error(error);
+				if (interaction.replied || interaction.deferred) {
+					await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+				} else {
+					await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+				}
+			}
+			
+		} else if (interaction.isModalSubmit()) {
+			const modal = interaction.client.modals.get(interaction.customId);
+			if (!modal) {
+				client.logger.error(`No modal matching ${interaction.customId} was found`);
+				return;
+			}
+
+			try {
+				await modal.handle(interaction);
+			} catch (error) {
+				client.logger.error(error);
+				if (interaction.replied || interaction.deferred) {
+					await interaction.followUp({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+				} else {
+					await interaction.reply({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+				}
+			}
+
+		} else if (interaction.isButton()) {
+			const buttonName = interaction.customId.split('.')[0];
+			const button = interaction.client.buttons.get(buttonName);
+			if (!button) {
+				client.logger.error(`No button matching ${buttonName} was found`);
+				return;
+			}
+
+			try {
+				await button.handle(interaction);
+			} catch (error) {
+				client.logger.error(error);
+				if (interaction.replied || interaction.deferred) {
+					await interaction.followUp({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
+				} else {
+					await interaction.reply({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
+				}
+			}
+		}
+	},
+};
+
+export default interactionCreate;

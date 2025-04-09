@@ -13,7 +13,7 @@ export default class Trainer extends DatabaseTable {
         fields: {
             'id':    { type: 'snowflake', nullable: false },
             'name':  { type: 'string',    nullable: false, length: 32 },
-            'code':  { type: 'string',    nullable: false, length: 12 },
+            'code':  { type: 'string',    nullable: true, length: 12 },
             'level': { type: 'integer',   nullable: true },
             'team':  { type: 'string',    nullable: true, length: 8 }
         }
@@ -53,10 +53,10 @@ export default class Trainer extends DatabaseTable {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
             let trainer = await super.get(conditions, orderBy);
             
-            if (!trainer) {
-                trainer = new Trainer({id: conditions.id});
-                await trainer.create();
-            }
+            //if (!trainer) {
+            //    trainer = new Trainer({id: conditions.id});
+            //    //await trainer.create();
+            //}
             
             return trainer;
         }
