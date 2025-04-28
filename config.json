@@ -1,12 +1,15 @@
 {
 	"about_token_config": "Bot token - available at https://discord.com/developers/applications/me",
-	"token": "MTM0ODc3MTUwNDY0NDQyNzgyNw.Gg4J1z.UeT1nOgz-i7zfAqMC4lrTtfGh0v50hKykw_GdA",
+	"token": "MTM0ODc3MTUwNDY0NDQyNzgyNw.Gaq1cZ.aiizW87G1nLAG_lpdV-WadhJAGJSTvC1BOdpVY",
 
 	"about_client_id": "Discord Application ID",
 	"client_id": "1348771504644427827",
 
-	"about_prefix_config": "Bot prefix",
-	"prefix": "!",
+	"about_client_secret": "Discord Application Secret",
+	"client_secret": "LIeNw3LKpNCFJwgJK0DVd95hQExLGdDz",
+
+	"about_bot_guil_id_config": "Guild ID for Rotom administration and shared asset retrieval (i.e. custom emoji)",
+	"bot_guild_id": "1338929227927392316",
 
 	"environment": "<environment>",
 	"logLevel": "debug",
@@ -25,7 +28,7 @@
 			"host": "127.0.0.1",
 			"database": "rotom",
 			"user": "rotom",
-			"password": "MoQ&cz@pj&zhCL3F"
+			"password": "MoQczpjzhCL3F"
 		}
 	},
 	"databaseCollation": "utf8mb4_unicode_ci",

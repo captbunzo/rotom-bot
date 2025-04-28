@@ -1,7 +1,8 @@
 
-import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, MessageFlags, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } from 'discord.js';
 
 const menu = {
+	global: false,
 	data: new SlashCommandBuilder()
 		.setName('menu')
 		.setDescription('Tests menu'),
@@ -32,7 +33,8 @@ const menu = {
 		
 		await interaction.reply({
 			content: 'This is a menu test',
-			components: [row]
+			components: [row],
+			flags: MessageFlags.Ephemeral
 		});
 	}
 };

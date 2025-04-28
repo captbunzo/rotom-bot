@@ -15,7 +15,7 @@ export default class DatabaseTable {
         orderBy: 'created_at',
         fields: []
     };
-        
+
     constructor(data) {
         this.data = {};
         this.temp = {};
@@ -26,11 +26,11 @@ export default class DatabaseTable {
         //    if (field.objectFieldName in this) {
         //        Object.defineProperty (this, field.objectFieldName, {
         //            get: function () {
-        //                console.log('GET', field.objectFieldName);
+        //                client.logger.log('GET', field.objectFieldName);
         //                return this.data[field.objectFieldName];
         //            },
         //            set: function (value) {
-        //                console.log('SET', field.objectFieldName, value);
+        //                client.logger.log('SET', field.objectFieldName, value);
         //                this.data[field.objectFieldName] = value;
         //            }
         //        });
@@ -76,10 +76,15 @@ export default class DatabaseTable {
         }
     }
     
-    // ***************** //
-    // * Class Methods * //
-    // ***************** //
-    
+    // ******************************* //
+    // * Class Variables and Methods * //
+    // ******************************* //
+
+    static ConditionTypeNot   = 'not';
+    static ConditionTypeLike  = 'like';
+    static ConditionTypeIn    = 'in';
+    static ConditionTypeNotIn = 'not in';
+
     //static new(data) {
     //    const object = new this(data);
     //    
@@ -132,42 +137,74 @@ export default class DatabaseTable {
     }
     
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        let parsedConditions = conditions;
-        let unique = false;
-        
-        // Parse the select conditions
-        if (typeof parsedConditions == 'object') {
-            if (parsedConditions.unique != null) {
-                unique = parsedConditions.unique;
-                delete parsedConditions.unique;
+        let unique = false;        
+        let query = null;
+
+        if (conditions.constructor.name.startsWith('QueryBuilder')) {
+            query = conditions;
+        } else {
+            client.logger.sql(`get : tableName = ${this.schema.tableName}`);
+            client.logger.sql(`get : conditions`);
+            client.logger.sqldump(conditions);
+
+            let parsedConditions = conditions;
+            let whereConditions     = {};
+            let whereLikeConditions = {};
+
+            // Parse the select conditions
+            if (typeof parsedConditions == 'object') {
+                if (parsedConditions.unique != null) {
+                    unique = parsedConditions.unique;
+                    delete parsedConditions.unique;
+                }
+                
+                parsedConditions = this.parseConditions(parsedConditions);
+                parsedConditions = this.parseFieldConditions(parsedConditions);
+
+                for (const fieldName in parsedConditions) {
+                    const value = parsedConditions[fieldName];
+
+                    if (value !== null && typeof value == 'object') {
+                        switch (value.type) {
+                            case 'like':
+                                whereLikeConditions[fieldName] = value.value;
+                                break
+                            default:
+                                throw new Error(`Unrecognized condition type - ${type}`);
+                        }
+                    } else {
+                        whereConditions[fieldName] = value;
+                    }
+                }
             }
             
-            parsedConditions = this.parseConditions(parsedConditions);
-            parsedConditions = this.parseFieldConditions(parsedConditions);
+            client.logger.sql(`get : parsedConditions`);
+            client.logger.sqldump(parsedConditions);
+            
+            client.logger.sql(`get : whereConditions`);
+            client.logger.sqldump(whereConditions);
+            
+            client.logger.sql(`get : whereLikeConditions`);
+            client.logger.sqldump(whereLikeConditions);
+            
+            // Add the conditions to the query
+            query = knex(this.schema.tableName).where(whereConditions);
+
+            for (const fieldName in whereLikeConditions) {
+                query = query.whereLike(fieldName, whereLikeConditions[fieldName]);
+            }
+
+            query = query.orderBy(orderBy).select();
         }
         
-        client.logger.sql(`get : tableName = ${this.schema.tableName}`);
-        
-        client.logger.sql(`get : conditions`);
-        client.logger.sqldump(conditions);
-        
-        client.logger.sql(`get : parsedConditions`);
-        client.logger.sqldump(parsedConditions);
-        
-        // For debugging purposes, generate the sql
-        const sql = await knex(this.schema.tableName)
-            .where(parsedConditions)
-            .orderBy(orderBy)
-            .select()
-            .toSQL();
-        
-        client.logger.sql(`Executing SQL: ${sql.sql}`);
-        client.logger.sql(`With Bindings: ${sql.bindings}`);
-        
+        if (client.logger.logSql) {
+            const sql = query.toSQL();
+            client.logger.sql(`Executing SQL: ${sql.sql}`);
+            client.logger.sql(`With Bindings: ${sql.bindings}`);
+        }
+
         // Execute the select and gather the results
-        const rows = await knex(this.schema.tableName)
-            .where(parsedConditions)
-            .orderBy(orderBy)
+        const rows = await query
             .then(function(rows) {
                 return rows;
             });
@@ -188,7 +225,11 @@ export default class DatabaseTable {
         // Otherwise just return the array of objects
         return objects;
     }
-    
+
+    static startQuery() {
+        return knex(this.schema.tableName);
+    }
+
     static async delete(conditions) {
         let parsedConditions = conditions;
         
@@ -199,7 +240,7 @@ export default class DatabaseTable {
         }
         
         // For debugging purposes, generate the sql
-        const sql = await knex(this.schema.tableName)
+        const sql = knex(this.schema.tableName)
             .where(parsedConditions)
             .delete()
             .toSQL();
@@ -244,6 +285,41 @@ export default class DatabaseTable {
         return this.schema.tableName;
     }
     
+    static getColumnName(fieldName) {
+        const dbFieldName = StringFunctions.camelToSnakeCase(fieldName);
+        const field = this.schema.fields[dbFieldName];
+        
+        if (field) {
+            return dbFieldName;
+        } else {
+            throw new Error(`Unrecognized field - ${fieldName}`);
+        }
+    }
+
+    static async getChoices(fieldName, fieldValuePrefix, conditions = {}) {
+        let columnName = this.getColumnName(fieldName);
+
+        //client.logger.debug(`fieldName = ${fieldName}`);
+        //client.logger.debug(`fieldPrefixValue = ${fieldValuePrefix}`);
+        //client.logger.debug('conditions');
+        //client.logger.dump(conditions);
+
+        let query = this.startQuery()
+            .distinct(columnName)
+            .whereLike(columnName, `${fieldValuePrefix.toUpperCase()}%`)
+            .orderBy(columnName, 'asc');
+
+        for (const conditonFieldName in conditions) {
+            const conditionColumnName = this.getColumnName(conditonFieldName);
+            query = query.where(conditionColumnName, conditions[conditonFieldName]);
+        }
+
+        let queryResults = await this.get(query);
+        //client.logger.debug('queryResults');
+        //client.logger.dump(queryResults);
+        return queryResults.map(result => result.data[columnName].toLowerCase());
+    }
+
     // ******************** //
     // * Instance Methods * //
     // ******************** //
@@ -367,15 +443,33 @@ export default class DatabaseTable {
     
     // Property fields
     
+    get baseAttack          () { return this.getField('baseAttack'); }
+    get baseDefense         () { return this.getField('baseDefense'); }
+    get baseStamina         () { return this.getField('baseStamina'); }
+    get bossType            () { return this.getField('bossType'); }
+    get buddyDistanceKm     () { return this.getField('buddyDistanceKm'); }
+    get candyToEvolve       () { return this.getField('candyToEvolve'); }
     get code                () { return this.getField('code'); }
+    get cpm                 () { return this.getField('cpm'); }
     get comment             () { return this.getField('comment'); }
+    get form                () { return this.getField('form'); }
+    get formMaster          () { return this.getField('formMaster'); }
+    get isActive            () { return this.getField('isActive') };
+    get isMega              () { return this.getField('isMega') };
+    get isShadow            () { return this.getField('isShadow') };
     get level               () { return this.getField('level'); }
     get logType             () { return this.getField('logType'); }
     get objectName          () { return this.getField('objectName'); }
     get objectType          () { return this.getField('objectType'); }
+    get pokedexId           () { return this.getField('pokedexId'); }
+    get pokemonId           () { return this.getField('pokemonId'); }
+    get purifyStardust      () { return this.getField('purifyStardust'); }
     get name                () { return this.getField('name'); }
     get status              () { return this.getField('status'); }
     get team                () { return this.getField('team'); }
+    get templateId          () { return this.getField('templateId'); }
+    get type                () { return this.getField('type'); }
+    get type2               () { return this.getField('type2'); }
     
     get logDate() {
         this.validateFieldName('logDate');
@@ -490,16 +584,34 @@ export default class DatabaseTable {
     
     // Property fields
     
+    set baseAttack          (value) { this.setField(value, 'baseAttack'); }
+    set baseDefense         (value) { this.setField(value, 'baseDefense'); }
+    set baseStamina         (value) { this.setField(value, 'baseStamina'); }
+    set bossType            (value) { this.setField(value, 'bossType'); }
+    set buddyDistanceKm     (value) { this.setField(value, 'buddyDistanceKm'); }
+    set candyToEvolve       (value) { this.setField(value, 'candyToEvolve'); }
     set code                (value) { this.setField(value, 'code'); }
+    set cpm                 (value) { this.setField(value, 'cpm'); }
     set comment             (value) { this.setField(value, 'comment'); }
+    set form                (value) { this.setField(value, 'form'); }
+    set formMaster          (value) { this.setField(value, 'formMaster'); }
+    set isActive            (value) { this.setField(value, 'isActive'); }
+    set isMega              (value) { this.setField(value, 'isMega'); }
+    set isShadow            (value) { this.setField(value, 'isShadow'); }
     set level               (value) { this.setField(value, 'level'); }
     set logDate             (value) { this.setField(value, 'logDate'); }
     set logType             (value) { this.setField(value, 'logType'); }
     set name                (value) { this.setField(value, 'name'); }
     set objectName          (value) { this.setField(value, 'objectName'); }
     set objectType          (value) { this.setField(value, 'objectType'); }
+    set pokedexId           (value) { this.setField(value, 'pokedexId'); }
+    set pokemonId           (value) { this.setField(value, 'pokemonId'); }
+    set purifyStardust      (value) { this.setField(value, 'purifyStardust'); }
     set status              (value) { this.setField(value, 'status'); }
     set team                (value) { this.setField(value, 'team'); }
+    set templateId          (value) { this.setField(value, 'templateId'); }
+    set type                (value) { this.setField(value, 'type'); }
+    set type2               (value) { this.setField(value, 'type2'); }
     
     // Standard datetime fields
         

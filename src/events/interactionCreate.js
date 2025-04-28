@@ -13,7 +13,12 @@ const interactionCreate = {
 				client.logger.error(`No command matching ${interaction.commandName} was found`);
 				return;
 			}
-
+			
+			if (!command.execute) {
+				client.logger.error(`Command ${interaction.commandName} does not have an execute function`);
+				return;
+			}
+			
 			try {
 				await command.execute(interaction);
 			} catch (error) {
@@ -25,6 +30,25 @@ const interactionCreate = {
 				}
 			}
 			
+		} else if (interaction.isAutocomplete()) {
+			const command = interaction.client.commands.get(interaction.commandName);
+
+			if (!command) {
+				client.logger.error(`No command matching ${interaction.commandName} was found`);
+				return;
+			}
+
+			if (!command.autocomplete) {
+				client.logger.error(`Command ${interaction.commandName} does not have an autocomplete function`);
+				return;
+			}
+
+			try {
+				await command.autocomplete(interaction);
+			} catch (error) {
+				client.logger.error(error);
+			}
+
 		} else if (interaction.isModalSubmit()) {
 			const modal = interaction.client.modals.get(interaction.customId);
 			if (!modal) {

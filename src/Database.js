@@ -10,10 +10,13 @@ import client from './Client.js';
 // const knex = require('knex')(client.config.database);
 import Knex from 'knex';
 const knex = Knex(client.config.database);
-console.log('Connected to database');
+client.logger.log('Connected to database');
 
 // Import the database objects
 import SchemaHistory from './data/SchemaHistory.js';
+import Boss          from './data/Boss.js';
+import MasterPokemon from './data/MasterPokemon.js';
+import MasterCPM     from './data/MasterCPM.js';
 import Trainer       from './data/Trainer.js';
 
 const newTables = [];
@@ -21,7 +24,10 @@ const newTables = [];
 knex.discordBotDatabaseInit = async () => {
     const Tables = [
         SchemaHistory,
-        Trainer
+        MasterPokemon,
+        MasterCPM,
+        Trainer,
+        Boss
     ];
     
     client.logger.log(`Creating database tables`);
@@ -107,24 +113,58 @@ knex.createDiscordBotTable = async (TableClass) => {
                 
                 client.logger.log(`       -> Adding column: ${fieldDescription}`);
                 
-                if (field.nullable) {
+                if (field.unsigned) {
+                    if (field.nullable) {
+                        switch (field.type) {
+                            case 'tinyint'  : table.tinyint  (dbFieldName).unsigned().nullable(); break;
+                            case 'smallint' : table.smallint (dbFieldName).unsigned().nullable(); break;
+                            case 'mediumint': table.integer  (dbFieldName).unsigned().nullable(); break;
+                            case 'integer'  : table.integer  (dbFieldName).unsigned().nullable(); break;
+                            case 'bigint'   : table.bigint   (dbFieldName).unsigned().nullable(); break;
+                            default: throw new RangeError(`Invalid unsigned nullable field type: ${field.type}`);
+                        }
+                    } else {
+                        switch (field.type) {
+                            case 'tinyint'  : table.tinyint  (dbFieldName).unsigned(); break;
+                            case 'smallint' : table.smallint (dbFieldName).unsigned(); break;
+                            case 'mediumint': table.integer  (dbFieldName).unsigned(); break;
+                            case 'integer'  : table.integer  (dbFieldName).unsigned(); break;
+                            case 'bigint'   : table.bigint   (dbFieldName).unsigned(); break;
+                            default: throw new RangeError(`Invalid unsigned field type: ${field.type}`);
+                        }
+                    }
+                } else if (field.nullable) {
                     switch (field.type) {
                         case 'snowflake': table.string   (dbFieldName, 20); break;
                         case 'string'   : table.string   (dbFieldName, field.length); break;
                         case 'boolean'  : table.boolean  (dbFieldName); break;
-                        case 'integer'  : table.integer  (dbFieldName); break;
                         case 'date'     : table.date     (dbFieldName); break;
                         case 'datetime' : table.timestamp(dbFieldName); break;
-                        default: throw new RangeError(`Invalid field type: ${field.type}`);
+                        case 'float'    : table.float    (dbFieldName); break;
+                        case 'double'   : table.double   (dbFieldName); break;
+                        case 'decimal'  : table.decimal  (dbFieldName, field.precision, field.scale); break;
+                        case 'tinyint'  : table.tinyint  (dbFieldName); break;
+                        case 'smallint' : table.smallint (dbFieldName); break;
+                        case 'mediumint': table.integer  (dbFieldName); break;
+                        case 'integer'  : table.integer  (dbFieldName); break;
+                        case 'bigint'   : table.bigint   (dbFieldName); break;
+                        default: throw new RangeError(`Invalid nullable field type: ${field.type}`);
                     }
                 } else {
                     switch (field.type) {
                         case 'snowflake': table.string   (dbFieldName, 20).notNullable(); break;
                         case 'string'   : table.string   (dbFieldName, field.length).notNullable(); break;
                         case 'boolean'  : table.boolean  (dbFieldName).notNullable(); break;
-                        case 'integer'  : table.integer  (dbFieldName).notNullable(); break;
                         case 'date'     : table.date     (dbFieldName).notNullable(); break;
                         case 'datetime' : table.timestamp(dbFieldName).notNullable(); break;
+                        case 'float'    : table.float    (dbFieldName).notNullable(); break;
+                        case 'double'   : table.double   (dbFieldName).notNullable(); break;
+                        case 'decimal'  : table.decimal  (dbFieldName, field.precision, field.scale).notNullable(); break;
+                        case 'tinyint'  : table.tinyint  (dbFieldName).notNullable(); break;
+                        case 'smallint' : table.smallint (dbFieldName).notNullable(); break;
+                        case 'mediumint': table.integer  (dbFieldName).notNullable(); break;
+                        case 'integer'  : table.integer  (dbFieldName).notNullable(); break;
+                        case 'bigint'   : table.bigint   (dbFieldName).notNullable(); break;
                         default: throw new RangeError(`Invalid field type: ${field.type}`);
                     }
                 }

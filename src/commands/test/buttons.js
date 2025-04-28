@@ -1,7 +1,8 @@
 
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
 const buttons = {
+	global: false,
 	data: new SlashCommandBuilder()
 		.setName('buttons')
 		.setDescription('Tests buttons'),
@@ -38,7 +39,8 @@ const buttons = {
 		
 		await interaction.reply({
 			content: 'This is a button test (except for premium which is harder to test)',
-			components: [row]
+			components: [row],
+			flags: MessageFlags.Ephemeral
 		});
 	}
 };

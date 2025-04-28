@@ -3,6 +3,7 @@ import { SlashCommandBuilder } from 'discord.js';
 import { MessageFlags } from 'discord.js';
 
 const trainer = {
+	global: true,
 	data: new SlashCommandBuilder()
 		.setName('trainer')
 		.setDescription('Manage your trainer profile')

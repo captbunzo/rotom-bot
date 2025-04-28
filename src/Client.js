@@ -40,22 +40,7 @@ class Client extends DiscordClient {
         this.colorizeType    = this.chalk.yellow;
         this.colorizeNotNull = this.chalk.red;
         this.colorizeFkName  = this.chalk.magenta;
-        
-        // Discord API errors
-        // this.DISCORD_ERROR_UNKNOWN_ACCOUNT     = 10001;
-        // this.DISCORD_ERROR_UNKNOWN_APPLICATION = 10002;
-        // this.DISCORD_ERROR_UNKNOWN_CHANNEL     = 10003;
-        // this.DISCORD_ERROR_UNKNOWN_GUILD       = 10004;
-        // this.DISCORD_ERROR_UNKNOWN_INTEGRATION = 10005;
-        // this.DISCORD_ERROR_UNKNOWN_INVITE      = 10006;
-        // this.DISCORD_ERROR_UNKNOWN_MEMBER      = 10007;
-        // this.DISCORD_ERROR_UNKNOWN_MESSAGE     = 10008;
-        // this.DISCORD_ERROR_UNKNOWN_ROLE        = 10011;
-        // this.DISCORD_ERROR_UNKNOWN_TOKEN       = 10012;
-        // this.DISCORD_ERROR_UNKNOWN_USER        = 10013;
-        // this.DISCORD_ERROR_UNKNOWN_EMOJI       = 10014;
-        // this.DISCORD_ERROR_UNKNOWN_WEBHOOK     = 10015;
-        
+                
         // Attach the config and logger
         this.config = config;
         this.logger = new Logger();
@@ -84,34 +69,55 @@ class Client extends DiscordClient {
         // this.scheduler = require(`./Scheduler`);
     }
 
+    // TODO - Improve logging of this as right now it just spits everything out and is a mess
+    // TODO - It would be nice to change this to (1) delete all previous commands and (2) deploy commands individually
     async deployCommands() {
         // Load the commands
         await this.loadCommands();
 
-        const commandsJSON = [];
+        const globalCommandsJSON = [];
+        const guildCommandsJSON  = [];
+
         for (const [commandName, command] of this.commands) {
-            console.log(command.data.toJSON());
-            commandsJSON.push(command.data.toJSON());
+            this.logger.log(`Loading Command: ${commandName}`);
+            this.logger.dump(command.data.toJSON());
+            this.logger.dump('');
+
+            if (command.global) {
+                globalCommandsJSON.push(command.data.toJSON());
+            } else {
+                guildCommandsJSON.push(command.data.toJSON());
+            }
         }
 
         // Construct and prepare an instance of the REST module
         const rest = new Discord.REST().setToken(this.config.token);
 
-        // and deploy your commands!
+        // Deploy global commands
         (async () => {
 	        try {
-                console.log(`Started refreshing ${commandsJSON.length} application (/) commands.`);
+                // Use the put method to fully refresh all global commands with the current set
+                this.logger.log(`Started refreshing ${globalCommandsJSON.length} global application (/) commands.`);
 
-                // The put method is used to fully refresh all commands in the guild with the current set
-                const data = await rest.put(
+                const globalData = await rest.put(
                     Discord.Routes.applicationCommands(this.config.client_id),
-                    { body: commandsJSON },
+                    { body: globalCommandsJSON },
                 );
 
-                console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+                this.logger.log(`Successfully reloaded ${globalData.length} global application (/) commands.`);
+
+                // Use the put method to fully refresh all guild commands with the current set
+                this.logger.log(`Started refreshing ${guildCommandsJSON.length} guild application (/) commands.`);
+
+                const guildData = await rest.put(
+                    Discord.Routes.applicationGuildCommands(this.config.client_id, this.config.bot_guild_id),
+                    { body: guildCommandsJSON },
+                );
+
+                this.logger.log(`Successfully reloaded ${guildData.length} global application (/) commands.`);
             } catch (error) {
                 // And of course, make sure you catch and log any errors!
-                console.error(error);
+                this.logger.error(error);
             }
         })();
     }
@@ -140,7 +146,7 @@ class Client extends DiscordClient {
                     this.logger.log(`Loading command: ${command.data.name}`);
                     this.commands.set(command.data.name, command);
                 } else {
-                    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                    this.logger.error(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
                 }
             }
         }
@@ -187,7 +193,7 @@ class Client extends DiscordClient {
                 this.logger.log(`Loading modal: ${modal.data.name}`);
                 this.modals.set(modal.data.name, modal);
             } else {
-                console.log(`[WARNING] The modal at ${filePath} is missing a required "data" or "show" or "handle" property.`);
+                this.logger.error(`[WARNING] The modal at ${filePath} is missing a required "data" or "show" or "handle" property.`);
             }
         }
     }
@@ -211,7 +217,7 @@ class Client extends DiscordClient {
                 this.logger.log(`Loading button: ${button.data.name}`);
                 this.buttons.set(button.data.name, button);
             } else {
-                console.log(`[WARNING] The button at ${filePath} is missing a required "data" or "show" or "handle" property.`);
+                this.logger.error(`[WARNING] The button at ${filePath} is missing a required "data" or "show" or "handle" property.`);
             }
         }
     }
@@ -221,17 +227,3 @@ if (global.client == null)
     global.client = new Client(global.client);
 
 export default global.client;
-
-// export function get() {
-//     if (global.client == null)
-//         global.client = new Client(config);
-//     return global.client;
-// }
-
-// console.log(global.config);
-
-// module.exports = function (config) {
-//     if (global.client) return global.client;
-//     global.client = new Client(config);
-//     return global.client;
-// };
