@@ -1,5 +1,8 @@
 
-import { Events, MessageFlags } from 'discord.js';
+import {
+	Events,
+	MessageFlags
+} from 'discord.js';
 
 const interactionCreate = {
 	name: Events.InteractionCreate,

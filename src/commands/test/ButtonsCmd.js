@@ -1,7 +1,13 @@
 
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	MessageFlags,
+	SlashCommandBuilder
+} from 'discord.js';
 
-const buttons = {
+const ButtonsCmd = {
 	global: false,
 	data: new SlashCommandBuilder()
 		.setName('buttons')
@@ -45,4 +51,4 @@ const buttons = {
 	}
 };
 
-export default buttons;
+export default ButtonsCmd;

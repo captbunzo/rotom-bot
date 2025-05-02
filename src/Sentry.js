@@ -1,5 +1,4 @@
 
-// Load external classes
 import * as Sentry from '@sentry/node';
 import Tracing from '@sentry/tracing';
 

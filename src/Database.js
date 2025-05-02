@@ -1,23 +1,20 @@
 
-// Load external modules
-import fs from 'fs';
-
-// Load singletons
-// const client = require(`./Client`)(); // eslint-disable-line no-unused-vars
 import client from './Client.js';
 
 // Load the database client
-// const knex = require('knex')(client.config.database);
 import Knex from 'knex';
 const knex = Knex(client.config.database);
 client.logger.log('Connected to database');
 
 // Import the database objects
 import SchemaHistory from './data/SchemaHistory.js';
-import Boss          from './data/Boss.js';
 import MasterPokemon from './data/MasterPokemon.js';
 import MasterCPM     from './data/MasterCPM.js';
+import Translation   from './data/Translation.js';
+import Boss          from './data/Boss.js';
 import Trainer       from './data/Trainer.js';
+import Battle        from './data/Battle.js';
+import BattleMember  from './data/BattleMember.js';
 
 const newTables = [];
 
@@ -26,8 +23,11 @@ knex.discordBotDatabaseInit = async () => {
         SchemaHistory,
         MasterPokemon,
         MasterCPM,
+        Translation,
         Trainer,
-        Boss
+        Boss,
+        Battle,
+        BattleMember
     ];
     
     client.logger.log(`Creating database tables`);
@@ -93,8 +93,8 @@ knex.createDiscordBotTable = async (TableClass) => {
         TableClass.schema.tableName, SchemaHistory.STATUS_STARTED, 'Creating table'
     );
     
-    await knex.schema.createTable(TableClass.schema.tableName, async function (table) {
-        try {
+    try {
+        await knex.schema.createTable(TableClass.schema.tableName, async function (table) {
             // Set the table collation, only applicable to MySQL
             table.collate(client.config.databaseCollation);
             
@@ -177,18 +177,18 @@ knex.createDiscordBotTable = async (TableClass) => {
             // Add primary key
             client.logger.log(`       -> Adding primary key: ${TableClass.schema.primaryKey}`);
             table.primary(TableClass.schema.primaryKey);
-        } catch (error) {
-            await SchemaHistory.logCreateTable(
-                TableClass.schema.tableName, SchemaHistory.STATUS_FAILED, error.toString()
-            );
-            throw error;
-        }
-        
-        newTables.push(TableClass.schema.tableName);
+        });
+    } catch (error) {
         await SchemaHistory.logCreateTable(
-            TableClass.schema.tableName, SchemaHistory.STATUS_COMPLETED, 'Table creation successful'
+            TableClass.schema.tableName, SchemaHistory.STATUS_FAILED, error.toString()
         );
-    });
+        throw error;
+    }
+    
+    newTables.push(TableClass.schema.tableName);
+    await SchemaHistory.logCreateTable(
+        TableClass.schema.tableName, SchemaHistory.STATUS_COMPLETED, 'Table creation successful'
+    );
 };
 
 knex.createDiscordBotForeignKeys = async (TableClass) => {

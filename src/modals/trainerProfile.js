@@ -1,8 +1,11 @@
 
-import { ModalBuilder, transformResolved } from 'discord.js';
-import { TextInputBuilder, TextInputStyle } from 'discord.js';
-import { ActionRowBuilder } from 'discord.js';
-import { MessageFlags } from 'discord.js';
+import {
+    ActionRowBuilder,
+    MessageFlags,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
+} from 'discord.js';
 
 import Trainer from '../data/Trainer.js';
 

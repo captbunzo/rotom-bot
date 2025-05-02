@@ -1,6 +1,4 @@
 
-// Load external classes
-//const chalk  = require('chalk');
 import chalk from 'chalk';
 import moment from 'moment';
 

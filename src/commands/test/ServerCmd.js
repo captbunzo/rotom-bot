@@ -1,7 +1,10 @@
 
-import { MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+	MessageFlags,
+	SlashCommandBuilder
+} from 'discord.js';
 
-const server = {
+const ServerCmd = {
 	global: false,
 	data: new SlashCommandBuilder()
 		.setName('server')
@@ -16,4 +19,4 @@ const server = {
 	},
 };
 
-export default server;
+export default ServerCmd;

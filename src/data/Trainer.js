@@ -1,10 +1,7 @@
 
-// Load our classes
-import DatabaseTable  from '../DatabaseTable.js';
-import Timestamp      from '../Timestamp.js';
-
-// Load singletons
 import client from '../Client.js';
+
+import DatabaseTable from '../DatabaseTable.js';
 
 export default class Trainer extends DatabaseTable {
     static schema = this.parseSchema({
@@ -16,7 +13,8 @@ export default class Trainer extends DatabaseTable {
             'code':  { type: 'string',    nullable: true, length: 12 },
             'level': { type: 'integer',   nullable: true },
             'team':  { type: 'string',    nullable: true, length: 8 }
-        }
+        },
+        primaryKey: ['id']
     });
     
     constructor(data) {
@@ -26,14 +24,26 @@ export default class Trainer extends DatabaseTable {
     // *********** //
     // * Getters * //
     // *********** //
-    
-    // No custom getters required
+
+    get id    () { return this.getField('id'); }
+    get name  () { return this.getField('name'); }
+    get code  () { return this.getField('code'); }
+    get level () { return this.getField('level'); }
+    get team  () { return this.getField('team'); }
+
+    get formattedCode() {
+        return this.code.match(/.{1,4}/g).join(' ').trim();
+    }
     
     // *********** //
     // * Setters * //
     // *********** //
     
-    // No custom setters required
+    set id    (value) { this.setField(value, 'id'); }
+    set name  (value) { this.setField(value, 'name'); }
+    set code  (value) { this.setField(value, 'code'); }
+    set level (value) { this.setField(value, 'level'); }
+    set team  (value) { this.setField(value, 'team'); }
     
     // ***************** //
     // * Class Methods * //
@@ -64,6 +74,13 @@ export default class Trainer extends DatabaseTable {
         return await super.get(conditions, orderBy);
     }
     
+    static getSetupTrainerFirstMessage() {
+        return {
+            content: `Please setup your profile first with /trainer profile`,
+            flags: MessageFlags.Ephemeral
+        };
+    }
+
     // ******************** //
     // * Instance Methods * //
     // ******************** //
@@ -78,7 +95,7 @@ export default class Trainer extends DatabaseTable {
         // Attempt to create it
         await DatabaseTable.prototype.create.call(this);
     }
-    
+
     // ********************************** //
     // * Turn a Guardian into a Message * //
     // ********************************** //

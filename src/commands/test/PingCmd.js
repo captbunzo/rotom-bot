@@ -1,11 +1,14 @@
 
-import { MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+	MessageFlags,
+	SlashCommandBuilder
+} from 'discord.js';
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const ping = {
+const PingCmd = {
 	global: true,
 	data: new SlashCommandBuilder()
 		.setName('ping')
@@ -18,4 +21,4 @@ const ping = {
 	}
 };
 
-export default ping;
+export default PingCmd;

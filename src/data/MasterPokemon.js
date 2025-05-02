@@ -1,10 +1,12 @@
 
-// Load our classes
-import DatabaseTable  from '../DatabaseTable.js';
-import Timestamp      from '../Timestamp.js';
-
-// Load singletons
 import client from '../Client.js';
+
+import {
+    PokemonType,
+    PokemonTypeColor
+} from '../Constants.js';
+
+import DatabaseTable from '../DatabaseTable.js';
 
 export default class MasterPokemon extends DatabaseTable {
     static schema = this.parseSchema({
@@ -36,17 +38,45 @@ export default class MasterPokemon extends DatabaseTable {
     // * Getters * //
     // *********** //
     
-    // No custom getters required
-    
+    get templateId      () { return this.getField('templateId'); }
+    get pokemonId       () { return this.getField('pokemonId'); }
+    get pokedexId       () { return this.getField('pokedexId'); }
+    get type            () { return this.getField('type'); }
+    get type2           () { return this.getField('type2'); }
+    get form            () { return this.getField('form'); }
+    get formMaster      () { return this.getField('formMaster'); }
+    get baseAttack      () { return this.getField('baseAttack'); }
+    get baseDefense     () { return this.getField('baseDefense'); }
+    get baseStamina     () { return this.getField('baseStamina'); }
+    get candyToEvolve   () { return this.getField('candyToEvolve'); }
+    get buddyDistanceKm () { return this.getField('buddyDistanceKm'); }
+    get purifyStardust  () { return this.getField('purifyStardust'); }
+ 
     // *********** //
     // * Setters * //
     // *********** //
     
-    // No custom setters required
-    
+    set templateId      (value) { this.setField(value, 'templateId'); }
+    set pokemonId       (value) { this.setField(value, 'pokemonId'); }
+    set pokedexId       (value) { this.setField(value, 'pokedexId'); }
+    set type            (value) { this.setField(value, 'type'); }
+    set type2           (value) { this.setField(value, 'type2'); }
+    set form            (value) { this.setField(value, 'form'); }
+    set formMaster      (value) { this.setField(value, 'formMaster'); }
+    set baseAttack      (value) { this.setField(value, 'baseAttack'); }
+    set baseDefense     (value) { this.setField(value, 'baseDefense'); }
+    set baseStamina     (value) { this.setField(value, 'baseStamina'); }
+    set candyToEvolve   (value) { this.setField(value, 'candyToEvolve'); }
+    set buddyDistanceKm (value) { this.setField(value, 'buddyDistanceKm'); }
+    set purifyStardust  (value) { this.setField(value, 'purifyStardust'); }
+
     // ***************** //
     // * Class Methods * //
     // ***************** //
+    
+    static async getPokemonIdChoices(pokemonIdPrefix, conditions = {}) {
+        return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
+    }
     
     //static parseConditions(conditions) {
     //    return conditions;
@@ -85,44 +115,57 @@ export default class MasterPokemon extends DatabaseTable {
         return await this.getChoices('form', formPrefix, conditions);
     }
 
+    static getTypeColor(type) {
+        let typeColor;
+
+        switch (type.toUpperCase()) {
+            case PokemonType.Bug      : typeColor = PokemonTypeColor.Bug;       break;
+            case PokemonType.Dark     : typeColor = PokemonTypeColor.Dark;      break;
+            case PokemonType.Dragon   : typeColor = PokemonTypeColor.Dragon;    break;
+            case PokemonType.Electric : typeColor = PokemonTypeColor.Electric;  break;
+            case PokemonType.Fairy    : typeColor = PokemonTypeColor.Fairy;     break;
+            case PokemonType.Fighting : typeColor = PokemonTypeColor.Fighting;  break;
+            case PokemonType.Fire     : typeColor = PokemonTypeColor.Fire;      break;
+            case PokemonType.Flying   : typeColor = PokemonTypeColor.Flying;    break;
+            case PokemonType.Ghost    : typeColor = PokemonTypeColor.Ghost;     break;
+            case PokemonType.Grass    : typeColor = PokemonTypeColor.Grass;     break;
+            case PokemonType.Ground   : typeColor = PokemonTypeColor.Ground;    break;
+            case PokemonType.Ice      : typeColor = PokemonTypeColor.Ice;       break;
+            case PokemonType.Normal   : typeColor = PokemonTypeColor.Normal;    break;
+            case PokemonType.Poison   : typeColor = PokemonTypeColor.Poison;    break;
+            case PokemonType.Psychic  : typeColor = PokemonTypeColor.Psychic;   break;
+            case PokemonType.Rock     : typeColor = PokemonTypeColor.Rock;      break;
+            case PokemonType.Steel    : typeColor = PokemonTypeColor.Steel;     break;
+            case PokemonType.Water    : typeColor = PokemonTypeColor.Water;     break;
+        }
+
+        client.logger.debug(`type = ${type}`);
+        client.logger.debug(`typeColor = ${typeColor}`);
+
+        return typeColor;
+    };
+
     // ******************** //
     // * Instance Methods * //
     // ******************** //
-    
-    //async create() {  
-    //    // If need be, retrieve the username
-    //    if (!this.name) {
-    //        const user = await client.users.fetch(this.id);
-    //        if (user) this.name = user.name;
-    //    }
-    //    
-    //    // Attempt to create it
-    //    await DatabaseTable.prototype.create.call(this);
-    //}
-    
-    async update(condition = { template_id: this.templateId }) {
+        
+    async update(condition = { templateId: this.templateId }) {
         await DatabaseTable.prototype.update.call(this, condition);
     }
     
-    async delete(condition = { template_id: this.templateId }) {
+    async delete(condition = { templateId: this.templateId }) {
         await DatabaseTable.prototype.delete.call(this, condition);
     }
 
-    // ********************************** //
-    // * Turn a Guardian into a Message * //
-    // ********************************** //
-    
-    /* async getMessageContent(cachedParameters = {}) {
-        const user = await this.getUser();
-        
-        //
-        // TODO - It would be nice to figure out how to get GuildMember instead so I can get their Guild displayName
-        //
-        
-        let details = [];
-        details.push(`**Time Zone:** ${this.timezone ? this.timezone : 'Not Set'}`);
-        details.push(`**Event (LFG) Privacy:** ${this.privateEventDefault ? 'Private' : 'Public'}`);
-        
-        return `__**${user.username}**__` + '\n' + details.join('\n');
-    } */
+    getTypeColor() {
+        return MasterPokemon.getTypeColor(this.type);
+    }
+
+    getType2Color() {
+        if (this.type2 != null) {
+            return MasterPokemon.getTypeColor(this.type2);
+        }
+
+        return null;
+    }
 }

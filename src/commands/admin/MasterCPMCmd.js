@@ -1,13 +1,19 @@
 
+import path from 'node:path';
+import { readFile } from 'fs/promises';
+
 import {
     MessageFlags,
     SlashCommandBuilder
 } from 'discord.js';
 
-import { readFile } from 'fs/promises';
+import {
+    InterimLoadUpdates
+} from '../../Constants.js';
+
 import MasterCPM from '../../data/MasterCPM.js';
 
-const master_cpm = {
+const MasterCPMCmd = {
     global: false,
 	data: new SlashCommandBuilder()
 		.setName('master-cpm')
@@ -16,12 +22,6 @@ const master_cpm = {
             subCommand
                 .setName('load')
                 .setDescription('Load Master CP Multiplier data file')
-                .addStringOption(option =>
-                    option
-                        .setName('file')
-                        .setDescription('File to load')
-                        .setRequired(true)
-                )
         ),
 	
 	async execute(interaction) {
@@ -30,9 +30,10 @@ const master_cpm = {
         switch (subCommand) {
             case 'load' : this.executeLoad(interaction); break;
             default :
-                await interaction.reply(
-                    { content: `Master CP Multiplier management command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }
-                ); 
+                await interaction.reply({
+                    content: `Master CP Multiplier management command execution not yet implemented for subcommand -- ${subCommand}`,
+                    flags: MessageFlags.Ephemeral
+                }); 
         }
 	},
 
@@ -54,23 +55,29 @@ const master_cpm = {
     async executeLoad(interaction) {
         const client = interaction.client;
         const table  = 'master_cpm';
-        const file   = interaction.options.getString('file')  ?? 'No file provided';
-                
-        await interaction.reply({ content: `Starting ${table} load`, flags: MessageFlags.Ephemeral });
-        await interaction.followUp({ content: `Reading ${file}`, flags: MessageFlags.Ephemeral });
+        const file   = path.join(client.config.data_directory, 'master_cpm.json');
 
-        const masterCpmJSON = JSON.parse(
-            await readFile(
-                new URL(file, import.meta.url)
-            )
-        );
-        
+        await interaction.reply({ content: `Starting load of ${table} table from ${file}` });
+
+        let json;
+        try {
+            json = JSON.parse(
+                await readFile(
+                    new URL(file, import.meta.url)
+                )
+            );
+        } catch (error) {
+            await interaction.followUp({ content: `Error reading file` });
+        }
+
         client.logger.debug('Master CP Multiplier JSON');
-        client.logger.dump(masterCpmJSON);
+        client.logger.dump(json);
 
         let count = 0;
-        for (let x = 0; x < masterCpmJSON.cpMultiplier.length; x++) {
-            let cpmValue = masterCpmJSON.cpMultiplier[x];
+        let followUpMsg = await interaction.followUp({ content: `Loaded ${count} records into ${table} table` });
+
+        for (let x = 0; x < json.cpMultiplier.length; x++) {
+            let cpmValue = json.cpMultiplier[x];
             count++;
 
             let masterCpmObject = {
@@ -81,16 +88,26 @@ const master_cpm = {
             let masterCpmRecord = await MasterCPM.get({ level: masterCpmObject.level, unique: true });
 
             if (!masterCpmRecord) {
-                masterCpmRecord = new MasterCPM(cpm);
+                masterCpmRecord = new MasterCPM(masterCpmObject);
                 await masterCpmRecord.create();
             } else {
                 masterCpmRecord.level = masterCpmObject.level;
                 masterCpmRecord.cpm   = masterCpmObject.cpm;
                 await masterCpmRecord.update();
             }
+            
+            if (count % InterimLoadUpdates == 0) {
+                interaction.editReply({
+                    message: followUpMsg,
+                    content: `Loaded ${count} records into ${table} table`
+                });
+            }
         }
 
-        await interaction.followUp({ content: `Loaded ${count} records from ${file}`, flags: MessageFlags.Ephemeral });
+        interaction.editReply({
+            message: followUpMsg,
+            content: `Loaded ${count} records into ${table} table`
+        });
     },
 
     async autocompleteLoad(interaction) {
@@ -101,4 +118,4 @@ const master_cpm = {
     }
 };
 
-export default master_cpm;
+export default MasterCPMCmd;

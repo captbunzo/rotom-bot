@@ -1,24 +1,15 @@
 
-// Load the config
 import config from '../config.json' with { type: 'json' };
 
-// Load our classes
-import DuplicateError from './error/DuplicateError.js';
-import PermissionError from './error/PermissionError.js';
-import Logger from './Logger.js';
-
-// Load external modules
 import fs from 'fs';
 import path from 'node:path';
 import chalk from 'chalk';
+import Logger from './Logger.js';
 
-// Load discord modules
 import Discord from 'discord.js';
-import { throws } from 'node:assert';
 
 const DiscordClient = Discord.Client;
 const Collection    = Discord.Collection;
-const Permissions   = Discord.Permissions;
 
 class Client extends DiscordClient {
     constructor() {
@@ -213,7 +204,7 @@ class Client extends DiscordClient {
             const { default: button } = await import(buttonFilePath);
             
             // Set a new item in the Collection with the key as the button name and the value as the exported module
-            if ('data' in button && 'show' in button && 'handle' in button) {
+            if ('data' in button && 'handle' in button) {
                 this.logger.log(`Loading button: ${button.data.name}`);
                 this.buttons.set(button.data.name, button);
             } else {

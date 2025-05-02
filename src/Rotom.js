@@ -19,7 +19,7 @@ Sentry.init(config);
 
 // Load singletons - which here in .js is actually initializing them
 import client from './Client.js';
-import knex from './Database.js';
+import knex   from './Database.js';
 
 // We are doing real fancy node 8 async/await stuff here, and to do that we
 // need to wrap stuff in an anonymous function. It is annoying but it works.

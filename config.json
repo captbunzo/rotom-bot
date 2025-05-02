@@ -28,11 +28,14 @@
 			"host": "127.0.0.1",
 			"database": "rotom",
 			"user": "rotom",
-			"password": "MoQczpjzhCL3F"
+			"password": "MoQ&cz@pj&zhCL3F"
 		}
 	},
 	"databaseCollation": "utf8mb4_unicode_ci",
 
+	"about_data_directory": "Data directory for Rotom data files",
+	"data_directory": "/home/captbunzo/src/rotom-data",
+	
 	"sentry": {
 		"dsn": "https://81113de442bd4a48aac9c3b1f296a554@o566108.ingest.us.sentry.io/4508955933081600",
 		"tracesSampleRate": 1.0,

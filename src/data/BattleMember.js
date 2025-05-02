@@ -1,17 +1,15 @@
 
-import client from '../Client.js';
-
 import DatabaseTable from '../DatabaseTable.js';
 
-export default class MasterCPM extends DatabaseTable {
+export default class BattleMember extends DatabaseTable {
     static schema = this.parseSchema({
-        tableName: 'master_cpm',
-        orderBy: 'level',
+        tableName: 'battle_member',
+        orderBy: ['battle_id', 'created_at'],
         fields: {
-            'level': { type: 'tinyint', nullable: false, unsigned: true },
-            'cpm':   { type: 'decimal', nullable: false, precision: 9, scale: 8 }
+            'battle_id':  { type: 'snowflake', nullable: false },
+            'trainer_id': { type: 'snowflake', nullable: false }
         },
-        primaryKey: ['level']
+        primaryKey: ['battle_id', 'trainer_id']
     });
     
     constructor(data) {
@@ -22,15 +20,15 @@ export default class MasterCPM extends DatabaseTable {
     // * Getters * //
     // *********** //
     
-    get level () { return this.getField('level'); }
-    get cpm   () { return this.getField('cpm'); }
+    get battleId  () { return this.getField('battleId'); }
+    get trainerId () { return this.getField('trainerId'); }
     
     // *********** //
     // * Setters * //
     // *********** //
     
-    set level (value) { this.setField(value, 'level'); }
-    set cpm   (value) { this.setField(value, 'cpm'); }
+    set battleId  (value) { this.setField(value, 'battleId'); }
+    set trainerId (value) { this.setField(value, 'trainerId'); }
     
     // ***************** //
     // * Class Methods * //
@@ -48,36 +46,19 @@ export default class MasterCPM extends DatabaseTable {
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let trainer = await super.get(conditions, orderBy);
+            let boss = await super.get(conditions, orderBy);
             
             //if (!trainer) {
             //    trainer = new Trainer({id: conditions.id});
             //    //await trainer.create();
             //}
             
-            return trainer;
+            return boss;
         }
         
         return await super.get(conditions, orderBy);
     }
     
-     static async getCombatPower(masterPokemonRec, attackIV, defenseIV, staminaIV, level) {
-        const masterCpmRec = await MasterCPM.get({ level: level, unique: true });
-        client.logger.debug('Master CP Multiplier Record');
-        client.logger.dump(masterCpmRec);
-
-        //
-        // Combat Power (CP) = FLOOR(((Attack + Attack IV) * SQRT(Defense + Defense IV) * SQRT(Stamina + Stamina IV) * (CPM_AT_LEVEL(Level) ^ 2)) / 10)
-        //
-        
-        const attackTotal  = masterPokemonRec.baseAttack  + attackIV;
-        const defenseTotal = masterPokemonRec.baseDefense + defenseIV;
-        const staminaTotal = masterPokemonRec.baseStamina + staminaIV;
-        const cp = Math.floor(((attackTotal * Math.sqrt(defenseTotal) * Math.sqrt(staminaTotal) * Math.pow(masterCpmRec.cpm, 2)) / 10));
-
-        return cp;
-    }
-
     // ******************** //
     // * Instance Methods * //
     // ******************** //
@@ -93,12 +74,8 @@ export default class MasterCPM extends DatabaseTable {
     //    await DatabaseTable.prototype.create.call(this);
     //}
     
-    async update(condition = { level: this.level }) {
-        await DatabaseTable.prototype.update.call(this, condition);
-    }
-    
-    async delete(condition = { level: this.level }) {
-        await DatabaseTable.prototype.delete.call(this, condition);
+    async delete(conditions = {battleId: this.battleId, trainerId: this.trainerId}) {
+        await DatabaseTable.prototype.delete.call(this, conditions);
     }
 
     // ********************************** //

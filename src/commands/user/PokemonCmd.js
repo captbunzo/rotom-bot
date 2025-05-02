@@ -1,26 +1,32 @@
 
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+    MessageFlags,
+    SlashCommandBuilder
+ } from 'discord.js';
 
-import { MaxAutoCompleteChoices } from '../../Constants.js';
-import MasterPokemon from '../../data/MasterPokemon.js';
+import {
+    MaxAutoCompleteChoices
+} from '../../Constants.js';
+
 import MasterCPM     from '../../data/MasterCPM.js';
+import MasterPokemon from '../../data/MasterPokemon.js';
 
-const pokemon = {
+const PokemonCmd = {
     global: true,
 	data: new SlashCommandBuilder()
 		.setName('pokemon')
-		.setDescription('Do Pokémom stuff')
+		.setDescription('Do Pokémon stuff')
         .addStringOption(option =>
             option
                 .setName('name')
-                .setDescription('Pokémom Name')
+                .setDescription('Pokémon Name')
                 .setRequired(true)
                 .setAutocomplete(true)
         )
         .addStringOption(option =>
             option
                 .setName('form')
-                .setDescription('Pokémom Form')
+                .setDescription('Pokémon Form')
                 .setRequired(false)
                 .setAutocomplete(true)
         )
@@ -128,7 +134,7 @@ const pokemon = {
         }
 
         if (level != null) {
-            const cp = await this.getCombatPower(masterPokemonRec, attack, defense, stamina, level);
+            const cp = await MasterCPM.getCombatPower(masterPokemonRec, attack, defense, stamina, level);
 
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
             client.logger.debug(`CP Level ${level}: ${cp}`);
@@ -140,10 +146,10 @@ const pokemon = {
             });
 
         } else {
-            const cpLevel15 = await this.getCombatPower(masterPokemonRec, attack, defense, stamina, 15);
-            const cpLevel20 = await this.getCombatPower(masterPokemonRec, attack, defense, stamina, 20);
-            const cpLevel25 = await this.getCombatPower(masterPokemonRec, attack, defense, stamina, 25);
-            const cpLevel50 = await this.getCombatPower(masterPokemonRec, attack, defense, stamina, 50);
+            const cpLevel15 = await MasterCPM.getCombatPower(masterPokemonRec, attack, defense, stamina, 15);
+            const cpLevel20 = await MasterCPM.getCombatPower(masterPokemonRec, attack, defense, stamina, 20);
+            const cpLevel25 = await MasterCPM.getCombatPower(masterPokemonRec, attack, defense, stamina, 25);
+            const cpLevel50 = await MasterCPM.getCombatPower(masterPokemonRec, attack, defense, stamina, 50);
 
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
             client.logger.debug(`CP Level 15: ${cpLevel15}`);
@@ -188,24 +194,7 @@ const pokemon = {
         } else {
             await interaction.respond([]);
         }
-    },
-
-    async getCombatPower(masterPokemonRec, attackIV, defenseIV, staminaIV, level) {
-        const masterCpmRec = await MasterCPM.get({ level: level, unique: true });
-        client.logger.debug('Master CP Multiplier Record');
-        client.logger.dump(masterCpmRec);
-
-        //
-        // Combat Power (CP) = FLOOR(((Attack + Attack IV) * SQRT(Defense + Defense IV) * SQRT(Stamina + Stamina IV) * (CPM_AT_LEVEL(Level) ^ 2)) / 10)
-        //
-         
-        const attackTotal  = masterPokemonRec.baseAttack  + attackIV;
-        const defenseTotal = masterPokemonRec.baseDefense + defenseIV;
-        const staminaTotal = masterPokemonRec.baseStamina + staminaIV;
-        const cp = Math.floor(((attackTotal * Math.sqrt(defenseTotal) * Math.sqrt(staminaTotal) * Math.pow(masterCpmRec.cpm, 2)) / 10));
-
-        return cp;
     }
 };
 
-export default pokemon;
+export default PokemonCmd;

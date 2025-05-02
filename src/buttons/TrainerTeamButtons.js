@@ -1,23 +1,27 @@
 
-import { ButtonBuilder, ButtonStyle, ModalBuilder } from 'discord.js';
-import { TextInputBuilder, TextInputStyle } from 'discord.js';
-import { ActionRowBuilder } from 'discord.js';
-import { MessageFlags } from 'discord.js';
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    MessageFlags
+} from 'discord.js';
+
+import {
+    Team
+} from '../Constants.js';
 
 import Trainer from '../data/Trainer.js';
-import { Team } from '../Constants.js';
 
 const ClearTeam = 'Clear Team';
 
-const trainerTeam = {
+const TrainerTeamButtons = {
     data: {
-        name: 'trainerTeam'
+        name: 'TrainerTeam'
     },
 
     async show(interaction) {
         const client = interaction.client;
-        const trainer = await Trainer.get({id: interaction.user.id, unique: true});
-
+        
         // Create the buttons
         const instinctButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${Team.Instinct}`)
@@ -44,7 +48,8 @@ const trainerTeam = {
         
             await interaction.reply({
                 content: 'Please select your team',
-                components: [teamRow]
+                components: [teamRow],
+                flags: MessageFlags.Ephemeral
             });
     },
     
@@ -64,4 +69,4 @@ const trainerTeam = {
     }
 };
 
-export default trainerTeam;
+export default TrainerTeamButtons;

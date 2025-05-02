@@ -1,7 +1,13 @@
 
-import { ActionRowBuilder, MessageFlags, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, SlashCommandBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	MessageFlags,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+	SlashCommandBuilder
+} from 'discord.js';
 
-const menu = {
+const MenuCmd = {
 	global: false,
 	data: new SlashCommandBuilder()
 		.setName('menu')
@@ -39,4 +45,4 @@ const menu = {
 	}
 };
 
-export default menu;
+export default MenuCmd;

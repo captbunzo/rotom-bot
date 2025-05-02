@@ -1,8 +1,18 @@
 
-import { SlashCommandBuilder } from 'discord.js';
-import { MessageFlags } from 'discord.js';
+import {
+	MessageFlags,
+	SlashCommandBuilder
+} from 'discord.js';
 
-const trainer = {
+import {
+	Team
+} from '../../Constants.js';
+
+import Trainer from '../../data/Trainer.js';
+
+const ClearTeam = 'Clear Team';
+
+const TrainerCmd = {
 	global: true,
 	data: new SlashCommandBuilder()
 		.setName('trainer')
@@ -16,6 +26,18 @@ const trainer = {
 			subCommand
 				.setName('team')
 				.setDescription('Set your team')
+				.addStringOption(option =>
+					option
+						.setName('team')
+						.setDescription('Traner Team')
+						.setRequired(true)
+						.setChoices(
+							{ name: Team.Instinct, value: Team.Instinct },
+							{ name: Team.Mystic, value: Team.Mystic },
+							{ name: Team.Valor, value: Team.Valor },
+							{ name: ClearTeam, value: ClearTeam }
+						)
+				)
 			)
 		.addSubcommand(subCommand =>
 			subCommand
@@ -54,13 +76,31 @@ const trainer = {
 	async executeProfile(interaction) {
 		const modal = interaction.client.modals.get('trainerProfile');
 		await modal.show(interaction);
-		//await interaction.reply({ content: `Setup -- Trainer profile management not yet implemented`, flags: MessageFlags.Ephemeral });
 	},
 	
+  //async executeTeam(interaction) {
+  //	const button = interaction.client.buttons.get('TrainerTeam');
+  //	await button.show(interaction);
+  //},
+
 	async executeTeam(interaction) {
-		const button = interaction.client.buttons.get('trainerTeam');
-		await button.show(interaction);
-		//await interaction.reply({ content: `Team -- Trainer profile management not yet implemented`, flags: MessageFlags.Ephemeral });
+		const client = interaction.client;
+        const team = interaction.options.getString('team');
+		const trainer = await Trainer.get({ id: interaction.user.id, unique: true });
+
+		if (!trainer) {
+			interaction.reply(Trainer.getSetupTrainerFirstMessage());
+			return;
+		}
+		
+		trainer.team = ( team == ClearTeam ? null : team );
+		await trainer.update();
+
+		const message = ( team == ClearTeam
+			? `Trainer team cleared`
+			: `Trainer team set to ${team}`
+		);
+		await interaction.reply({ content: message, flags: MessageFlags.Ephemeral });
 	},
 
 	async executeDelete(interaction) {
@@ -72,4 +112,4 @@ const trainer = {
 	}
 };
 
-export default trainer;
+export default TrainerCmd;

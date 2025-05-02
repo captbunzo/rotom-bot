@@ -1,14 +1,12 @@
 
-// Load our classes
-import DatabaseTable from '../DatabaseTable.js';
-
-// Load singletons
 import client from '../Client.js';
+
+import DatabaseTable from '../DatabaseTable.js';
 
 export default class SchemaHistory extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'schema_history',
-        orderBy: ['log_date', 'object_type', 'object_name'],
+        orderBy: ['created_at'],
         fields: {
             'log_date':    { type: 'date',                 nullable: false },
             'object_type': { type: 'string', length: 32,   nullable: false },
@@ -17,19 +15,19 @@ export default class SchemaHistory extends DatabaseTable {
             'status':      { type: 'string', length: 16,   nullable: false },
             'comment':     { type: 'string', length: 4000, nullable: true }
         },
-        primaryKey: ['log_date', 'object_type', 'object_name']
+        primaryKey: ['created_at', 'object_type', 'object_name', 'log_type', 'status']
     });
     
-    static OBJECT_TYPE_TABLE       = 'table';
-    static OBJECT_TYPE_FOREIGN_KEY = 'foreign-key';
+    static OBJECT_TYPE_TABLE       = 'TABLE';
+    static OBJECT_TYPE_FOREIGN_KEY = 'FOREIGN-KEY';
     
-    static LOG_TYPE_CREATE = 'create';
-    static LOG_TYPE_ALTER  = 'alter';
-    static LOG_TYPE_DELETE = 'delete';
+    static LOG_TYPE_CREATE = 'CREATE';
+    static LOG_TYPE_ALTER  = 'ALTER';
+    static LOG_TYPE_DELETE = 'DELETE';
     
-    static STATUS_STARTED   = 'started';
-    static STATUS_COMPLETED = 'completed';
-    static STATUS_FAILED    = 'failed';
+    static STATUS_STARTED   = 'START';
+    static STATUS_COMPLETED = 'COMPLETE';
+    static STATUS_FAILED    = 'FAIL';
         
     constructor(data) {
         super(data);
@@ -39,14 +37,28 @@ export default class SchemaHistory extends DatabaseTable {
     // * Getters * //
     // *********** //
     
-    // No custom getters required
+    get logDate() {
+        this.validateFieldName('logDate');
+        return new Date(this.data['log_date']);
+    }
+
+    get logType    () { return this.getField('logType'); }
+    get objectName () { return this.getField('objectName'); }
+    get objectType () { return this.getField('objectType'); }
+    get status     () { return this.getField('status'); }
+    get comment    () { return this.getField('comment'); }
     
     // *********** //
     // * Setters * //
     // *********** //
     
-    // No custom setters required
-    
+    set logDate    (value) { this.setField(value, 'logDate'); }
+    set logType    (value) { this.setField(value, 'logType'); }
+    set objectName (value) { this.setField(value, 'objectName'); }
+    set objectType (value) { this.setField(value, 'objectType'); }
+    set status     (value) { this.setField(value, 'status'); }
+    set comment    (value) { this.setField(value, 'comment'); }
+
     /**
      * Get schema histories based on a given set of conditions in an optional order.
      * @param {object} [conditions] The criteria for the schema histories to retrieve
@@ -95,11 +107,7 @@ export default class SchemaHistory extends DatabaseTable {
             if (status != SchemaHistory.STATUS_COMPLETED) return;
             await log.create();
         } else {
-            if (status == SchemaHistory.STATUS_STARTED) {
-                await log.create();
-            } else {
-                await log.update();
-            }
+            await log.create();
         }
     }
     

@@ -240,22 +240,21 @@ export default class DatabaseTable {
         }
         
         // For debugging purposes, generate the sql
-        const sql = knex(this.schema.tableName)
+        const sqlBuilder = knex(this.schema.tableName)
             .where(parsedConditions)
-            .delete()
-            .toSQL();
+            .delete();
+        const sql = sqlBuilder.toSQL();
         
         client.logger.sql(`Executing SQL: ${sql.sql}`);
         client.logger.sql(`With Bindings: ${sql.bindings}`);
         
-        return await knex(this.schema.tableName)
-            .where(parsedConditions)
-            .delete()
+        return await sqlBuilder
             .then(result => {
                 return result;
             });
     }
     
+    // TODO - Figure out how to not have to define this function as both static and class
     static parseConditions(conditions) {
         return conditions;
     }
@@ -326,16 +325,15 @@ export default class DatabaseTable {
     
     async create() {
         // For debugging purposes, generate the sql
-        const sql = await knex(this.schema.tableName)
-            .insert(this.data)
-            .toSQL();
+        const sqlBuilder = knex(this.schema.tableName)
+            .insert(this.data);
+        const sql = sqlBuilder.toSQL();
         
         client.logger.sql(`Executing SQL: ${sql.sql}`);
         client.logger.sql(`With Bindings: ${sql.bindings}`);
         
         // Execute the insert
-        return await knex(this.schema.tableName)
-            .insert(this.data)
+        return await sqlBuilder
             .then(function(result) {
                 return result;
             });
@@ -344,19 +342,22 @@ export default class DatabaseTable {
     async update(conditions = {id: this.id}) {
         // Update the timestamp
         this.updatedAt = knex.fn.now();
+
+        // Parse the update conditions
+        let parsedConditions = conditions;
+        parsedConditions = this.constructor.parseConditions(parsedConditions);
+        parsedConditions = this.constructor.parseFieldConditions(parsedConditions);
         
         // For debugging purposes, generate the sql
-        const sql = await knex(this.schema.tableName)
-            .where(conditions)
-            .update(this.data)
-            .toSQL();
+        const sqlBuilder = knex(this.schema.tableName)
+            .where(parsedConditions)
+            .update(this.data);
+        const sql = sqlBuilder.toSQL();
         
         client.logger.sql(`Executing SQL: ${sql.sql}`);
         client.logger.sql(`With Bindings: ${sql.bindings}`);
         
-        const rowsChanged = await knex(this.schema.tableName)
-            .where(conditions)
-            .update(this.data)
+        const rowsChanged = await sqlBuilder
             .then(result => {
                 return result;
             });
@@ -370,19 +371,22 @@ export default class DatabaseTable {
         return rowsChanged;
     }
     
-    async delete(conditions = {id: this.id}) {        
+    async delete(conditions = {id: this.id}) {
+        // Parse the update conditions
+        let parsedConditions = conditions;
+        parsedConditions = this.constructor.parseConditions(parsedConditions);
+        parsedConditions = this.constructor.parseFieldConditions(parsedConditions);
+        
         // For debugging purposes, generate the sql
-        const sql = await knex(this.schema.tableName)
-            .where(conditions)
-            .delete()
-            .toSQL();
+        const sqlBuilder = knex(this.schema.tableName)
+            .where(parsedConditions)
+            .delete();
+        const sql = sqlBuilder.toSQL();
         
         client.logger.sql(`Executing SQL: ${sql.sql}`);
         client.logger.sql(`With Bindings: ${sql.bindings}`);
         
-        return await knex(this.schema.tableName)
-            .where(conditions)
-            .delete()
+        return await sqlBuilder
             .then(result => {
                 return result;
             });
@@ -414,9 +418,7 @@ export default class DatabaseTable {
     get schema() {
         return this.constructor.schema;
     }
-    
-    // Generic get field and object functions
-    
+        
     //
     // TODO - We really should figure out how to make these getters and setters properly dynamic
     //
@@ -436,82 +438,11 @@ export default class DatabaseTable {
     getObject(camelName, camelId = `${camelName}Id`) {
         return this.temp[camelName];
     }
-    
-    // Standard ID field most tables have
-    
-    get id                  () { return this.getField('id'); }
-    
-    // Property fields
-    
-    get baseAttack          () { return this.getField('baseAttack'); }
-    get baseDefense         () { return this.getField('baseDefense'); }
-    get baseStamina         () { return this.getField('baseStamina'); }
-    get bossType            () { return this.getField('bossType'); }
-    get buddyDistanceKm     () { return this.getField('buddyDistanceKm'); }
-    get candyToEvolve       () { return this.getField('candyToEvolve'); }
-    get code                () { return this.getField('code'); }
-    get cpm                 () { return this.getField('cpm'); }
-    get comment             () { return this.getField('comment'); }
-    get form                () { return this.getField('form'); }
-    get formMaster          () { return this.getField('formMaster'); }
-    get isActive            () { return this.getField('isActive') };
-    get isMega              () { return this.getField('isMega') };
-    get isShadow            () { return this.getField('isShadow') };
-    get level               () { return this.getField('level'); }
-    get logType             () { return this.getField('logType'); }
-    get objectName          () { return this.getField('objectName'); }
-    get objectType          () { return this.getField('objectType'); }
-    get pokedexId           () { return this.getField('pokedexId'); }
-    get pokemonId           () { return this.getField('pokemonId'); }
-    get purifyStardust      () { return this.getField('purifyStardust'); }
-    get name                () { return this.getField('name'); }
-    get status              () { return this.getField('status'); }
-    get team                () { return this.getField('team'); }
-    get templateId          () { return this.getField('templateId'); }
-    get type                () { return this.getField('type'); }
-    get type2               () { return this.getField('type2'); }
-    
-    get logDate() {
-        this.validateFieldName('logDate');
-        return new Date(this.data['log_date']);
-    }
-    
+        
     // Standard datetime fields
-    
-    get createdAt           () { return this.getField('createdAt'); }
-    get updatedAt           () { return this.getField('updatedAt'); }
-    
-    // Object identifier fields
-    
-    get trainerId           () { return this.getField('trainerId'); }
-
-    // JSON identifier fields
-    
-    get ownerIds            () { return this.getJSONField('ownerIds'); }
-    
-    // Objects
-    
-    // get activity          () { return this.getObject('activity'); }
-    // get activityCategory  () { return this.getObject('activityCategory'); }
-    // get alliance          () { return this.getObject('alliance'); }
-    // get author            () { return this.getObject('author'); }
-    // get channel           () { return this.getObject('channel'); }
-    // get channelGroup      () { return this.getObject('channelGroup'); }
-    // get configChannel     () { return this.getObject('configChannel'); }
-    // get creator           () { return this.getObject('creator'); }
-    // get discordChannel    () { return this.getObject('discordChannel'); }
-    // get event             () { return this.getObject('event'); }
-    // get guardian          () { return this.getObject('guardian'); }
-    // get guild             () { return this.getObject('guild'); }
-    // get joinedFromChannel () { return this.getObject('joinedFromChannel'); }
-    // get joinedFromGuild   () { return this.getObject('joinedFromGuild'); }
-    // get origChannel       () { return this.getObject('origChannel'); }
-    // get origGuild         () { return this.getObject('origGuild'); }
-    // get origMessage       () { return this.getObject('origMessage'); }
-    // get updater           () { return this.getObject('updater'); }
-    // get userFriendlyId    () { return this.getObject('userFriendlyId'); }
-    // get webhook           () { return this.getObject('webhook'); }
-    
+    get createdAt () { return this.getField('createdAt'); }
+    get updatedAt () { return this.getField('updatedAt'); }
+        
     // *********** //
     // * Setters * //
     // ********** //
@@ -547,7 +478,7 @@ export default class DatabaseTable {
                 
                 case 'commandChannelType':
                 case 'reactionMessageType':
-                case 'type':
+                //case 'type':
                     cleansedValue = cleansedValue.toLowerCase();
                     break;
                 
@@ -578,140 +509,97 @@ export default class DatabaseTable {
         this.temp[camelName] = object;
     }
     
-    // Standard ID field most tables have
-    
-    set id                  (value) { this.setField(value, 'id'); }
-    
-    // Property fields
-    
-    set baseAttack          (value) { this.setField(value, 'baseAttack'); }
-    set baseDefense         (value) { this.setField(value, 'baseDefense'); }
-    set baseStamina         (value) { this.setField(value, 'baseStamina'); }
-    set bossType            (value) { this.setField(value, 'bossType'); }
-    set buddyDistanceKm     (value) { this.setField(value, 'buddyDistanceKm'); }
-    set candyToEvolve       (value) { this.setField(value, 'candyToEvolve'); }
-    set code                (value) { this.setField(value, 'code'); }
-    set cpm                 (value) { this.setField(value, 'cpm'); }
-    set comment             (value) { this.setField(value, 'comment'); }
-    set form                (value) { this.setField(value, 'form'); }
-    set formMaster          (value) { this.setField(value, 'formMaster'); }
-    set isActive            (value) { this.setField(value, 'isActive'); }
-    set isMega              (value) { this.setField(value, 'isMega'); }
-    set isShadow            (value) { this.setField(value, 'isShadow'); }
-    set level               (value) { this.setField(value, 'level'); }
-    set logDate             (value) { this.setField(value, 'logDate'); }
-    set logType             (value) { this.setField(value, 'logType'); }
-    set name                (value) { this.setField(value, 'name'); }
-    set objectName          (value) { this.setField(value, 'objectName'); }
-    set objectType          (value) { this.setField(value, 'objectType'); }
-    set pokedexId           (value) { this.setField(value, 'pokedexId'); }
-    set pokemonId           (value) { this.setField(value, 'pokemonId'); }
-    set purifyStardust      (value) { this.setField(value, 'purifyStardust'); }
-    set status              (value) { this.setField(value, 'status'); }
-    set team                (value) { this.setField(value, 'team'); }
-    set templateId          (value) { this.setField(value, 'templateId'); }
-    set type                (value) { this.setField(value, 'type'); }
-    set type2               (value) { this.setField(value, 'type2'); }
-    
     // Standard datetime fields
-        
-    set createdAt           (value) { this.setField(value, 'createdAt'); }
-    set updatedAt           (value) { this.setField(value, 'updatedAt'); }
+    set createdAt (value) { this.setField(value, 'createdAt'); }
+    set updatedAt (value) { this.setField(value, 'updatedAt'); }
     
     // Object identifier fields
-    
-    set trainerId           (value) { this.setField(value, 'trainerId'); }
-    
-    // JSON identifier fields
-    
-    set ownerIds            (value) { this.setJSONField(value, 'ownerIds'); }
-    
+        
     // Objects
     
-    set activity(object) {
-        this.setObject(object, 'activity');
-        
-        if (object) {
-            if (this.hasFieldName('activityId')) this.activityId = object.id;
-            if (this.hasFieldName('activityCategoryId')) this.activityCategoryId = object.activityCategoryId;
-            if (this.hasFieldName('fireteamSize') && !this.fireteamSize) this.fireteamSize = object.fireteamSize;
-            if (this.hasFieldName('estMaxDuration') && !this.estMaxDuration) this.estMaxDuration = object.estMaxDuration;
-        }
-    }
+  //set activity(object) {
+  //    this.setObject(object, 'activity');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('activityId')) this.activityId = object.id;
+  //        if (this.hasFieldName('activityCategoryId')) this.activityCategoryId = object.activityCategoryId;
+  //        if (this.hasFieldName('fireteamSize') && !this.fireteamSize) this.fireteamSize = object.fireteamSize;
+  //        if (this.hasFieldName('estMaxDuration') && !this.estMaxDuration) this.estMaxDuration = object.estMaxDuration;
+  //    }
+  //}
     
-    set activityCategory(object) {
-        this.setObject(object, 'activityCategory');
-        
-        if (object) {
-            if (this.hasFieldName('activityCategoryId')) this.activityCategoryId = object.id;
-        }
-    }
+  //set activityCategory(object) {
+  //    this.setObject(object, 'activityCategory');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('activityCategoryId')) this.activityCategoryId = object.id;
+  //    }
+  //}
     
-    set alliance(object) {
-        this.setObject(object, 'alliance');
-        
-        if (object) {
-            if (this.hasFieldName('allianceId')) this.allianceId = object.id;
-        }
-    }
+  //set alliance(object) {
+  //    this.setObject(object, 'alliance');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('allianceId')) this.allianceId = object.id;
+  //    }
+  //}
     
-    set configChannel(object) {
-        this.setObject(object, 'configChannel');
-        
-        if (object) {
-            if (this.hasFieldName('configChannelId')) this.configChannelId = object.id;
-        }
-    }
+  //set configChannel(object) {
+  //    this.setObject(object, 'configChannel');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('configChannelId')) this.configChannelId = object.id;
+  //    }
+  //}
     
-    set event(object) {
-        this.setObject(object, 'event');
-        
-        if (object) {
-            if (this.hasFieldName('eventId')) this.eventId = object.id;
-        }
-    }
+  //set event(object) {
+  //    this.setObject(object, 'event');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('eventId')) this.eventId = object.id;
+  //    }
+  //}
     
-    set guild(object) {
-        this.setObject(object, 'guild');
-        
-        if (object) {
-            if (this.hasFieldName('guildId')) this.guildId = object.id;
-        }
-    }
+  //set guild(object) {
+  //    this.setObject(object, 'guild');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('guildId')) this.guildId = object.id;
+  //    }
+  //}
     
-    set allianceGuild    (object) { this.setObject(object, 'allianceGuild'); }
-    set author           (object) { this.setObject(object, 'author'); }
-    set channel          (object) { this.setObject(object, 'channel'); }
-    set channelGroup     (object) { this.setObject(object, 'channelGroup'); }
-    set creator          (object) { this.setObject(object, 'creator'); }
-    set discordChannel   (object) { this.setObject(object, 'discordChannel'); }
-    set guardian         (object) { this.setObject(object, 'guardian'); }
-    set origChannel      (object) { this.setObject(object, 'origChannel'); }
-    set origGuild        (object) { this.setObject(object, 'origGuild'); }
-    set origMessage      (object) { this.setObject(object, 'origMessage'); }
+  //set allianceGuild    (object) { this.setObject(object, 'allianceGuild'); }
+  //set author           (object) { this.setObject(object, 'author'); }
+  //set channel          (object) { this.setObject(object, 'channel'); }
+  //set channelGroup     (object) { this.setObject(object, 'channelGroup'); }
+  //set creator          (object) { this.setObject(object, 'creator'); }
+  //set discordChannel   (object) { this.setObject(object, 'discordChannel'); }
+  //set guardian         (object) { this.setObject(object, 'guardian'); }
+  //set origChannel      (object) { this.setObject(object, 'origChannel'); }
+  //set origGuild        (object) { this.setObject(object, 'origGuild'); }
+  //set origMessage      (object) { this.setObject(object, 'origMessage'); }
   //set owner            (object) { this.setObject(object, 'owner'); }
-    set updater          (object) { this.setObject(object, 'updater'); }
+  //set updater          (object) { this.setObject(object, 'updater'); }
     
-    set userFriendlyId(object) {
-        this.setObject(object, 'userFriendlyId');
-        
-        if (object) {
-            if (this.hasFieldName('ufid'))
-                this.ufid = object.ufid;
-        }
-    }
+  //set userFriendlyId(object) {
+  //    this.setObject(object, 'userFriendlyId');
+  //    
+  //    if (object) {
+  //        if (this.hasFieldName('ufid'))
+  //            this.ufid = object.ufid;
+  //    }
+  //}
     
-    set webhook(object) {
-        this.setObject(object, 'webhook');
-
-        if (object) {
-            if (this.hasFieldName('webhookId'))
-                this.webhookId = object.id;
-            
-            if (this.hasFieldName('webhookUrl'))
-                this.webhookUrl = object.url;
-        }
-    }
+  //set webhook(object) {
+  //    this.setObject(object, 'webhook');  //
+  //    if (object) {
+  //        if (this.hasFieldName('webhookId'))
+  //            this.webhookId = object.id;
+  //        
+  //        if (this.hasFieldName('webhookUrl'))
+  //            this.webhookUrl = object.url;
+  //    }
+  //}
     
     // ************************************************************ //
     // * Instance Methods - Helper methods to get related objects * //
@@ -829,43 +717,43 @@ export default class DatabaseTable {
 
     // Get objects from their ultimate source (database or the Discord API)
     
-    async getActivity          (options = {required: false}) { return await this.getObjectFromSource( 'activity',          options                ); }
-    async getActivityCategory  (options = {required: false}) { return await this.getObjectFromSource( 'activityCategory',  options                ); }
-    async getAlliance          (options = {required: false}) { return await this.getObjectFromSource( 'alliance',          options                ); }
-    async getAuthor            (options = {required: false}) { return await this.getObjectFromSource( 'author',            options, 'Guardian'    ); }
-    async getChannel           (options = {required: false}) { return await this.getObjectFromSource( 'channel',           options                ); }
-    async getChannelGroup      (options = {required: false}) { return await this.getObjectFromSource( 'channelGroup',      options                ); }
-    async getConfigChannel     (options = {required: false}) { return await this.getObjectFromSource( 'configChannel',     options, 'Channel'     ); }
-    async getCreator           (options = {required: false}) { return await this.getObjectFromSource( 'creator',           options, 'Guardian'    ); }
-    async getDiscordChannel    (options = {required: false}) { return await this.getObjectFromSource( 'discordChannel',    options                ); }
-    async getDiscordGuild      (options = {required: false}) { return await this.getObjectFromSource( 'discordGuild',      options                ); }
-    async getDiscordMessage    (options = {required: false}) { return await this.getObjectFromSource( 'discordMessage',    options                ); }
-    async getUser              (options = {required: false}) { return await this.getObjectFromSource( 'user',              options,               ); }
-    async getEvent             (options = {required: false}) { return await this.getObjectFromSource( 'event',             options                ); }
-    async getGuardian          (options = {required: false}) { return await this.getObjectFromSource( 'guardian',          options                ); }
-    async getGuild             (options = {required: false}) { return await this.getObjectFromSource( 'guild',             options                ); }
-    async getJoinedFromChannel (options = {required: false}) { return await this.getObjectFromSource( 'joinedFromChannel', options, 'Channel'     ); }
-    async getJoinedFromGuild   (options = {required: false}) { return await this.getObjectFromSource( 'joinedFromGuild',   options, 'Guild'       ); }
-    async getOrigChannel       (options = {required: false}) { return await this.getObjectFromSource( 'origChannel',       options, 'Guild'       ); }
-    async getOrigGuild         (options = {required: false}) { return await this.getObjectFromSource( 'origGuild',         options, 'Message'     ); }
-    async getOrigMessage       (options = {required: false}) { return await this.getObjectFromSource( 'origMessage',       options                ); }
-    async getUpdater           (options = {required: false}) { return await this.getObjectFromSource( 'updater',           options, 'Guardian'    ); }
-    async getWebhook           (options = {required: false}) { return await this.getObjectFromSource( 'webhook',           options                ); }
+    //async getActivity          (options = {required: false}) { return await this.getObjectFromSource( 'activity',          options                ); }
+    //async getActivityCategory  (options = {required: false}) { return await this.getObjectFromSource( 'activityCategory',  options                ); }
+    //async getAlliance          (options = {required: false}) { return await this.getObjectFromSource( 'alliance',          options                ); }
+    //async getAuthor            (options = {required: false}) { return await this.getObjectFromSource( 'author',            options, 'Guardian'    ); }
+    //async getChannel           (options = {required: false}) { return await this.getObjectFromSource( 'channel',           options                ); }
+    //async getChannelGroup      (options = {required: false}) { return await this.getObjectFromSource( 'channelGroup',      options                ); }
+    //async getConfigChannel     (options = {required: false}) { return await this.getObjectFromSource( 'configChannel',     options, 'Channel'     ); }
+    //async getCreator           (options = {required: false}) { return await this.getObjectFromSource( 'creator',           options, 'Guardian'    ); }
+    //async getDiscordChannel    (options = {required: false}) { return await this.getObjectFromSource( 'discordChannel',    options                ); }
+    //async getDiscordGuild      (options = {required: false}) { return await this.getObjectFromSource( 'discordGuild',      options                ); }
+    //async getDiscordMessage    (options = {required: false}) { return await this.getObjectFromSource( 'discordMessage',    options                ); }
+    //async getUser              (options = {required: false}) { return await this.getObjectFromSource( 'user',              options,               ); }
+    //async getEvent             (options = {required: false}) { return await this.getObjectFromSource( 'event',             options                ); }
+    //async getGuardian          (options = {required: false}) { return await this.getObjectFromSource( 'guardian',          options                ); }
+    //async getGuild             (options = {required: false}) { return await this.getObjectFromSource( 'guild',             options                ); }
+    //async getJoinedFromChannel (options = {required: false}) { return await this.getObjectFromSource( 'joinedFromChannel', options, 'Channel'     ); }
+    //async getJoinedFromGuild   (options = {required: false}) { return await this.getObjectFromSource( 'joinedFromGuild',   options, 'Guild'       ); }
+    //async getOrigChannel       (options = {required: false}) { return await this.getObjectFromSource( 'origChannel',       options, 'Guild'       ); }
+    //async getOrigGuild         (options = {required: false}) { return await this.getObjectFromSource( 'origGuild',         options, 'Message'     ); }
+    //async getOrigMessage       (options = {required: false}) { return await this.getObjectFromSource( 'origMessage',       options                ); }
+    //async getUpdater           (options = {required: false}) { return await this.getObjectFromSource( 'updater',           options, 'Guardian'    ); }
+    //async getWebhook           (options = {required: false}) { return await this.getObjectFromSource( 'webhook',           options                ); }
     
-    async getOwners(options = {required: false}) {
-        const Guardian = require(`./data/Guardian.js`);
-        const ownerIds = this.ownerIds;
-        const owners = [];
-        
-        for (let o = 0; o < ownerIds.length; o++) {
-            const owner = await Guardian.get({id: ownerIds[o], unique: true});
-            if (owner) owners.push(owner);
-        }
-        
-        return owners;
-    }
+    //async getOwners(options = {required: false}) {
+    //    const Guardian = require(`./data/Guardian.js`);
+    //    const ownerIds = this.ownerIds;
+    //    const owners = [];
+    //    
+    //    for (let o = 0; o < ownerIds.length; o++) {
+    //        const owner = await Guardian.get({id: ownerIds[o], unique: true});
+    //        if (owner) owners.push(owner);
+    //    }
+    //    
+    //    return owners;
+    //}
     
-    async getUserFriendlyId(options = {required: false}) {
-        return await this.getObjectFromSource('userFriendlyId', options, 'UserFriendlyId', 'ufid');
-    }
+    //async getUserFriendlyId(options = {required: false}) {
+    //    return await this.getObjectFromSource('userFriendlyId', options, 'UserFriendlyId', 'ufid');
+    //}
 }

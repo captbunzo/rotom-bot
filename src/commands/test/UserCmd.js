@@ -1,7 +1,10 @@
 
-import { MessageFlags, SlashCommandBuilder } from 'discord.js';
+import {
+	MessageFlags,
+	SlashCommandBuilder
+} from 'discord.js';
 
-const user = {
+const UserCmd = {
 	global: false,
 	data: new SlashCommandBuilder()
 		.setName('user')
@@ -17,4 +20,4 @@ const user = {
 	},
 };
 
-export default user;
+export default UserCmd;
