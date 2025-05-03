@@ -1,6 +1,10 @@
 
 import client from '../Client.js';
 
+import {
+    MessageFlags
+} from 'discord.js';
+
 import DatabaseTable from '../DatabaseTable.js';
 
 export default class Trainer extends DatabaseTable {

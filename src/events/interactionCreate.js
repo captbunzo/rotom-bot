@@ -25,7 +25,8 @@ const interactionCreate = {
 			try {
 				await command.execute(interaction);
 			} catch (error) {
-				client.logger.error(error);
+				client.logger.error(`Error executing command ${interaction.commandName}`);
+				client.logger.dump(error);
 				if (interaction.replied || interaction.deferred) {
 					await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
 				} else {
@@ -49,7 +50,8 @@ const interactionCreate = {
 			try {
 				await command.autocomplete(interaction);
 			} catch (error) {
-				client.logger.error(error);
+				client.logger.error(`Error autocompleting command ${interaction.commandName}`);
+				client.logger.dump(error);
 			}
 
 		} else if (interaction.isModalSubmit()) {
@@ -62,7 +64,8 @@ const interactionCreate = {
 			try {
 				await modal.handle(interaction);
 			} catch (error) {
-				client.logger.error(error);
+				client.logger.error(`Error submitting model ${interaction.customId}`);
+				client.logger.dump(error);
 				if (interaction.replied || interaction.deferred) {
 					await interaction.followUp({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
 				} else {
@@ -81,7 +84,8 @@ const interactionCreate = {
 			try {
 				await button.handle(interaction);
 			} catch (error) {
-				client.logger.error(error);
+				client.logger.error(`Error handling button ${buttonName}`);
+				client.logger.dump(error);
 				if (interaction.replied || interaction.deferred) {
 					await interaction.followUp({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
 				} else {
