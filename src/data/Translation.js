@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 
 import {
+    BossType,
     PokemonType
 } from '../Constants.js';
 
@@ -42,7 +43,7 @@ export default class Translation extends DatabaseTable {
     static VariantNull = '-';
     static ValueBlank = '-';
 
-    static Name = {
+    static TranslationName = {
         Pokemon: 'poke',
         PokemonDescription: 'desc',
         PokemonType: 'poke_type'
@@ -128,6 +129,14 @@ export default class Translation extends DatabaseTable {
         Fairy:    18
     }
 
+    static BossTypeName = {
+        Raid:       'Raid',
+        Dynamax:    'Dynamax',
+        Gigantamax: 'Gigantamax'
+    }
+
+    static MegaName = 'Mega';
+
     // *********** //
     // * Getters * //
     // *********** //
@@ -160,9 +169,22 @@ export default class Translation extends DatabaseTable {
     // * Class Methods * //
     // ***************** //
     
+    static async getBossTypeName(bossType, language = Translation.Language.English) {
+        switch (bossType) {
+            case BossType.Raid: return this.BossTypeName.Raid;
+            case BossType.Dynamax: return this.BossTypeName.Dynamax;
+            case BossType.Gigantamax: return this.BossTypeName.Gigantamax;
+            default: throw new Error(`Invalid boss type: ${bossType}`);
+        }
+    }
+
+    static async getMegaName(language = Translation.Language.English) {
+        return this.MegaName;
+    }
+
     static async getPokemonName(pokedexId, language = Translation.Language.English) {
         const translationSearchObj = {
-            name: Translation.Name.Pokemon,
+            name: Translation.TranslationName.Pokemon,
             key: pokedexId,
             language: language,
             variant: Translation.VariantNull,
@@ -175,7 +197,7 @@ export default class Translation extends DatabaseTable {
 
     static async getPokemonDesc(pokedexId, language = Translation.Language.English) {
         const translationSearchObj = {
-            name: Translation.Name.PokemonDescription,
+            name: Translation.TranslationName.PokemonDescription,
             key: pokedexId,
             language: language,
             variant: Translation.VariantNull,
@@ -211,7 +233,7 @@ export default class Translation extends DatabaseTable {
         }
         
         let translationSearchObj = {
-            name: Translation.Name.PokemonType,
+            name: Translation.TranslationName.PokemonType,
             key : typeKey,
             language: language,
             variant: Translation.VariantNull,

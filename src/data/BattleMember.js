@@ -7,7 +7,8 @@ export default class BattleMember extends DatabaseTable {
         orderBy: ['battle_id', 'created_at'],
         fields: {
             'battle_id':  { type: 'snowflake', nullable: false },
-            'trainer_id': { type: 'snowflake', nullable: false }
+            'trainer_id': { type: 'snowflake', nullable: false },
+            'status':     { type: 'string',    nullable: false,  length: 20 }
         },
         primaryKey: ['battle_id', 'trainer_id']
     });
@@ -22,6 +23,7 @@ export default class BattleMember extends DatabaseTable {
     
     get battleId  () { return this.getField('battleId'); }
     get trainerId () { return this.getField('trainerId'); }
+    get status    () { return this.getField('status'); }
     
     // *********** //
     // * Setters * //
@@ -29,6 +31,7 @@ export default class BattleMember extends DatabaseTable {
     
     set battleId  (value) { this.setField(value, 'battleId'); }
     set trainerId (value) { this.setField(value, 'trainerId'); }
+    set status    (value) { this.setField(value, 'status'); }
     
     // ***************** //
     // * Class Methods * //
@@ -73,6 +76,10 @@ export default class BattleMember extends DatabaseTable {
     //    // Attempt to create it
     //    await DatabaseTable.prototype.create.call(this);
     //}
+
+    async update(conditions = {battleId: this.battleId, trainerId: this.trainerId}) {
+        await DatabaseTable.prototype.update.call(this, conditions);
+    }
     
     async delete(conditions = {battleId: this.battleId, trainerId: this.trainerId}) {
         await DatabaseTable.prototype.delete.call(this, conditions);

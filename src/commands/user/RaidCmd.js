@@ -15,7 +15,7 @@ import Boss    from '../../data/Boss.js';
 import Battle  from '../../data/Battle.js';
 import Trainer from '../../data/Trainer.js';
 
-import BattleActionButtons from '../../buttons/BattleActionButtons.js';
+import BattlePlanningButtons from '../../buttons/BattlePlanningButtons.js';
 
 const RaidCmd = {
 	global: true,
@@ -64,17 +64,26 @@ const RaidCmd = {
         // Create the Boss search object
         const pokemonId = interaction.options.getString('pokemon');
         const form      = interaction.options.getString('form');
-        const isMega    = interaction.options.getBoolean('mega') ?? false;
-        const isShadow  = interaction.options.getBoolean('shadow') ?? false;
+        const isMega    = interaction.options.getBoolean('mega');
+        const isShadow  = interaction.options.getBoolean('shadow');
 
         const bossSearchObj = {
 			bossType: BossType.Raid,
 			pokemonId: pokemonId,
-			form: form,
-			isMega: isMega,
-			isShadow: isShadow,
 			isActive: true
 		};
+
+		if (form != null) {
+			bossSearchObj.form = form;
+		}
+
+		if (isMega != null) {
+			bossSearchObj.isMega = isMega;
+		}
+
+		if (isShadow != null) {
+			bossSearchObj.isShadow = isShadow;
+		}
 
         client.logger.debug('Boss Search Object =');
 		client.logger.dump(bossSearchObj);
@@ -111,11 +120,11 @@ const RaidCmd = {
 		client.logger.dump(battleRec);
 
 		const battleEmbed   = await battleRec.buildEmbed();
-		const battleButtons = await BattleActionButtons.build(interaction); 
+		const battlePlanningButtons = await BattlePlanningButtons.build(interaction); 
 
 		await interaction.reply({
             embeds: [battleEmbed],
-			components: [battleButtons]
+			components: [battlePlanningButtons]
 		});
 		let replyMessage = await interaction.fetchReply();
 

@@ -7,6 +7,10 @@ import {
     SnowflakeUtil
 } from 'discord.js';
 
+import {
+    BattleStatus
+} from '../Constants.js';
+
 import DatabaseTable from '../DatabaseTable.js';
 import BattleMember  from './BattleMember.js';
 import Boss          from './Boss.js';
@@ -14,9 +18,6 @@ import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
 import Trainer       from './Trainer.js';
 import Translation   from './Translation.js';
-
-// TODO - Turn this into a config parameter
-const ShowRaidMemberTrainerNames = true;
 
 export default class Battle extends DatabaseTable {
     static schema = this.parseSchema({
@@ -27,8 +28,8 @@ export default class Battle extends DatabaseTable {
             'boss_id':         { type: 'string',    nullable: false, length: 100 },
             'host_trainer_id': { type: 'snowflake', nullable: false },
             'guild_id':        { type: 'snowflake', nullable: false },
-            'message_id':      { type: 'snowflake', nullable: true },
-            'status':          { type: 'string',    nullable: true,  length: 20 }
+            'status':          { type: 'string',    nullable: false,  length: 20 },
+            'message_id':      { type: 'snowflake', nullable: true }
         },
         primaryKey: ['id']
     });
@@ -45,8 +46,8 @@ export default class Battle extends DatabaseTable {
     get bossId        () { return this.getField('bossId'); }
     get hostTrainerId () { return this.getField('hostTrainerId'); }
     get guildId       () { return this.getField('guildId'); }
-    get messageId     () { return this.getField('messageId'); }
     get status        () { return this.getField('status'); }
+    get messageId     () { return this.getField('messageId'); }
 
     // *********** //
     // * Setters * //
@@ -56,8 +57,8 @@ export default class Battle extends DatabaseTable {
     set bossId        (value) { this.setField(value, 'bossId'); }
     set hostTrainerId (value) { this.setField(value, 'hostTrainerId'); }
     set guildId       (value) { this.setField(value, 'guildId'); }
-    set messageId     (value) { this.setField(value, 'messageId'); }
     set status        (value) { this.setField(value, 'status'); }
+    set messageId     (value) { this.setField(value, 'messageId'); }
     
     // ***************** //
     // * Class Methods * //
@@ -135,7 +136,7 @@ export default class Battle extends DatabaseTable {
         //client.logger.dump(hostDiscordMember);
         //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
-        let bossTypeName = 'Raid';
+        let bossTypeName = await Translation.getBossTypeName(bossRec.bossType);
         let pokemonName = await Translation.getPokemonName(masterPokemonRec.pokedexId);
         let pokemonDesc = await Translation.getPokemonDesc(masterPokemonRec.pokedexId) ?? 'Description not available';
         let shinyText = bossRec.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny';
@@ -146,7 +147,14 @@ export default class Battle extends DatabaseTable {
         }
 
         if (bossRec.isMega) {
-            title += ' [Mega]';
+            title = `${await Translation.getMegaName()} ${title}`;
+        }
+
+        switch (this.status) {
+            case BattleStatus.Started:   title += ' -- Started'; break;
+            case BattleStatus.Completed: title += ' -- Completed'; break;
+            case BattleStatus.Failed:    title += ' -- Failed'; break;
+            case BattleStatus.Cancelled: title += ' -- Cancelled'; break;
         }
 
         let typeColor = masterPokemonRec.getTypeColor(masterPokemonRec.type);
@@ -181,7 +189,7 @@ export default class Battle extends DatabaseTable {
             for (let x = 0; x < battleMemberArray.length; x++) {
                 const battleMemberRec = battleMemberArray[x];
 
-                if (ShowRaidMemberTrainerNames) {
+                if (client.config.options.showBattleMemberTrainerNames) {
                     const battleMemberTrainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true }); 
                     battleMembersTextArray.push(battleMemberTrainerRec.name);
                 } else {
@@ -234,6 +242,31 @@ export default class Battle extends DatabaseTable {
                 { name: 'Battle Members', value: battleMembersText }
             );
         
+        //client.logger.debug(`Mark 5.5`);
+
+        let battleStatusText;
+        switch (this.status) {
+            case BattleStatus.Started:
+                battleStatusText = 'This raid has started.';
+                break;
+            case BattleStatus.Completed:
+                battleStatusText = 'This raid has been completed.';
+                break;
+            case BattleStatus.Failed:
+                battleStatusText = 'This raid has failed.';
+                break;
+            case BattleStatus.Cancelled:
+                battleStatusText = 'This raid has been cancelled by the host.';
+                break;
+        }
+
+        if (battleStatusText) {
+                embed = embed
+                .addFields(
+                    { name: 'Raid Status', value: battleStatusText }
+                );
+        }
+
         //client.logger.debug(`Mark 6`);
         embed = embed
             .setTimestamp()

@@ -1,12 +1,12 @@
 {
 	"about_token_config": "Bot token - available at https://discord.com/developers/applications/me",
-	"token": "MTM0ODc3MTUwNDY0NDQyNzgyNw.Gaq1cZ.aiizW87G1nLAG_lpdV-WadhJAGJSTvC1BOdpVY",
+	"token": "MTM2ODA3Nzk5MTU4MTg0NzYyMw.GyEWI0.2-zkA_ojZmZJk_sndP5R8IeF4R9k3Faguw3LpI",
 
 	"about_client_id": "Discord Application ID",
-	"client_id": "1348771504644427827",
+	"client_id": "1368077991581847623",
 
 	"about_client_secret": "Discord Application Secret",
-	"client_secret": "LIeNw3LKpNCFJwgJK0DVd95hQExLGdDz",
+	"client_secret": "kQpiTJIPo5Vpibv2UhiWLUEfUkXqdHSz",
 
 	"about_bot_guil_id_config": "Guild ID for Rotom administration and shared asset retrieval (i.e. custom emoji)",
 	"bot_guild_id": "1338929227927392316",
@@ -26,28 +26,25 @@
 		"client": "mysql",
 		"connection": {
 			"host": "127.0.0.1",
-			"database": "rotom",
-			"user": "rotom",
-			"password": "MoQ&cz@pj&zhCL3F"
+			"database": "rotom_dev",
+			"user": "rotom_dev",
+			"password": "aMWaf]8zWSY9Bp3o"
 		}
 	},
 	"databaseCollation": "utf8mb4_unicode_ci",
 
 	"about_data_directory": "Data directory for Rotom data files",
-	"data_directory": "/home/captbunzo/src/rotom-data",
+	"data_directory": "/home/captbunzo/data",
+
+	"about_options": "Options for the bot",
+	"options": {
+		"showBattleMemberTrainerNames": true,
+		"blockBattleHostSelfJoin": false
+	},
 	
 	"sentry": {
 		"dsn": "https://81113de442bd4a48aac9c3b1f296a554@o566108.ingest.us.sentry.io/4508955933081600",
 		"tracesSampleRate": 1.0,
 		"triggerSampleAlerts": false
-	},
-
-	"about_intents_config": "Intents the bot needs - this is not yet used",
-	"intents": [
-		"GUILD_MEMBERS",
-		"GUILD_MESSAGES",
-		"GUILD_MESSAGE_REACTIONS",
-		"DIRECT_MESSAGES",
-		"DIRECT_MESSAGE_REACTIONS"
-	]
+	}
 }

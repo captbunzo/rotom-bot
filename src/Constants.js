@@ -16,10 +16,18 @@ export const BossType = {
 }
 
 export const BattleStatus = {
-    Planning: 'PLANNING',
-    Battling: 'BATTLING',
+    Planning:  'PLANNING',
+    Started:   'STARTED',
     Completed: 'COMPLETED',
-    Failed: 'FAILED'
+    Failed:    'FAILED',
+    Cancelled: 'CANCELLED'
+}
+
+export const BattleMemberStatus = {
+    Joined:      'JOINED',
+    Completed:   'COMPLETED',
+    Failed:      'FAILED',
+    NotReceived: 'NOT-RECEIVED'
 }
 
 export const PokemonType = {

@@ -6,7 +6,7 @@ import path from 'node:path';
 import chalk from 'chalk';
 import Logger from './Logger.js';
 
-import Discord from 'discord.js';
+import Discord, { GatewayIntentBits } from 'discord.js';
 
 const DiscordClient = Discord.Client;
 const Collection    = Discord.Collection;
@@ -14,7 +14,15 @@ const Collection    = Discord.Collection;
 class Client extends DiscordClient {
     constructor() {
         super({
-            intents: [],
+            intents: [
+                GatewayIntentBits.Guilds
+            ]
+            //intents: [
+            //    GatewayIntentBits.Guilds,
+            //    GatewayIntentBits.GuildMessages,
+            //    GatewayIntentBits.MessageContent,
+            //    GatewayIntentBits.GuildMembers
+            //]
         });
         
         // Load the colors
