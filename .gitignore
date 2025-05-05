@@ -1,3 +1,11 @@
+
+#  My Stuff
+config.json
+bin/master_cpm.json
+bin/master_pokemon.json
+bin/master_pokemon_filtered.csv
+bin/master_pokemon_filtered.json
+
 # Logs
 logs
 *.log
