@@ -57,7 +57,7 @@ const MasterCPMCmd = {
         const table  = 'master_cpm';
         const file   = path.join(client.config.data_directory, 'master_cpm.json');
 
-        await interaction.reply({ content: `Starting load of ${table} table from ${file}` });
+        await interaction.reply({ content: `Starting load of ${table} table` });
 
         let json;
         try {
@@ -107,6 +107,10 @@ const MasterCPMCmd = {
         interaction.editReply({
             message: followUpMsg,
             content: `Loaded ${count} records into ${table} table`
+        });
+
+        interaction.followUp({
+            content: `Load of ${table} table complete`
         });
     },
 

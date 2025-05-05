@@ -2,8 +2,14 @@
 import client from '../Client.js';
 
 import {
+    EmbedBuilder,
     MessageFlags
 } from 'discord.js';
+
+import {
+    Team,
+    TeamColor
+} from '../Constants.js';
 
 import DatabaseTable from '../DatabaseTable.js';
 
@@ -12,11 +18,13 @@ export default class Trainer extends DatabaseTable {
         tableName: 'trainer',
         orderBy: 'name',
         fields: {
-            'id':    { type: 'snowflake', nullable: false },
-            'name':  { type: 'string',    nullable: false, length: 32 },
-            'code':  { type: 'string',    nullable: true, length: 12 },
-            'level': { type: 'integer',   nullable: true },
-            'team':  { type: 'string',    nullable: true, length: 8 }
+            'id':               { type: 'snowflake', nullable: false },
+            'name':             { type: 'string',    nullable: false, length: 32 },
+            'code':             { type: 'string',    nullable: true, length: 12 },
+            'level':            { type: 'integer',   nullable: true },
+            'team':             { type: 'string',    nullable: true, length: 8 },
+            'about_me':         { type: 'string',    nullable: true, length: 256 },
+            'favorite_pokemon': { type: 'string',    nullable: true, length: 24 }
         },
         primaryKey: ['id']
     });
@@ -29,11 +37,13 @@ export default class Trainer extends DatabaseTable {
     // * Getters * //
     // *********** //
 
-    get id    () { return this.getField('id'); }
-    get name  () { return this.getField('name'); }
-    get code  () { return this.getField('code'); }
-    get level () { return this.getField('level'); }
-    get team  () { return this.getField('team'); }
+    get id              () { return this.getField('id'); }
+    get name            () { return this.getField('name'); }
+    get code            () { return this.getField('code'); }
+    get level           () { return this.getField('level'); }
+    get team            () { return this.getField('team'); }
+    get aboutMe         () { return this.getField('aboutMe'); }
+    get favoritePokemon () { return this.getField('favoritePokemon'); }
 
     get formattedCode() {
         return this.code.match(/.{1,4}/g).join(' ').trim();
@@ -43,11 +53,13 @@ export default class Trainer extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id    (value) { this.setField(value, 'id'); }
-    set name  (value) { this.setField(value, 'name'); }
-    set code  (value) { this.setField(value, 'code'); }
-    set level (value) { this.setField(value, 'level'); }
-    set team  (value) { this.setField(value, 'team'); }
+    set id              (value) { this.setField(value, 'id'); }
+    set name            (value) { this.setField(value, 'name'); }
+    set code            (value) { this.setField(value, 'code'); }
+    set level           (value) { this.setField(value, 'level'); }
+    set team            (value) { this.setField(value, 'team'); }
+    set aboutMe         (value) { this.setField(value, 'aboutMe'); }
+    set favoritePokemon (value) { this.setField(value, 'favoritePokemon'); }
     
     // ***************** //
     // * Class Methods * //
@@ -78,6 +90,10 @@ export default class Trainer extends DatabaseTable {
         return await super.get(conditions, orderBy);
     }
     
+    static async getNameChoices(namePrefix, conditions = {}) {
+        return await this.getChoices('name', namePrefix, conditions);
+    }
+
     static getSetupTrainerFirstMessage() {
         return {
             content: `Please setup your profile first with /trainer profile`,
@@ -100,21 +116,30 @@ export default class Trainer extends DatabaseTable {
         await DatabaseTable.prototype.create.call(this);
     }
 
-    // ********************************** //
-    // * Turn a Guardian into a Message * //
-    // ********************************** //
-    
-    /* async getMessageContent(cachedParameters = {}) {
-        const user = await this.getUser();
+    async buildEmbed() {
+        client.logger.debug(`Trainer Record =`);
+        client.logger.dump(this);
+
+        const color = this.team == Team.Instinct ? TeamColor.Instinct :
+                      this.team == Team.Mystic   ? TeamColor.Mystic :
+                      this.team == Team.Valor    ? TeamColor.Valor :
+                      0x595761;
+
+        let embed = new EmbedBuilder()
+            .setColor(color)
+            .setTitle(`${this.name}'s Profile`)
+            .setDescription(`Trainer Code: ${this.formattedCode}`)
+            .addFields(
+                { name: 'Team', value: this.team ?? 'N/A', inline: true },
+                { name: 'Level', value: this.level ? this.level.toString() : 'N/A', inline: true }
+            )
+            .addFields(
+                { name: 'About Me', value: this.aboutMe ?? 'N/A' }
+            )
+            .addFields(
+                { name: 'Favorite Pokemon', value: this.favoritePokemon ?? 'N/A' }
+            );
         
-        //
-        // TODO - It would be nice to figure out how to get GuildMember instead so I can get their Guild displayName
-        //
-        
-        let details = [];
-        details.push(`**Time Zone:** ${this.timezone ? this.timezone : 'Not Set'}`);
-        details.push(`**Event (LFG) Privacy:** ${this.privateEventDefault ? 'Private' : 'Public'}`);
-        
-        return `__**${user.username}**__` + '\n' + details.join('\n');
-    } */
+        return embed;
+    }
 }

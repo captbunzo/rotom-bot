@@ -46,6 +46,19 @@ const trainerProfile = {
             .setMaxLength(2)
             .setRequired(false);
         
+        const aboutMeInput = new TextInputBuilder()
+            .setCustomId('aboutMe')
+            .setLabel('About Me')
+            .setStyle(TextInputStyle.Paragraph)
+            .setMaxLength(256)
+            .setRequired(false);
+
+        const favoritePokemonInput = new TextInputBuilder()
+            .setCustomId('favoritePokemon')
+            .setLabel('Favorite Pokémon')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false);
+
         if (trainer) {
             nameInput.setValue(trainer.name);
 
@@ -56,15 +69,23 @@ const trainerProfile = {
             if (trainer.level) {
                 levelInput.setValue(trainer.level.toString());
             }
+
+            if (trainer.favoritePokemon) {
+                favoritePokemonInput.setValue(trainer.favoritePokemon);
+            }
         }
 
         // Create rows and add them to the modal
-        const nameRow = new ActionRowBuilder().addComponents(nameInput);
-        const codeRow = new ActionRowBuilder().addComponents(codeInput);
-        const levelRow = new ActionRowBuilder().addComponents(levelInput);
-        modal.addComponents(nameRow, codeRow, levelRow);
+        modal.addComponents(
+            new ActionRowBuilder().addComponents(nameInput),
+            new ActionRowBuilder().addComponents(codeInput),
+            new ActionRowBuilder().addComponents(levelInput),
+            new ActionRowBuilder().addComponents(aboutMeInput),
+            new ActionRowBuilder().addComponents(favoritePokemonInput)
+        );
 
-        await interaction.showModal(modal);
+        // Finally show the modal
+        interaction.showModal(modal);
     },
     
     async handle(interaction) {
@@ -82,6 +103,8 @@ const trainerProfile = {
         var name = interaction.fields.getTextInputValue('name');
         var code = interaction.fields.getTextInputValue('code');
         var level = interaction.fields.getTextInputValue('level');
+        var aboutMe = interaction.fields.getTextInputValue('aboutMe');
+        var favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
 
         //if (code.length == 0) code = null;
         //if (level.length == 0) level = null;
@@ -91,17 +114,24 @@ const trainerProfile = {
                 id: interaction.user.id,
                 name: name,
                 code: code,
-                level: level
+                level: level,
+                aboutMe: aboutMe,
+                favoritePokemon: favoritePokemon
             });
             await trainer.create();
         } else {
             trainer.name = name;
             trainer.code = code;
             trainer.level = level;
+            trainer.aboutMe = aboutMe;
+            trainer.favoritePokemon = favoritePokemon;
             await trainer.update();
         }
 
-        await interaction.reply({ content: `Profile -- Trainer profile management not yet implemented`, flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+            content: `Trainer profile updated`,
+            flags: MessageFlags.Ephemeral
+        });
     }
 };
 

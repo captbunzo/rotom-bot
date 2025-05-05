@@ -29,12 +29,6 @@ const MasterTranslationCmd = {
                         .setRequired(true)
                         .setChoices(Translation.LanguageChoices)
                 )
-              //.addStringOption(option =>
-              //    option
-              //        .setName('file')
-              //        .setDescription('File to load')
-              //        .setRequired(true)
-              //)
         ),
     
     async execute(interaction) {
@@ -74,7 +68,7 @@ const MasterTranslationCmd = {
       //const filename = file.replace(/^.*[\\\/]/, '');
       //const language = filename.replace(/\..*$/, '');
 
-        await interaction.reply({ content: `Starting load of ${table} table from ${file}` });
+        await interaction.reply({ content: `Starting load of ${table} table` });
 
         let json;
         try {
@@ -232,6 +226,10 @@ const MasterTranslationCmd = {
         interaction.editReply({
             message: followUpMsg,
             content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`
+        });
+
+        interaction.followUp({
+            content: `Load of ${table} table complete`
         });
     },
 

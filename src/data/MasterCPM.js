@@ -100,22 +100,4 @@ export default class MasterCPM extends DatabaseTable {
     async delete(condition = { level: this.level }) {
         await DatabaseTable.prototype.delete.call(this, condition);
     }
-
-    // ********************************** //
-    // * Turn a Guardian into a Message * //
-    // ********************************** //
-    
-    /* async getMessageContent(cachedParameters = {}) {
-        const user = await this.getUser();
-        
-        //
-        // TODO - It would be nice to figure out how to get GuildMember instead so I can get their Guild displayName
-        //
-        
-        let details = [];
-        details.push(`**Time Zone:** ${this.timezone ? this.timezone : 'Not Set'}`);
-        details.push(`**Event (LFG) Privacy:** ${this.privateEventDefault ? 'Private' : 'Public'}`);
-        
-        return `__**${user.username}**__` + '\n' + details.join('\n');
-    } */
 }

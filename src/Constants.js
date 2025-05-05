@@ -5,6 +5,12 @@ export const Team = {
     Valor:    'Valor'
 }
 
+export const TeamColor = {
+    Instinct: 0xFFD300,
+    Mystic:   0x0076F2,
+    Valor:    0xF61208
+}
+
 export const InterimLoadUpdates     = 100;
 export const MaxAutoCompleteChoices = 25;
 export const FieldValueMaxSize      = 1024;
