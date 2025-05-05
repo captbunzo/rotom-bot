@@ -14,6 +14,8 @@ import StringFunctions from '../../functions/StringFunctions.js';
 import Boss          from '../../data/Boss.js';
 import MasterPokemon from '../../data/MasterPokemon.js';
 
+// TODO - Add boss edit command
+
 const BossCmd = {
     global: false,
     data: new SlashCommandBuilder()

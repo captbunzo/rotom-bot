@@ -17,6 +17,11 @@ import Trainer from '../../data/Trainer.js';
 
 import BattlePlanningButtons from '../../buttons/BattlePlanningButtons.js';
 
+// TODO - Set server timezone and time or something
+// TODO - Add guild settings
+// TODO - Add option to ping a role when posting a wraid
+// TODO - Replace pokemonId with pokemonName in all commands
+
 const RaidCmd = {
 	global: true,
 	data: new SlashCommandBuilder()

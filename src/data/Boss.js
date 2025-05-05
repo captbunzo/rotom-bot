@@ -97,6 +97,12 @@ export default class Boss extends DatabaseTable {
     // * Instance Methods * //
     // ******************** //
     
+    // TODO - Add icon to indicate if the raid boss is shinyable
+    // TODO - Add icon to indicate if the raid boss is shadow
+    // TODO - Add icon to indicate if the raid boss is mega
+    // TODO - Add icon to indicate if the raid boss is active
+    // TODO - Add stars or something to indicate if the raid boss tier
+    
     async buildEmbed() {
         const masterPokemonRec = await MasterPokemon.get({ templateId: this.templateId, unique: true });
 
