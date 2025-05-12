@@ -13,6 +13,7 @@ import {
 
 import Battle       from '../data/Battle.js';
 import BattleMember from '../data/BattleMember.js';
+import Boss         from '../data/Boss.js';
 import Trainer      from '../data/Trainer.js';
 
 import BattleStartedButtons from './BattleStartedButtons.js';
@@ -60,83 +61,81 @@ const BattlePlanningButtons = {
         const message = interaction.message;
         const action = interaction.customId.split('.')[1];
 
-        const battleRec  = await Battle.get({ messageId: message.id, unique: true });
-        const trainerRec = await Trainer.get({id: interaction.user.id, unique: true});
+        const battle  = await Battle.get({ messageId: message.id, unique: true });
+        const trainer = await Trainer.get({ id: interaction.user.id, unique: true });
 
         // Log some stuff for debugging
         client.logger.debug(`Handling Battle Planning Button for Message ID = ${message.id}`);
         client.logger.debug(`Action = ${action}`);
         client.logger.debug(`Battle Record = `);
-        client.logger.dump(battleRec);
+        client.logger.dump(battle);
         client.logger.debug(`Trainer Record =`);
-        client.logger.dump(trainerRec);
+        client.logger.dump(trainer);
 
-        if (!trainerRec) {
+        if (!trainer) {
             interaction.reply(Trainer.getSetupTrainerFirstMessage());
             return;
         }
         
         switch (action) {
-            case this.data.button.Join: this.handleJoin(interaction, battleRec, trainerRec); break;
-            case this.data.button.Leave: this.handleLeave(interaction, battleRec, trainerRec); break;
-            case this.data.button.Start: this.handleStart(interaction, battleRec, trainerRec); break;
-            case this.data.button.Cancel: this.handleCancel(interaction, battleRec, trainerRec); break;
+            case this.data.button.Join: this.handleJoin(interaction, battle, trainer); break;
+            case this.data.button.Leave: this.handleLeave(interaction, battle, trainer); break;
+            case this.data.button.Start: this.handleStart(interaction, battle, trainer); break;
+            case this.data.button.Cancel: this.handleCancel(interaction, battle, trainer); break;
         }
     },
 
-    async handleJoin(interaction, battleRec, trainerRec) {
+    async handleJoin(interaction, battle, trainer) {
         const client = interaction.client;
-        const hostTrainerRec = await Trainer.get({ id: battleRec.hostTrainerId, unique: true });
+        const hostTrainer = await Trainer.get({ id: battle.hostTrainerId, unique: true });
+        const boss = await Boss.get({ id: battle.bossId, unique: true });
+        const battleTypeName = boss.battleTypeName;
         
         // Check if the host is trying to join the raid
-        if ( client.config.options.blockBattleHostSelfJoin && (battleRec.hostTrainerId == trainerRec.id) ) {
+        if ( client.config.options.blockBattleHostSelfJoin && (battle.battlehostTrainerId == trainer.id) ) {
             await interaction.reply({
-                content: `You cannot join a raid that you are hosting`,
+                content: `You cannot join a ${battleTypeName.toLowerCase()} that you are hosting`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
-        // Check if this trainer has already joined the raid
-        let battleMemberObj = {
-            battleId: battleRec.id,
-            trainerId: trainerRec.id,
+        // Check if this trainer has already joined the battle
+        const battleMemberObj = {
+            battleId: battle.id,
+            trainerId: trainer.id,
             unique: true
         };
-        let battleMemberRec = await BattleMember.get(battleMemberObj);
 
-        if (battleMemberRec) {
+        let battleMember = await BattleMember.get(battleMemberObj);
+        if (battleMember) {
             await interaction.reply({
-                content: `You have already joined this raid`,
+                content: `You have already joined this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
-        // Join the trainer to this raid
+        // Join the trainer to this battle
         battleMemberObj.status = BattleMemberStatus.Joined;
-        battleMemberRec = new BattleMember(battleMemberObj);
-        await battleMemberRec.create();
+        battleMember = new BattleMember(battleMemberObj);
+        await battleMember.create();
 
-        hostTrainerRec.formattedCode
-
-        //await client.channels.fetch(interaction.message.channelId);
-
-        // Update the embed (noting we have to make sure the channel is in the cache first)
-        const battleEmbed = await battleRec.buildEmbed();
+        // Update the embed
+        const battleEmbed = await battle.buildEmbed();
         await interaction.update({
             embeds: [battleEmbed]
         });
 
         await interaction.followUp({
             content:
-                  'You have joined this raid, please make sure to add the host to your friends list with the following trainer code. '
-                + 'Note that Pokémon Go will ignore the text after the numbers.',
+                  `You have joined this ${battleTypeName.toLowerCase()}, please make sure to add the host to your friends list with the following trainer code. `
+                + `Note that Pokémon Go will ignore the text after the numbers.`,
             flags: MessageFlags.Ephemeral
         });
 
         await interaction.followUp({
-            content: `${hostTrainerRec.formattedCode} -- ${hostTrainerRec.name}`,
+            content: `${hostTrainer.formattedCode} -- ${hostTrainer.name}`,
             flags: MessageFlags.Ephemeral
         });
 
@@ -145,47 +144,51 @@ const BattlePlanningButtons = {
         client.logger.dump(interaction.message);
     },
 
-    async handleLeave(interaction, battleRec, trainerRec) {
+    async handleLeave(interaction, battle, trainer) {
         const client = interaction.client;
+        const boss = await Boss.get({ id: battle.bossId, unique: true });
+        const battleTypeName = boss.battleTypeName;
 
         // Check if the host is trying to leave the raid
-        if ( client.config.options.blockBattleHostSelfJoin && (battleRec.hostTrainerId == trainerRec.id) ) {
+        if ( client.config.options.blockBattleHostSelfJoin && (battle.hostTrainerId == trainer.id) ) {
             await interaction.reply({
-                content: `You cannot leave a raid that you are hosting, please click ${this.data.button.Cancel} to cancel this raid`,
+                content:
+                    `You cannot leave a ${battleTypeName.toLowerCase()} that you are hosting, `
+                  + `please click ${this.data.button.Cancel} to cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         // Check if this trainer has not yet joined the raid
-        let battleMemberObj = {
-            battleId: battleRec.id,
-            trainerId: trainerRec.id,
+        const battleMemberObj = {
+            battleId: battle.id,
+            trainerId: trainer.id,
             unique: true
         };
-        let battleMemberRec = await BattleMember.get(battleMemberObj);
 
-        if (!battleMemberRec) {
+        const battleMember = await BattleMember.get(battleMemberObj);
+        if (!battleMember) {
             await interaction.reply({
-                content: `You have not yet joined this raid`,
+                content: `You have not yet joined this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         // Remove the trainer from this raid
-        await battleMemberRec.delete();
+        await battleMember.delete();
 
         //await client.channels.fetch(interaction.message.channelId);
         
         // Update the embed (noting we have to make sure the channel is in the cache first)
-        const battleEmbed = await battleRec.buildEmbed();
+        const battleEmbed = await battle.buildEmbed();
         await interaction.update({
             embeds: [battleEmbed]
         });
 
         await interaction.followUp({
-            content: `You have left this raid`,
+            content: `You have left this ${battleTypeName.toLowerCase()}`,
             flags: MessageFlags.Ephemeral
         });
 
@@ -194,35 +197,37 @@ const BattlePlanningButtons = {
         client.logger.dump(interaction.message);
     },
 
-    async handleStart(interaction, battleRec, trainerRec) {
+    async handleStart(interaction, battle, trainer) {
         const client = interaction.client;
+        const boss = await Boss.get({ id: battle.bossId, unique: true });
+        const battleTypeName = boss.battleTypeName;
 
         // Only the host can cancel the raid
-        if (battleRec.hostTrainerId != trainerRec.id) {
+        if (battle.hostTrainerId != trainer.id) {
             await interaction.reply({
-                content: `Only the host can cancel this raid`,
+                content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         // Collect the battle members
-        const battleMemberRecs = await BattleMember.get({ battleId: battleRec.id });
+        const battleMembers = await BattleMember.get({ battleId: battle.id });
 
-        if (battleMemberRecs.length == 0) {
+        if (battleMembers.length == 0) {
             await interaction.reply({
-                content: `You must have at least one battle member to start the battle, perhaps cancel instead?`,
+                content: `You must have at least one battle member to start the ${battleTypeName.toLowerCase()}, perhaps cancel instead?`,
                 flags: MessageFlags.Ephemeral
             });
             return;
         }
 
         // Update the battle status
-        battleRec.status = BattleStatus.Started;
-        await battleRec.update();
+        battle.status = BattleStatus.Started;
+        await battle.update();
 
         // Update the battle message
-        const battleEmbed = await battleRec.buildEmbed();
+        const battleEmbed = await battle.buildEmbed();
 		const battleStartedButtons = await BattleStartedButtons.build(interaction);
 
         await interaction.update({
@@ -231,20 +236,20 @@ const BattlePlanningButtons = {
         });
 
         // Get battle member details together
-        let battleMemberTrainerNames = [];
-        let battleMemberDiscordPings = [];
+        const battleMemberTrainerNames = [];
+        const battleMemberDiscordPings = [];
 
-        for (const battleMemberRec of battleMemberRecs ) {
-            let trainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
-            battleMemberTrainerNames.push(trainerRec.name);
-            battleMemberDiscordPings.push(`<@${trainerRec.id}>`);
+        for (const battleMemberRec of battleMembers ) {
+            let battleMemberTrainer = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
+            battleMemberTrainerNames.push(battleMemberTrainer.name);
+            battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
         }
-        let battleMemberTrainerList = battleMemberTrainerNames.join(',');
-        let battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
+        const battleMemberTrainerList = battleMemberTrainerNames.join(',');
+        const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
 
         // Ping the battle members
         await interaction.followUp({
-            content: `${battleMemberDiscordPingList} -- Raid started, please look for a invite from ${trainerRec.name}`
+            content: `${battleMemberDiscordPingList} -- ${battleTypeName} started, please look for a invite from ${trainer.name}`
         });
 
         // Message the host with the battle member trainer names
@@ -259,13 +264,15 @@ const BattlePlanningButtons = {
         });
     },
 
-    async handleCancel(interaction, battleRec, trainerRec) {
+    async handleCancel(interaction, battle, trainer) {
         const client = interaction.client;
+        const boss = await Boss.get({ id: battle.bossId, unique: true });
+        const battleTypeName = boss.battleTypeName;
 
         // Only the host can cancel the raid
-        if (battleRec.hostTrainerId != trainerRec.id) {
+        if (battle.hostTrainerId != trainer.id) {
             await interaction.reply({
-                content: `Only the host can cancel this raid`,
+                content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
@@ -278,8 +285,8 @@ const BattlePlanningButtons = {
         //}
 
         // Update the battle record
-        battleRec.status = BattleStatus.Cancelled;
-        await battleRec.update();
+        battle.status = BattleStatus.Cancelled;
+        await battle.update();
 
         // Delete the message (noting we have to make sure the channel is in the cache first)
         //client.logger.debug(`Channel ID = ${interaction.message.channelId}`);
@@ -295,26 +302,26 @@ const BattlePlanningButtons = {
         //    content: `Raid cancelled`
         //});
 
-        const battleEmbed = await battleRec.buildEmbed();
+        const battleEmbed = await battle.buildEmbed();
         await interaction.update({
             embeds: [battleEmbed],
             components: []
         });
 
         // Ping the battle members
-        const battleMemberRecs = await BattleMember.get({ battleId: battleRec.id });
+        const battleMembers = await BattleMember.get({ battleId: battle.id });
 
-        if (battleMemberRecs.length > 0) {
-            let battleMemberDiscordPings = [];
+        if (battleMembers.length > 0) {
+            const battleMemberDiscordPings = [];
 
-            for (const battleMemberRec of battleMemberRecs ) {
-                let trainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
-                battleMemberDiscordPings.push(`<@${trainerRec.id}>`);
+            for (const battleMemberRec of battleMembers ) {
+                let battleMemberTrainer = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
+                battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
             }
-            let battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
+            const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
 
             await interaction.followUp({
-                content: `${battleMemberDiscordPingList} -- Raid cancelled`
+                content: `${battleMemberDiscordPingList} -- ${battleTypeName} cancelled`
             });
         }
     }

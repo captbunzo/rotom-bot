@@ -136,10 +136,10 @@ export default class Battle extends DatabaseTable {
         //client.logger.dump(hostDiscordMember);
         //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
-        let bossTypeName = await Translation.getBossTypeName(bossRec.bossType);
-        let pokemonName = await Translation.getPokemonName(masterPokemonRec.pokedexId);
-        let pokemonDesc = await Translation.getPokemonDesc(masterPokemonRec.pokedexId) ?? 'Description not available';
-        let shinyText = bossRec.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny';
+        let bossTypeName       = await Translation.getBossTypeName(bossRec.bossType);
+        let pokemonName        = await Translation.getPokemonName(masterPokemonRec.pokedexId);
+        let pokemonDescription = await Translation.getPokemonDescription(masterPokemonRec.pokedexId) ?? 'Description not available';
+        let shinyText          = bossRec.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny';
 
         let title = `${bossTypeName}: ${pokemonName}`;
         if (masterPokemonRec.form != null) {
@@ -223,7 +223,7 @@ export default class Battle extends DatabaseTable {
         //client.logger.debug(`Mark 2`);
         embed = embed
             .addFields(
-                { name: 'Description', value: pokemonDesc }
+                { name: 'Description', value: pokemonDescription }
             );
         
         // client 

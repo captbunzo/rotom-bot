@@ -7,6 +7,7 @@ import {
 } from '../Constants.js';
 
 import DatabaseTable from '../DatabaseTable.js';
+import Translation   from './Translation.js';
 
 export default class MasterPokemon extends DatabaseTable {
     static schema = this.parseSchema({
@@ -157,15 +158,29 @@ export default class MasterPokemon extends DatabaseTable {
         await DatabaseTable.prototype.delete.call(this, condition);
     }
 
-    getTypeColor() {
-        return MasterPokemon.getTypeColor(this.type);
+    async getName(language = Translation.Language.English) {
+        return await Translation.getPokemonName(this.pokedexId, language);
+    }
+
+    async getDescription(language = Translation.Language.English) {
+        return await Translation.getPokemonDescription(this.pokedexId, language);
+    }
+
+    async getTypeName(language = Translation.Language.English) {
+        return await Translation.getPokemonType(this.type, language);
+    }
+
+    async getType2Name(language = Translation.Language.English) {
+        if (this.type2 != null) {
+            return await Translation.getPokemonType(this.type2, language);
+        }
+        return null;
     }
 
     getType2Color() {
         if (this.type2 != null) {
             return MasterPokemon.getTypeColor(this.type2);
         }
-
         return null;
     }
 }

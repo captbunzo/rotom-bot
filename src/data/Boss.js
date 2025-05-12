@@ -8,6 +8,7 @@ import {
 import DatabaseTable from '../DatabaseTable.js';
 import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
+import Translation   from '../data/Translation.js';
 
 export default class Boss extends DatabaseTable {
     static schema = this.parseSchema({
@@ -47,6 +48,14 @@ export default class Boss extends DatabaseTable {
     get isShinyable () { return this.getField('isShinyable') }
     get templateId  () { return this.getField('templateId') }
     
+    get bossTypeName () {
+        return Translation.getBossTypeName(this.bossType);
+    }
+
+    get battleTypeName () {
+        return Translation.getBattleTypeName(this.bossType);
+    }
+
     // *********** //
     // * Setters * //
     // *********** //

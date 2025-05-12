@@ -135,6 +135,12 @@ export default class Translation extends DatabaseTable {
         Gigantamax: 'Gigantamax'
     }
 
+    static BattleTypeName = {
+        Raid:       'Raid',
+        Dynamax:    'Dynamax Battle',
+        Gigantamax: 'Gigantamax Battle'
+    }
+
     static MegaName = 'Mega';
 
     // *********** //
@@ -169,7 +175,7 @@ export default class Translation extends DatabaseTable {
     // * Class Methods * //
     // ***************** //
     
-    static async getBossTypeName(bossType, language = Translation.Language.English) {
+    static getBossTypeName(bossType, language = Translation.Language.English) {
         switch (bossType) {
             case BossType.Raid: return this.BossTypeName.Raid;
             case BossType.Dynamax: return this.BossTypeName.Dynamax;
@@ -178,7 +184,16 @@ export default class Translation extends DatabaseTable {
         }
     }
 
-    static async getMegaName(language = Translation.Language.English) {
+    static getBattleTypeName(bossType, language = Translation.Language.English) {
+        switch (bossType) {
+            case BossType.Raid: return this.BattleTypeName.Raid;
+            case BossType.Dynamax: return this.BattleTypeName.Dynamax;
+            case BossType.Gigantamax: return this.BattleTypeName.Gigantamax;
+            default: throw new Error(`Invalid boss type: ${bossType}`);
+        }
+    }
+
+    static getMegaName(language = Translation.Language.English) {
         return this.MegaName;
     }
 
@@ -195,7 +210,7 @@ export default class Translation extends DatabaseTable {
         return translationRec.value;
     }
 
-    static async getPokemonDesc(pokedexId, language = Translation.Language.English) {
+    static async getPokemonDescription(pokedexId, language = Translation.Language.English) {
         const translationSearchObj = {
             name: Translation.TranslationName.PokemonDescription,
             key: pokedexId,

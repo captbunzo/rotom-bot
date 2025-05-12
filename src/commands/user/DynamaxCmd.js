@@ -22,11 +22,11 @@ import BattlePlanningButtons from '../../buttons/BattlePlanningButtons.js';
 // TODO - Add option to ping a role when posting a wraid
 // TODO - Replace pokemonId with pokemonName in all commands
 
-const RaidCmd = {
+const DynamaxCmd = {
 	global: true,
 	data: new SlashCommandBuilder()
-		.setName('raid')
-		.setDescription('Host a raid battle')
+		.setName('dynamax')
+		.setDescription('Host a dynamax battle')
 		.setContexts(InteractionContextType.Guild) // TODO - Figure out how to and this with InteractionContextType.PrivateChannel
 		.addStringOption(option =>
 			option
@@ -34,97 +34,63 @@ const RaidCmd = {
 				.setDescription('Pokémon Name')
 				.setRequired(true)
 				.setAutocomplete(true)
-		)
-		.addStringOption(option =>
-			option
-				.setName('form')
-				.setDescription('Pokémon Form')
-				.setRequired(false)
-				.setAutocomplete(true)
-		)
-		.addBooleanOption(option =>
-			option
-				.setName('mega')
-				.setDescription('Mega Raid')
-				.setRequired(false)
-		)
-		.addBooleanOption(option =>
-			option
-				.setName('shadow')
-				.setDescription('Shadow Raid')
-				.setRequired(false)
 		),
 	
 	async execute(interaction) {
-        const client     = interaction.client;
-		const guildId    = interaction.guild.id;
-		const trainerId  = interaction.user.id;
-		const trainerRec = await Trainer.get({ id: trainerId, unique: true });
+        const client    = interaction.client;
+		const guildId   = interaction.guild.id;
+		const trainerId = interaction.user.id;
+		const trainer   = await Trainer.get({ id: trainerId, unique: true });
 
-        if (!trainerRec) {
+        if (!trainer) {
         	interaction.reply(Trainer.getSetupTrainerFirstMessage());
             return;
         }
 
         // Create the Boss search object
         const pokemonId = interaction.options.getString('pokemon');
-        const form      = interaction.options.getString('form');
-        const isMega    = interaction.options.getBoolean('mega');
-        const isShadow  = interaction.options.getBoolean('shadow');
 
         const bossSearchObj = {
-			bossType: BossType.Raid,
+			bossType: BossType.Dynamax,
 			pokemonId: pokemonId,
 			isActive: true
 		};
 
-		if (form != null) {
-			bossSearchObj.form = form;
-		}
-
-		if (isMega != null) {
-			bossSearchObj.isMega = isMega;
-		}
-
-		if (isShadow != null) {
-			bossSearchObj.isShadow = isShadow;
-		}
-
         client.logger.debug('Boss Search Object =');
 		client.logger.dump(bossSearchObj);
 
-		const bossRecArray = await Boss.get(bossSearchObj);
-		if (bossRecArray.length == 0) {
+		const bosses = await Boss.get(bossSearchObj);
+		if (bosses.length == 0) {
 			await interaction.reply({
-				content: `Active raid boss not found with those options, please try again`,
+				content: `Active dynamax boss not found with those options, please try again`,
 				flags: MessageFlags.Ephemeral
 			})
 			return;
-		} else if (bossRecArray.length > 1) {
+		} else if (bosses.length > 1) {
 			await interaction.reply({
-				content: `Multiple active raid bosses found with those options, please try again`,
+				content: `Multiple active dynamax bosses found with those options, please try again`,
 				flags: MessageFlags.Ephemeral
 			})
 			return;
 		}
 
-		const bossRec = bossRecArray[0];
+		const boss = bosses[0];
         client.logger.debug('Boss Record =');
-		client.logger.dump(bossRec);
+		client.logger.dump(boss);
 
 		const battleObj = {
-			bossId: bossRec.id,
+			bossId: boss.id,
 			hostTrainerId: trainerId,
 			guildId: guildId,
 			status: BattleStatus.Planning
 		}
-		const battleRec = new Battle(battleObj);
-		await battleRec.create();
+		const battle = new Battle(battleObj);
+		await battle.create();
 
         client.logger.debug('Battle Record =');
-		client.logger.dump(battleRec);
+		client.logger.dump(battle);
 
-		const battleEmbed   = await battleRec.buildEmbed();
+		const battleEmbed = await battle.buildEmbed();
 		const battlePlanningButtons = await BattlePlanningButtons.build(interaction); 
 
 		await interaction.reply({
@@ -137,8 +103,8 @@ const RaidCmd = {
 		client.logger.dump(replyMessage);
 		client.logger.debug(`replyMessage.id = ${replyMessage.id}`);
 
-		battleRec.messageId = replyMessage.id;
-		await battleRec.update();
+		battle.messageId = replyMessage.id;
+		await battle.update();
 	},
 
 	async autocomplete(interaction) {
@@ -147,18 +113,11 @@ const RaidCmd = {
 		client.logger.debug(`Initiating autocomplete for ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
 
         const pokemonId  = interaction.options.getString('pokemon');
-        const form       = interaction.options.getString('form');
-        const isMega     = interaction.options.getBoolean('mega');
-        const isShadow   = interaction.options.getBoolean('shadow');
-
         client.logger.debug(`pokemonId  = ${pokemonId}`);
-        client.logger.debug(`form       = ${form}`);
-        client.logger.debug(`isMega     = ${isMega}`);
-        client.logger.debug(`isShadow   = ${isShadow}`);
 
         // Create the Boss search object
         const bossSearchObj = {
-			bossType: BossType.Raid,
+			bossType: BossType.Dynamax,
 			isActive: true
 		};
 
@@ -166,18 +125,6 @@ const RaidCmd = {
             bossSearchObj.pokemonId = pokemonId;
         }
 
-        if ( (focusedOption.name != 'form') && (form != null) ) {
-            bossSearchObj.form = form;
-        }
-
-        if (isMega != null) {
-            bossSearchObj.isMega = isMega;
-        }
-
-        if (isShadow != null) {
-            bossSearchObj.isShadow = isShadow;
-        }
-		
         client.logger.debug('Boss Search Object =');
 		client.logger.dump(bossSearchObj);
 
@@ -185,9 +132,6 @@ const RaidCmd = {
 		switch (focusedOption.name) {
 			case 'pokemon':
 				choices = await Boss.getPokemonIdChoices(focusedOption.value, bossSearchObj);
-				break;
-			case 'form':
-				choices = await Boss.getFormChoices(focusedOption.value, bossSearchObj);
 				break;
 		}
 
@@ -204,4 +148,4 @@ const RaidCmd = {
 	}
 };
 
-export default RaidCmd;
+export default DynamaxCmd;

@@ -36,6 +36,44 @@ export const BattleMemberStatus = {
     NotReceived: 'NOT-RECEIVED'
 }
 
+export const SearchStringBuddyKmName = {
+    distance1k:  '1 km',
+    distance3k:  '3 km',
+    distance5k:  '5 km',
+    distance20k: '20 km'
+}
+
+export const SearchStringCode = {
+    buddyKm: 'search-buddy-km',
+    purifyStardust: 'search-purify-stardust'
+}
+
+export const SearchStringName = {
+    buddyKm: 'Buddy Walking Distance',
+    purifyStardust: 'Buddy Purification Stardust'
+}
+
+export const SearchStringBuddyKmValue = {
+    distance1k:  1,
+    distance3k:  3,
+    distance5k:  5,
+    distance20k: 20
+}
+
+export const SearchStringPurifyStardustName = {
+    stardust1k:  '1,000',
+    stardust3k:  '3,000',
+    stardust5k:  '5,000',
+    stardust20k: '20,000'
+}
+
+export const SearchStringPurifyStardustValue = {
+    stardust1k:  1000,
+    stardust3k:  3000,
+    stardust5k:  5000,
+    stardust20k: 20000
+}
+
 export const PokemonType = {
     Bug:      'BUG',
     Dark:     'DARK',

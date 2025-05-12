@@ -319,6 +319,28 @@ export default class DatabaseTable {
         return queryResults.map(result => result.data[columnName].toLowerCase());
     }
 
+    static async getDistinct(fieldName, conditions = {}) {
+        let columnName = this.getColumnName(fieldName);
+
+        //client.logger.debug(`fieldName = ${fieldName}`);
+        //client.logger.debug('conditions');
+        //client.logger.dump(conditions);
+
+        let query = this.startQuery()
+            .distinct(columnName)
+            .orderBy(columnName, 'asc');
+
+        for (const conditonFieldName in conditions) {
+            const conditionColumnName = this.getColumnName(conditonFieldName);
+            query = query.where(conditionColumnName, conditions[conditonFieldName]);
+        }
+
+        let queryResults = await this.get(query);
+        //client.logger.debug('queryResults');
+        //client.logger.dump(queryResults);
+        return queryResults.map(result => result.data[columnName]);
+    }
+
     // ******************** //
     // * Instance Methods * //
     // ******************** //

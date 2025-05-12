@@ -196,7 +196,7 @@ const MasterPokemonCmd = {
         let masterPokemonRec = masterPokemonArray[0];
 
         let pokemonName = await Translation.getPokemonName(masterPokemonRec.pokedexId);
-        let description = await Translation.getPokemonDesc(masterPokemonRec.pokedexId);
+        let description = await Translation.getPokemonDescription(masterPokemonRec.pokedexId);
         let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemonRec.pokemonId.toLowerCase()}`;
         let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemonRec.pokemonId.toLowerCase()}-main.png`;
         

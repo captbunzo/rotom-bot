@@ -21,213 +21,183 @@ const BossCmd = {
     data: new SlashCommandBuilder()
         .setName('boss')
         .setDescription('Manage Pokémon boss data')
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('load')
-                .setDescription('Load Boss Pokémon data')
-                .addStringOption(option =>
-                    option
-                        .setName('pokemon')
-                        .setDescription('Pokémon Name')
-                        .setRequired(true)
-                        .setAutocomplete(true)
+        .addSubcommand(subCommand => subCommand
+            .setName('load')
+            .setDescription('Load Boss Pokémon data')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon Name')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('template')
+                .setDescription('Master Pokémon Template')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('boss-type')
+                .setDescription('Boss Type')
+                .setRequired(true)
+                .addChoices(
+                    { name: 'Raid', value: BossType.Raid },
+                    { name: 'Dynamax', value: BossType.Dynamax },
+                    { name: 'Gigantamax', value: BossType.Gigantamax }
                 )
-                .addStringOption(option =>
-                    option
-                        .setName('template')
-                        .setDescription('Master Pokémon Template')
-                        .setRequired(true)
-                        .setAutocomplete(true)
-                )
-                .addStringOption(option =>
-                    option
-                        .setName('boss_type')
-                        .setDescription('Boss Type')
-                        .setRequired(true)
-                        .addChoices(
-                            { name: 'Raid', value: BossType.Raid },
-                            { name: 'Dynamax', value: BossType.Dynamax },
-                            { name: 'Gigantamax', value: BossType.Gigantamax }
-                        )
-                )
-                .addIntegerOption(option =>
-                    option
-                        .setName('tier')
-                        .setDescription('Boss Tier')
-                        .setRequired(true)
-                        .setMinValue(1)
-                        .setMaxValue(7)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shinyable')
-                        .setDescription('Can be shiny?')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('mega')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shadow')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('active')
-                        .setDescription('Boss is Active')
-                        .setRequired(false)
-                )
+            )
+            .addIntegerOption(option => option
+                .setName('tier')
+                .setDescription('Boss Tier')
+                .setRequired(true)
+                .setMinValue(1)
+                .setMaxValue(7)
+            )
+            .addBooleanOption(option => option
+                .setName('shinyable')
+                .setDescription('Can be shiny?')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('mega')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('shadow')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('active')
+                .setDescription('Boss is Active')
+                .setRequired(false)
+            )
         )
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('list')
-                .setDescription('Show Boss Pokémon data')
-                .addStringOption(option =>
-                    option
-                        .setName('pokemon')
-                        .setDescription('Pokémon Name')
-                        .setRequired(false)
-                        .setAutocomplete(true)
+        .addSubcommand(subCommand => subCommand
+            .setName('list')
+            .setDescription('Show Boss Pokémon data')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon Name')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('form')
+                .setDescription('Pokémon Form')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('boss-type')
+                .setDescription('Boss Type')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Raid', value: BossType.Raid },
+                    { name: 'Dynamax', value: BossType.Dynamax },
+                    { name: 'Gigantamax', value: BossType.Gigantamax }
                 )
-                .addStringOption(option =>
-                    option
-                        .setName('form')
-                        .setDescription('Pokémon Form')
-                        .setRequired(false)
-                        .setAutocomplete(true)
-                )
-                .addStringOption(option =>
-                    option
-                        .setName('boss_type')
-                        .setDescription('Boss Type')
-                        .setRequired(false)
-                        .addChoices(
-                            { name: 'Raid', value: BossType.Raid },
-                            { name: 'Dynamax', value: BossType.Dynamax },
-                            { name: 'Gigantamax', value: BossType.Gigantamax }
-                        )
-                )
-                .addIntegerOption(option =>
-                    option
-                        .setName('tier')
-                        .setDescription('Boss Tier')
-                        .setRequired(false)
-                        .setMinValue(1)
-                        .setMaxValue(7)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shinyable')
-                        .setDescription('Can be shiny?')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('mega')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shadow')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('active')
-                        .setDescription('Boss is Active')
-                        .setRequired(false)
-                )
+            )
+            .addIntegerOption(option => option
+                .setName('tier')
+                .setDescription('Boss Tier')
+                .setRequired(false)
+                .setMinValue(1)
+                .setMaxValue(7)
+            )
+            .addBooleanOption(option => option
+                .setName('shinyable')
+                .setDescription('Can be shiny?')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('mega')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('shadow')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('active')
+                .setDescription('Boss is Active')
+                .setRequired(false)
+            )
         )
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('enable')
-                .setDescription('Enable a Boss Pokémon')
-                .addStringOption(option =>
-                    option
-                        .setName('pokemon')
-                        .setDescription('Pokémon Name')
-                        .setRequired(false)
-                        .setAutocomplete(true)
+        .addSubcommand(subCommand => subCommand
+            .setName('enable')
+            .setDescription('Enable a Boss Pokémon')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon Name')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('form')
+                .setDescription('Pokémon Form')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('boss-type')
+                .setDescription('Boss Type')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Raid', value: BossType.Raid },
+                    { name: 'Dynamax', value: BossType.Dynamax },
+                    { name: 'Gigantamax', value: BossType.Gigantamax }
                 )
-                .addStringOption(option =>
-                    option
-                        .setName('form')
-                        .setDescription('Pokémon Form')
-                        .setRequired(false)
-                        .setAutocomplete(true)
-                )
-                .addStringOption(option =>
-                    option
-                        .setName('boss_type')
-                        .setDescription('Boss Type')
-                        .setRequired(false)
-                        .addChoices(
-                            { name: 'Raid', value: BossType.Raid },
-                            { name: 'Dynamax', value: BossType.Dynamax },
-                            { name: 'Gigantamax', value: BossType.Gigantamax }
-                        )
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('mega')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shadow')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
+            )
+            .addBooleanOption(option => option
+                .setName('mega')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('shadow')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
         )
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('disable')
-                .setDescription('Disable a Boss Pokémon')
-                .addStringOption(option =>
-                    option
-                        .setName('pokemon')
-                        .setDescription('Pokémon Name')
-                        .setRequired(false)
-                        .setAutocomplete(true)
+        .addSubcommand(subCommand => subCommand
+            .setName('disable')
+            .setDescription('Disable a Boss Pokémon')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon Name')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('form')
+                .setDescription('Pokémon Form')
+                .setRequired(false)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('boss-type')
+                .setDescription('Boss Type')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Raid', value: BossType.Raid },
+                    { name: 'Dynamax', value: BossType.Dynamax },
+                    { name: 'Gigantamax', value: BossType.Gigantamax }
                 )
-                .addStringOption(option =>
-                    option
-                        .setName('form')
-                        .setDescription('Pokémon Form')
-                        .setRequired(false)
-                        .setAutocomplete(true)
-                )
-                .addStringOption(option =>
-                    option
-                        .setName('boss_type')
-                        .setDescription('Boss Type')
-                        .setRequired(false)
-                        .addChoices(
-                            { name: 'Raid', value: BossType.Raid },
-                            { name: 'Dynamax', value: BossType.Dynamax },
-                            { name: 'Gigantamax', value: BossType.Gigantamax }
-                        )
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('mega')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
-                .addBooleanOption(option =>
-                    option
-                        .setName('shadow')
-                        .setDescription('Mega Boss')
-                        .setRequired(false)
-                )
+            )
+            .addBooleanOption(option => option
+                .setName('mega')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('shadow')
+                .setDescription('Mega Boss')
+                .setRequired(false)
+            )
         ),
     
     async execute(interaction) {
@@ -267,7 +237,7 @@ const BossCmd = {
 
         const pokemonId   = interaction.options.getString('pokemon');
         const templateId  = interaction.options.getString('template');
-        const bossType    = interaction.options.getString('boss_type');
+        const bossType    = interaction.options.getString('boss-type');
         const tier        = interaction.options.getInteger('tier'); // Todo -- Add in validation of tiers (1, 3, 5, ?)
         const isMega      = interaction.options.getBoolean('mega') ?? false;
         const isShadow    = interaction.options.getBoolean('shadow') ?? false;
@@ -428,7 +398,7 @@ const BossCmd = {
 
         const pokemonId   = interaction.options.getString('pokemon');
         const form        = interaction.options.getString('form');
-        const bossType    = interaction.options.getString('boss_type');
+        const bossType    = interaction.options.getString('boss-type');
         const tier        = interaction.options.getInteger('tier');
         const isMega      = interaction.options.getBoolean('mega');
         const isShadow    = interaction.options.getBoolean('shadow');
@@ -516,9 +486,9 @@ const BossCmd = {
 
         const pokemonId  = interaction.options.getString('pokemon');
         const form       = interaction.options.getString('form');
-        const bossType   = interaction.options.getString('boss_type') ?? BossType.Raid;
-        const isMega     = interaction.options.getBoolean('mega') ?? false;
-        const isShadow   = interaction.options.getBoolean('shadow') ?? false;
+        const bossType   = interaction.options.getString('boss-type') ?? BossType.Raid;
+        const isMega     = interaction.options.getBoolean('mega')     ?? false;
+        const isShadow   = interaction.options.getBoolean('shadow')   ?? false;
 
         client.logger.debug(`pokemonId  = ${pokemonId}`);
         client.logger.debug(`form       = ${form}`);
@@ -570,7 +540,7 @@ const BossCmd = {
         let choices = [];
         const pokemonId  = interaction.options.getString('pokemon');
         const form       = interaction.options.getString('form');
-        const bossType   = interaction.options.getString('boss_type');
+        const bossType   = interaction.options.getString('boss-type');
         const isMega     = interaction.options.getBoolean('mega');
         const isShadow   = interaction.options.getBoolean('shadow');
         let   isActive   = interaction.options.getBoolean('active');
