@@ -18,10 +18,9 @@ const MasterCPMCmd = {
 	data: new SlashCommandBuilder()
 		.setName('master-cpm')
 		.setDescription('Manage Master CP Multiplier data')
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('load')
-                .setDescription('Load Master CP Multiplier data file')
+        .addSubcommand(subCommand => subCommand
+            .setName('load')
+            .setDescription('Load Master CP Multiplier data file')
         ),
 	
 	async execute(interaction) {

@@ -28,40 +28,36 @@ const RaidCmd = {
 		.setName('raid')
 		.setDescription('Host a raid battle')
 		.setContexts(InteractionContextType.Guild) // TODO - Figure out how to and this with InteractionContextType.PrivateChannel
-		.addStringOption(option =>
-			option
-				.setName('pokemon')
-				.setDescription('Pokémon Name')
-				.setRequired(true)
-				.setAutocomplete(true)
+		.addStringOption(option => option
+			.setName('pokemon')
+			.setDescription('Pokémon Name')
+			.setRequired(true)
+			.setAutocomplete(true)
 		)
-		.addStringOption(option =>
-			option
-				.setName('form')
-				.setDescription('Pokémon Form')
-				.setRequired(false)
-				.setAutocomplete(true)
+		.addStringOption(option => option
+			.setName('form')
+			.setDescription('Pokémon Form')
+			.setRequired(false)
+			.setAutocomplete(true)
 		)
-		.addBooleanOption(option =>
-			option
-				.setName('mega')
-				.setDescription('Mega Raid')
-				.setRequired(false)
+		.addBooleanOption(option => option
+			.setName('mega')
+			.setDescription('Mega Raid')
+			.setRequired(false)
 		)
-		.addBooleanOption(option =>
-			option
-				.setName('shadow')
-				.setDescription('Shadow Raid')
-				.setRequired(false)
+		.addBooleanOption(option => option
+			.setName('shadow')
+			.setDescription('Shadow Raid')
+			.setRequired(false)
 		),
 	
 	async execute(interaction) {
         const client     = interaction.client;
 		const guildId    = interaction.guild.id;
 		const trainerId  = interaction.user.id;
-		const trainerRec = await Trainer.get({ id: trainerId, unique: true });
+		const trainer = await Trainer.get({ id: trainerId, unique: true });
 
-        if (!trainerRec) {
+        if (!trainer) {
         	interaction.reply(Trainer.getSetupTrainerFirstMessage());
             return;
         }
@@ -93,14 +89,14 @@ const RaidCmd = {
         client.logger.debug('Boss Search Object =');
 		client.logger.dump(bossSearchObj);
 
-		const bossRecArray = await Boss.get(bossSearchObj);
-		if (bossRecArray.length == 0) {
+		const bosses = await Boss.get(bossSearchObj);
+		if (bosses.length == 0) {
 			await interaction.reply({
 				content: `Active raid boss not found with those options, please try again`,
 				flags: MessageFlags.Ephemeral
 			})
 			return;
-		} else if (bossRecArray.length > 1) {
+		} else if (bosses.length > 1) {
 			await interaction.reply({
 				content: `Multiple active raid bosses found with those options, please try again`,
 				flags: MessageFlags.Ephemeral
@@ -108,23 +104,23 @@ const RaidCmd = {
 			return;
 		}
 
-		const bossRec = bossRecArray[0];
+		const boss = bosses[0];
         client.logger.debug('Boss Record =');
-		client.logger.dump(bossRec);
+		client.logger.dump(boss);
 
 		const battleObj = {
-			bossId: bossRec.id,
+			bossId: boss.id,
 			hostTrainerId: trainerId,
 			guildId: guildId,
 			status: BattleStatus.Planning
 		}
-		const battleRec = new Battle(battleObj);
-		await battleRec.create();
+		const battle = new Battle(battleObj);
+		await battle.create();
 
         client.logger.debug('Battle Record =');
-		client.logger.dump(battleRec);
+		client.logger.dump(battle);
 
-		const battleEmbed   = await battleRec.buildEmbed();
+		const battleEmbed = await battle.buildEmbed();
 		const battlePlanningButtons = await BattlePlanningButtons.build(interaction); 
 
 		await interaction.reply({
@@ -137,8 +133,8 @@ const RaidCmd = {
 		client.logger.dump(replyMessage);
 		client.logger.debug(`replyMessage.id = ${replyMessage.id}`);
 
-		battleRec.messageId = replyMessage.id;
-		await battleRec.update();
+		battle.messageId = replyMessage.id;
+		await battle.update();
 	},
 
 	async autocomplete(interaction) {

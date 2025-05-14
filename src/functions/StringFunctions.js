@@ -29,7 +29,7 @@ export default class StringFunctions {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ3456789';
         const charsLength = chars.length;
 
-        for ( var i = 0; i < length; i++ ) {
+        for (let i = 0; i < length; i++) {
             result += chars.charAt(Math.floor(Math.random() * charsLength));
         }
 
@@ -56,15 +56,15 @@ export default class StringFunctions {
         let i = 0;
 
         // While all words have the same character at position i, increment i
-        while (words[0][i] && words.every(w => w[i] === words[0][i]))
+        while (words[0][i] && words.every(w => w[i] === words[0][i])) {
             i++;
+        }
 
         // Prefix is the substring from the beginning to the last successfully checked i
         return words[0].slice(0, i);
     };
 
     static SNOWFLAKE_PATTERN = /[\d]{17,20}/;
-    static SNOWFLAKE_PATTERN = this.SNOWFLAKE_PATTERN;
     static CHANNELS_PATTERN = MessageMentions.ChannelsPattern;
     static EVERYONE_PATTERN = MessageMentions.EveryonePattern;
     static ROLES_PATTERN    = MessageMentions.RolesPattern;

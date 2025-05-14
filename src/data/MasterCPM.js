@@ -6,7 +6,7 @@ import DatabaseTable from '../DatabaseTable.js';
 export default class MasterCPM extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'master_cpm',
-        orderBy: 'level',
+        orderBy: ['level'],
         fields: {
             'level': { type: 'tinyint', nullable: false, unsigned: true },
             'cpm':   { type: 'decimal', nullable: false, precision: 9, scale: 8 }
@@ -36,32 +36,21 @@ export default class MasterCPM extends DatabaseTable {
     // * Class Methods * //
     // ***************** //
     
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
-    
     /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
+     * Get MasterCPM(s) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the MasterCPM(s) to retrieve
+     * @param {object} [orderBy] The order in which the MasterCPM(s) will be returned
+     * @returns {Promise<MasterCPM|MasterCPM[]>} The MasterCPM(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let trainer = await super.get(conditions, orderBy);
-            
-            //if (!trainer) {
-            //    trainer = new Trainer({id: conditions.id});
-            //    //await trainer.create();
-            //}
-            
-            return trainer;
+            return await super.get(conditions, orderBy);
         }
         
         return await super.get(conditions, orderBy);
     }
     
-     static async getCombatPower(masterPokemonRec, attackIV, defenseIV, staminaIV, level) {
+    static async getCombatPower(masterPokemonRec, attackIV, defenseIV, staminaIV, level) {
         const masterCpmRec = await MasterCPM.get({ level: level, unique: true });
         client.logger.debug('Master CP Multiplier Record');
         client.logger.dump(masterCpmRec);
@@ -81,17 +70,6 @@ export default class MasterCPM extends DatabaseTable {
     // ******************** //
     // * Instance Methods * //
     // ******************** //
-    
-    //async create() {  
-    //    // If need be, retrieve the username
-    //    if (!this.name) {
-    //        const user = await client.users.fetch(this.id);
-    //        if (user) this.name = user.name;
-    //    }
-    //    
-    //    // Attempt to create it
-    //    await DatabaseTable.prototype.create.call(this);
-    //}
     
     async update(condition = { level: this.level }) {
         await DatabaseTable.prototype.update.call(this, condition);

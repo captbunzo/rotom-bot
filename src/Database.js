@@ -31,13 +31,13 @@ knex.discordBotDatabaseInit = async () => {
     ];
     
     client.logger.log(`Creating database tables`);
-    for (let t = 0; t < Tables.length; t++) {
-        await knex.createDiscordBotTable(Tables[t]);
+    for (let table of Tables) {
+        await knex.createDiscordBotTable(table);
     }
     
     client.logger.log(`Creating foreign keys`);
-    for (let t = 0; t < Tables.length; t++) {
-        await knex.createDiscordBotForeignKeys(Tables[t]);
+    for (let table of Tables) {
+        await knex.createDiscordBotForeignKeys(table);
     }
     
     // Cycle through the schema upgrade directories

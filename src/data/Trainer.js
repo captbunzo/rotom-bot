@@ -16,7 +16,7 @@ import DatabaseTable from '../DatabaseTable.js';
 export default class Trainer extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'trainer',
-        orderBy: 'name',
+        orderBy: ['name'],
         fields: {
             'id':               { type: 'snowflake', nullable: false },
             'name':             { type: 'string',    nullable: false, length: 32 },
@@ -70,21 +70,14 @@ export default class Trainer extends DatabaseTable {
     //}
     
     /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
+     * Get Trainer(s) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the Trainer(s) to retrieve
+     * @param {object} [orderBy] The order in which the Trainer(s) will be returned
+     * @returns {Promise<Trainer|Trainer[]>} The Trainer(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let trainer = await super.get(conditions, orderBy);
-            
-            //if (!trainer) {
-            //    trainer = new Trainer({id: conditions.id});
-            //    //await trainer.create();
-            //}
-            
-            return trainer;
+            return await super.get(conditions, orderBy);
         }
         
         return await super.get(conditions, orderBy);

@@ -7,12 +7,13 @@ import {
 } from '../Constants.js';
 
 import DatabaseTable from '../DatabaseTable.js';
+import MasterCPM     from './MasterCPM.js';
 import Translation   from './Translation.js';
 
 export default class MasterPokemon extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'master_pokemon',
-        orderBy: 'template_id',
+        orderBy: ['template_id'],
         fields: {
             'template_id':       { type: 'string',    nullable: false, length: 64 },
             'pokemon_id':        { type: 'string',    nullable: false, length: 20 },
@@ -78,27 +79,16 @@ export default class MasterPokemon extends DatabaseTable {
     static async getPokemonIdChoices(pokemonIdPrefix, conditions = {}) {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }
-    
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
-    
+        
     /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
+     * Get MasterPokemon(s) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the MasterPokemon(s) to retrieve
+     * @param {object} [orderBy] The order in which the MasterPokemon(s) will be returned
+     * @returns {Promise<MasterPokemon|MasterPokemon[]>} The MasterPokemon(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let masterPokemon = await super.get(conditions, likeConditions, orderBy);
-            
-            //if (!trainer) {
-            //    trainer = new Trainer({id: conditions.id});
-            //    //await trainer.create();
-            //}
-            
-            return masterPokemon;
+            return await super.get(conditions, likeConditions, orderBy);
         }
         
         return await super.get(conditions, orderBy);
@@ -177,10 +167,22 @@ export default class MasterPokemon extends DatabaseTable {
         return null;
     }
 
+    getTypeColor() {
+        return MasterPokemon.getTypeColor(this.type);
+    }
+
     getType2Color() {
         if (this.type2 != null) {
             return MasterPokemon.getTypeColor(this.type2);
         }
         return null;
+    }
+
+    async getCombatPower(attack, defense, stamina, level) {
+        return await MasterCPM.getCombatPower(this, attack, defense, stamina, level);
+    }
+    
+    async getHundoCombatPower(level) {
+        return await MasterCPM.getCombatPower(this, 15, 15, 15, level);
     }
 }

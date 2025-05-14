@@ -76,23 +76,23 @@ const TrainerCmd = {
 		const subCommand = interaction.options.getSubcommand();
 
 		switch (subCommand) {
-			case 'profile' : this.executeProfile(interaction);    break;
-			case 'team'    : this.executeTeam(interaction);       break;
-			case 'delete'  : this.executeDelete(interaction);     break;
-			case 'code'    : this.executeShowOrCode(interaction); break;
-			case 'show'    : this.executeShowOrCode(interaction); break;
+			case 'profile' : this.executeProfile(interaction); break;
+			case 'team'    : this.executeTeam(interaction); break;
+			case 'delete'  : this.executeDelete(interaction); break;
+			case 'code'    : this.executeShowOrCode(interaction, subCommand); break;
+			case 'show'    : this.executeShowOrCode(interaction, subCommand); break;
 			default :
 				await interaction.reply({ content: `Trainer profile management not yet implemented -- ${subCommand}`, flags: MessageFlags.Ephemeral }); 
 		}
 	},
 
     async autocomplete(interaction) {
-        const client  = interaction.client;
+        const client = interaction.client;
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'code'    : this.autocompleteShowOrCode(interaction); break;
-            case 'show'    : this.autocompleteShowOrCode(interaction); break;
+            case 'code' : this.autocompleteShowOrCode(interaction); break;
+            case 'show' : this.autocompleteShowOrCode(interaction); break;
             default :
                 client.logger.error(`Trainer profile command autocomplete not yet implemented for subcommand -- ${subCommand}`);
         }
@@ -136,9 +136,8 @@ const TrainerCmd = {
 		await interaction.reply({ content: `Delete -- Trainer profile management not yet implemented`, flags: MessageFlags.Ephemeral });
 	},
 
-	async executeShowOrCode(interaction) {
+	async executeShowOrCode(interaction, subCommand) {
 		const client = interaction.client;
-        const subCommand = interaction.options.getSubcommand();
 		let name = interaction.options.getString('name');
 		let user = interaction.options.getUser('user');
 
@@ -183,9 +182,8 @@ const TrainerCmd = {
 		}
 	},
 
-	async autocompleteShowOrCode(interaction) {
+	async autocompleteShowOrCode(interaction, subCommand) {
 		const client = interaction.client;
-        const subCommand = interaction.options.getSubcommand();
 		const focusedOption = interaction.options.getFocused(true);
 		client.logger.debug(`Initiating autocomplete for ${subCommand} -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
 

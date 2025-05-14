@@ -5,6 +5,8 @@ import {
     EmbedBuilder
 } from 'discord.js';
 
+import StringFunctions from '../functions/StringFunctions.js';
+
 import DatabaseTable from '../DatabaseTable.js';
 import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
@@ -13,7 +15,7 @@ import Translation   from '../data/Translation.js';
 export default class Boss extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'boss',
-        orderBy: 'id',
+        orderBy: ['id'],
         fields: {
             'id':           { type: 'string',    nullable: false, length: 64 },
             'boss_type':    { type: 'string',    nullable: false, length: 10 },
@@ -74,21 +76,16 @@ export default class Boss extends DatabaseTable {
     // ***************** //
     // * Class Methods * //
     // ***************** //
-    
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
-    
+        
     /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
+     * Get Boss(es) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the Boss(es) to retrieve
+     * @param {object} [orderBy] The order in which the Boss(es) will be returned
+     * @returns {Promise<Boss|Boss[]>} The Boss(es) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let boss = await super.get(conditions, orderBy);            
-            return boss;
+            return await super.get(conditions, orderBy);            
         }
         
         return await super.get(conditions, orderBy);
@@ -113,47 +110,49 @@ export default class Boss extends DatabaseTable {
     // TODO - Add stars or something to indicate if the raid boss tier
     
     async buildEmbed() {
-        const masterPokemonRec = await MasterPokemon.get({ templateId: this.templateId, unique: true });
+        const masterPokemon = await MasterPokemon.get({ templateId: this.templateId, unique: true });
 
         client.logger.debug(`Boss Record =`);
         client.logger.dump(this);
         client.logger.debug(`Master Pokémon Record =`);
-        client.logger.dump(masterPokemonRec);
+        client.logger.dump(masterPokemon);
 
-        let title = `#${masterPokemonRec.pokedexId} ${masterPokemonRec.pokemonId}`;
+        let title = `#${masterPokemon.pokedexId} - ${await masterPokemon.getName()}`;
 
-        if (masterPokemonRec.form != null) {
-            title += ` ${masterPokemonRec.form}`;
+        if (masterPokemon.form != null) {
+            title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
         }
 
-        title += ` ${this.bossType}`;
+        title += ` ${Translation.getBossTypeName(this.bossType)}`;
 
         if (this.isMega) {
             title += ' [Mega]';
         }
 
-        let typeColor = masterPokemonRec.getTypeColor(masterPokemonRec.type);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemonRec.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemonRec.pokemonId.toLowerCase()}-main.png`;
-        let pokemonType = masterPokemonRec.type;
+        let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
+        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
+        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
+        let pokemonType = await masterPokemon.getTypeName();
 
-        if (masterPokemonRec.type2 != null) {
-            pokemonType += ` / ${masterPokemonRec.type2}`;
+        if (masterPokemon.type2 != null) {
+            pokemonType += ` / ${await masterPokemon.getType2Name()}`;
         }
 
-        let pokemonForm = 'No Form'; //masterPokemonRec.form ?? 'No Form';
+        let pokemonForm = masterPokemon.form != null ? StringFunctions.titleCase(masterPokemon.form) : 'No Form';
 
-        let cpL20Min = await MasterCPM.getCombatPower(masterPokemonRec, 10, 10, 10, 20);
-        let cpL20Max = await MasterCPM.getCombatPower(masterPokemonRec, 15, 15, 15, 20);
-        let cpL25Min = await MasterCPM.getCombatPower(masterPokemonRec, 10, 10, 10, 25);
-        let cpL25Max = await MasterCPM.getCombatPower(masterPokemonRec, 15, 15, 15, 25);
-        let cpL50Min = await MasterCPM.getCombatPower(masterPokemonRec, 10, 10, 10, 50);
-        let cpL50Max = await MasterCPM.getCombatPower(masterPokemonRec, 15, 15, 15, 50);
+        let cpL20Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 20);
+        let cpL20Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 20);
+        let cpL25Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 25);
+        let cpL25Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 25);
+        let cpL50Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 50);
+        let cpL50Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 50);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
         let cpL50 = `${cpL50Min} - ${cpL50Max}`;
 
+        client.logger.debug(`pokemonType = ${pokemonType}`);
+        client.logger.debug(`pokemonForm = ${pokemonForm}`);
         client.logger.debug(`typeColor = ${typeColor}`);
 
         let embed =  new EmbedBuilder()

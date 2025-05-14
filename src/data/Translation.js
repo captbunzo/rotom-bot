@@ -258,42 +258,7 @@ export default class Translation extends DatabaseTable {
         const translationRec = await this.get(translationSearchObj);
         return translationRec.value;
     }
-
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
     
-    /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
-     */
-    //static async get(conditions = {}, orderBy = this.schema.orderBy) {
-    //    if (typeof conditions == 'object' && conditions.unique) {
-    //        // Set some defaults
-    //        if (!conditions.variant) {
-    //            conditions.variant = Translation.VariantNull;
-    //        }
-    //
-    //        if (!conditions.isPlural) {
-    //            conditions.isPlural = false;
-    //        }
-    //
-    //        return await super.get(conditions, orderBy);            
-    //    }
-    //    
-    //    return await super.get(conditions, orderBy);
-    //}
-    
-    //static async getPokemonIdChoices(pokemonIdPrefix, conditions = {}) {
-    //    return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
-    //}
-    //
-    //static async getFormChoices(formPrefix, conditions = {}) {
-    //    return await this.getChoices('form', formPrefix, conditions);
-    //}
-
     // ******************** //
     // * Instance Methods * //
     // ******************** //
@@ -328,22 +293,4 @@ export default class Translation extends DatabaseTable {
     //    // Attempt to update it
     //    await DatabaseTable.prototype.update.call(this, conditions);
     //}
-    
-    // ********************************** //
-    // * Turn a Guardian into a Message * //
-    // ********************************** //
-    
-    /* async getMessageContent(cachedParameters = {}) {
-        const user = await this.getUser();
-        
-        //
-        // TODO - It would be nice to figure out how to get GuildMember instead so I can get their Guild displayName
-        //
-        
-        let details = [];
-        details.push(`**Time Zone:** ${this.timezone ? this.timezone : 'Not Set'}`);
-        details.push(`**Event (LFG) Privacy:** ${this.privateEventDefault ? 'Private' : 'Public'}`);
-        
-        return `__**${user.username}**__` + '\n' + details.join('\n');
-    } */
 }

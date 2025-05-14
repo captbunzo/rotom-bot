@@ -6,6 +6,10 @@ import {
 
 const interactionCreate = {
 	name: Events.InteractionCreate,
+
+	/**
+	 * @param {import('discord.js').Interaction} interaction
+	 */
 	async execute(interaction) {
 		const client = interaction.client;
 

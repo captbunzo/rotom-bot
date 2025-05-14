@@ -22,7 +22,7 @@ import Translation   from './Translation.js';
 export default class Battle extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'battle',
-        orderBy: 'id',
+        orderBy: ['id'],
         fields: {
             'id':              { type: 'snowflake', nullable: false },
             'boss_id':         { type: 'string',    nullable: false, length: 100 },
@@ -63,27 +63,16 @@ export default class Battle extends DatabaseTable {
     // ***************** //
     // * Class Methods * //
     // ***************** //
-    
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
-    
+        
     /**
-     * Get guardian(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the guardian(s) to retrieve
-     * @param {object} [orderBy] The order in which the guardian(s) will be returned
-     * @returns {Promise<Guardian|Guardian[]>} The guardian(s) retrieved
+     * Get Battle(s) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the Battle(s) to retrieve
+     * @param {object} [orderBy] The order in which the Battle(s) will be returned
+     * @returns {Promise<Battle|Battle[]>} The Battle(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            let boss = await super.get(conditions, orderBy);
-            
-            //if (!trainer) {
-            //    trainer = new Trainer({id: conditions.id});
-            //    //await trainer.create();
-            //}
-            
-            return boss;
+            return await super.get(conditions, orderBy);
         }
         
         return await super.get(conditions, orderBy);
@@ -103,7 +92,7 @@ export default class Battle extends DatabaseTable {
     
     async buildEmbed() {
         const bossRec           = await Boss.get({ id: this.bossId, unique: true });
-        const masterPokemonRec  = await MasterPokemon.get({ templateId: bossRec.templateId, unique: true });
+        const masterPokemon     = await MasterPokemon.get({ templateId: bossRec.templateId, unique: true });
         const hostTrainer       = await Trainer.get({ id: this.hostTrainerId, unique: true });
         const battleMemberArray = await BattleMember.get({ battleId: this.id });
 
@@ -137,13 +126,13 @@ export default class Battle extends DatabaseTable {
         //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
         let bossTypeName       = await Translation.getBossTypeName(bossRec.bossType);
-        let pokemonName        = await Translation.getPokemonName(masterPokemonRec.pokedexId);
-        let pokemonDescription = await Translation.getPokemonDescription(masterPokemonRec.pokedexId) ?? 'Description not available';
+        let pokemonName        = await Translation.getPokemonName(masterPokemon.pokedexId);
+        let pokemonDescription = await Translation.getPokemonDescription(masterPokemon.pokedexId) ?? 'Description not available';
         let shinyText          = bossRec.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny';
 
         let title = `${bossTypeName}: ${pokemonName}`;
-        if (masterPokemonRec.form != null) {
-            title += ` (${masterPokemonRec.form})`;
+        if (masterPokemon.form != null) {
+            title += ` (${masterPokemon.form})`;
         }
 
         if (bossRec.isMega) {
@@ -157,26 +146,26 @@ export default class Battle extends DatabaseTable {
             case BattleStatus.Cancelled: title += ' -- Cancelled'; break;
         }
 
-        let typeColor = masterPokemonRec.getTypeColor(masterPokemonRec.type);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemonRec.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemonRec.pokemonId.toLowerCase()}-main.png`;
+        let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
+        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
+        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
 
         let hostTrainerCode = hostTrainer.formattedCode;
         let description = `To join this raid, please click join below. `
                         + `If the raid host is not yet on your friends list, please send a friend request to them with the code ${bold(hostTrainerCode)}.`;
 
-        let pokemonType = await Translation.getPokemonType(masterPokemonRec.type);
-        if (masterPokemonRec.type2 != null) {
-            let pokemonType2 = await Translation.getPokemonType(masterPokemonRec.type2);
+        let pokemonType = await Translation.getPokemonType(masterPokemon.type);
+        if (masterPokemon.type2 != null) {
+            let pokemonType2 = await Translation.getPokemonType(masterPokemon.type2);
             pokemonType += ` / ${pokemonType2}`;
         }
 
         let raidHost = hostDiscordMember.nickname ?? hostDiscordMember.user.displayName;
 
-        let cpL20Min = await MasterCPM.getCombatPower(masterPokemonRec, 10, 10, 10, 20);
-        let cpL20Max = await MasterCPM.getCombatPower(masterPokemonRec, 15, 15, 15, 20);
-        let cpL25Min = await MasterCPM.getCombatPower(masterPokemonRec, 10, 10, 10, 25);
-        let cpL25Max = await MasterCPM.getCombatPower(masterPokemonRec, 15, 15, 15, 25);
+        let cpL20Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 20);
+        let cpL20Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 20);
+        let cpL25Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 25);
+        let cpL25Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 25);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
@@ -216,7 +205,7 @@ export default class Battle extends DatabaseTable {
         embed = embed
             .addFields(
                 { name: 'Pokémon Type', value: pokemonType, inline: true },
-                { name: 'Pokédex ID', value: `${masterPokemonRec.pokedexId}`, inline: true },
+                { name: 'Pokédex ID', value: `${masterPokemon.pokedexId}`, inline: true },
                 { name: 'Shiny', value: shinyText, inline: true }
             );
         
@@ -275,22 +264,4 @@ export default class Battle extends DatabaseTable {
         //client.logger.debug(`Mark 7`);
         return embed;
     }
-
-    // ********************************** //
-    // * Turn a Guardian into a Message * //
-    // ********************************** //
-    
-    /* async getMessageContent(cachedParameters = {}) {
-        const user = await this.getUser();
-        
-        //
-        // TODO - It would be nice to figure out how to get GuildMember instead so I can get their Guild displayName
-        //
-        
-        let details = [];
-        details.push(`**Time Zone:** ${this.timezone ? this.timezone : 'Not Set'}`);
-        details.push(`**Event (LFG) Privacy:** ${this.privateEventDefault ? 'Private' : 'Public'}`);
-        
-        return `__**${user.username}**__` + '\n' + details.join('\n');
-    } */
 }

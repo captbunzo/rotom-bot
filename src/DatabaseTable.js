@@ -113,8 +113,7 @@ export default class DatabaseTable {
         // Add all the objects
         if (!schema.objects) schema.objects = [];
         
-        for (let o = 0; o < schema.objects.length; o++) {
-            const object = schema.objects[o];
+        for (let object of schema.objects) {
             schema.objectMap.set(object.objectName, object);
         }
         
@@ -136,6 +135,7 @@ export default class DatabaseTable {
         return ( field && field.validValues ? field.validValues : [] );
     }
     
+    // TODO - Move orderBy into conditions
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         let unique = false;        
         let query = null;
@@ -194,7 +194,8 @@ export default class DatabaseTable {
                 query = query.whereLike(fieldName, whereLikeConditions[fieldName]);
             }
 
-            query = query.orderBy(orderBy).select();
+            const parsedOrderBy = this.parseOrderBy(orderBy);
+            query = query.orderBy(parsedOrderBy).select();
         }
         
         if (client.logger.logSql) {
@@ -204,16 +205,24 @@ export default class DatabaseTable {
         }
 
         // Execute the select and gather the results
-        const rows = await query
-            .then(function(rows) {
-                return rows;
-            });
+        //const rows = await query
+        //    .then((rows) => {
+        //        return rows;
+        //    });
+        //
+        //const objects = [];
+        //for (let row of rows) {
+        //    objects.push(new this(row));
+        //}
         
         const objects = [];
-        for (let x = 0; x < rows.length; x++) {
-            objects.push(new this(rows[x]));
-        }
-        
+        await query
+            .then((rows) => {
+                for (let row of rows) {
+                    objects.push(new this(row));
+                }
+            });
+
         // Handle this extra carefully if a unique result was expected
         if (unique) {
             if (objects.length > 1) {
@@ -278,6 +287,30 @@ export default class DatabaseTable {
         }
         
         return parsedConditions;
+    }
+
+    static parseOrderBy(orderBy) {
+        if (!Array.isArray(orderBy)) {
+            return orderBy;
+        }
+        
+        const parsedOrderBy = [];
+        
+        for (const fieldName of orderBy) {
+            const dbFieldName = StringFunctions.camelToSnakeCase(fieldName);
+            const fieldOriginal = this.schema.fields[fieldName];
+            const fieldSnaked   = this.schema.fields[dbFieldName];
+            
+            if (fieldOriginal) {
+                parsedOrderBy.push(fieldName);
+            } else if (fieldSnaked) {
+                parsedOrderBy.push(dbFieldName);
+            } else {
+                throw new Error(`Unrecognized field - ${fieldName}`);
+            }
+        }
+        
+        return parsedOrderBy;
     }
     
     static getTableName() {

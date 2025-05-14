@@ -22,22 +22,19 @@ const MasterPokemonCmd = {
     data: new SlashCommandBuilder()
         .setName('master-pokemon')
         .setDescription('Manage Master Pokémon data')
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('load')
-                .setDescription('Load Master Pokémon data file')
+        .addSubcommand(subCommand => subCommand
+            .setName('load')
+            .setDescription('Load Master Pokémon data file')
         )
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('list')
-                .setDescription('List Master Pokémon templates')
-                .addStringOption(option =>
-                    option
-                        .setName('pokemon')
-                        .setDescription('Pokémon name')
-                        .setRequired(true)
-                        .setAutocomplete(true)
-                )
+        .addSubcommand(subCommand => subCommand
+            .setName('list')
+            .setDescription('List Master Pokémon templates')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon name')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
         ),
     
     async execute(interaction) {
@@ -168,7 +165,7 @@ const MasterPokemonCmd = {
         });
     },
 
-    async autocompletLoad(interaction) {
+    async autocompleteLoad(interaction) {
         const client  = interaction.client;
         const focusedOption = interaction.options.getFocused(true);
         client.logger.error(

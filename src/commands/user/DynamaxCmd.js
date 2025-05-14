@@ -28,12 +28,11 @@ const DynamaxCmd = {
 		.setName('dynamax')
 		.setDescription('Host a dynamax battle')
 		.setContexts(InteractionContextType.Guild) // TODO - Figure out how to and this with InteractionContextType.PrivateChannel
-		.addStringOption(option =>
-			option
-				.setName('pokemon')
-				.setDescription('Pokémon Name')
-				.setRequired(true)
-				.setAutocomplete(true)
+		.addStringOption(option => option
+			.setName('pokemon')
+			.setDescription('Pokémon Name')
+			.setRequired(true)
+			.setAutocomplete(true)
 		),
 	
 	async execute(interaction) {

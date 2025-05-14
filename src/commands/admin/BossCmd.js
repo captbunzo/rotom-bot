@@ -254,15 +254,15 @@ const BossCmd = {
         client.logger.debug(`isActive    = ${isActive}`);
 
         // Get the Pokemon Master record
-        const masterPokemonRec = await MasterPokemon.get({templateId: templateId, unique: true});
+        const masterPokemon = await MasterPokemon.get({templateId: templateId, unique: true});
         client.logger.debug('Master Pokémon Record');
-        client.logger.dump(masterPokemonRec);
+        client.logger.dump(masterPokemon);
 
         // Derive the Boss ID
         let id = `${bossType.toUpperCase()}_${pokemonId.toUpperCase()}`;
         
-        if (masterPokemonRec.form != null) {
-            id += `_${masterPokemonRec.form.toUpperCase()}`;
+        if (masterPokemon.form != null) {
+            id += `_${masterPokemon.form.toUpperCase()}`;
         }
 
         if (isMega) {
@@ -278,7 +278,7 @@ const BossCmd = {
             id: id,
             bossType: bossType.toUpperCase(),
             pokemonId: pokemonId.toUpperCase(),
-            form: masterPokemonRec.form,
+            form: masterPokemon.form,
             tier: tier,
             isMega: isMega,
             isShadow: isShadow,
@@ -290,26 +290,26 @@ const BossCmd = {
         client.logger.debug('Boss Object');
         client.logger.dump(bossObj);
 
-        let bossRec = await Boss.get({ id: bossObj.id, unique: true });
+        let boss = await Boss.get({ id: bossObj.id, unique: true });
 
-        if (!bossRec) {
-            bossRec = new Boss(bossObj);
-            await bossRec.create();
+        if (!boss) {
+            boss = new Boss(bossObj);
+            await boss.create();
         } else {
-            bossRec.id          = bossObj.id;
-            bossRec.bossType    = bossObj.bossType;
-            bossRec.pokemonId   = bossObj.pokemonId;
-            bossRec.form        = bossObj.form;
-            bossRec.tier        = bossObj.tier;
-            bossRec.isMega      = bossObj.isMega;
-            bossRec.isShadow    = bossObj.isShadow;
-            bossRec.isShinyable = bossObj.isShinyable;
-            bossRec.isActive    = bossObj.isActive;
-            bossRec.templateId  = bossObj.templateId;
-            await bossRec.update();
+            boss.id          = bossObj.id;
+            boss.bossType    = bossObj.bossType;
+            boss.pokemonId   = bossObj.pokemonId;
+            boss.form        = bossObj.form;
+            boss.tier        = bossObj.tier;
+            boss.isMega      = bossObj.isMega;
+            boss.isShadow    = bossObj.isShadow;
+            boss.isShinyable = bossObj.isShinyable;
+            boss.isActive    = bossObj.isActive;
+            boss.templateId  = bossObj.templateId;
+            await boss.update();
         }
 
-        const bossEmbed = await bossRec.buildEmbed();
+        const bossEmbed = await boss.buildEmbed();
         await interaction.reply({
             embeds: [bossEmbed]
         });
@@ -356,8 +356,7 @@ const BossCmd = {
         client.logger.debug(`prefix = ${prefix}`);
 
         let choicesPrefixed = [];
-        for (let x = 0; x < choices.length; x++) {
-            let choiceFull = choices[x];
+        for (let choiceFull of choices) {
             let choice = choiceFull.slice(0, prefix.length + 1);
             
             if (choice == prefix) {
@@ -453,14 +452,13 @@ const BossCmd = {
         client.logger.dump(bossSearchObj);
         
         // Run the search query
-        const bossRecArray = await Boss.get(bossSearchObj);
+        const bosses = await Boss.get(bossSearchObj, [ 'tier', 'pokemonId' ] );
 
         // Iterate through the results
         let bossEembedArray = [];
 
-        for (let x = 0; x < bossRecArray.length; x++) {
-            const bossRec = bossRecArray[x]
-            let bossEmbed = await bossRec.buildEmbed();
+        for (let boss of bosses) {
+            let bossEmbed = await boss.buildEmbed();
             bossEembedArray.push(bossEmbed);
         }
 

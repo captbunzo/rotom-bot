@@ -104,9 +104,9 @@ const PokemonCmd = {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'cp'                      : this.executeCP(interaction); break;
-            case 'search-buddy-km'         : this.executeSearch(interaction, subCommand); break;
-            case 'search-purify-stardust'  : this.executeSearch(interaction, subCommand); break;
+            case 'cp' : this.executeCP(interaction); break;
+            case SearchStringCode.buddyKm        : this.executeSearch(interaction, subCommand); break;
+            case SearchStringCode.purifyStardust : this.executeSearch(interaction, subCommand); break;
             default :
                 await interaction.reply({ content: `Pokémon command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }); 
         }
@@ -117,7 +117,7 @@ const PokemonCmd = {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'cp': this.autocompleteCP(interaction); break;
+            case 'cp' : this.autocompleteCP(interaction); break;
             default :
                 client.logger.error(`Pokémon command autocomplete not yet implemented for subcommand -- ${subCommand}`);
         }
@@ -145,7 +145,7 @@ const PokemonCmd = {
             });
         } else {
             await interaction.reply({
-                content: `Search for Pokémon: ${name} (${form})`,
+                content: `Searching for Pokémon: ${name} (${form})`,
                 flags: MessageFlags.Ephemeral
             });
         }
@@ -161,8 +161,7 @@ const PokemonCmd = {
                 flags: MessageFlags.Ephemeral
             });
 
-            for (let x = 0; x < masterPokemons.length; x++) {
-                masterPokemon = masterPokemons[x];
+            for (let masterPokemon of masterPokemons) {
                 await interaction.followUp({
                     content: `Pokémon: ${masterPokemon.pokemonId}, Form: ${masterPokemon.form}, Type: ${masterPokemon.type}, Type2: ${masterPokemon.type2}`,
                     flags: MessageFlags.Ephemeral
@@ -215,10 +214,10 @@ const PokemonCmd = {
             });
 
         } else {
-            const cpLevel15 = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, 15);
-            const cpLevel20 = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, 20);
-            const cpLevel25 = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, 25);
-            const cpLevel50 = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, 50);
+            const cpLevel15 = await masterPokemon.getCombatPower(attack, defense, stamina, 15);
+            const cpLevel20 = await masterPokemon.getCombatPower(attack, defense, stamina, 20);
+            const cpLevel25 = await masterPokemon.getCombatPower(attack, defense, stamina, 25);
+            const cpLevel50 = await masterPokemon.getCombatPower(attack, defense, stamina, 50);
 
             client.logger.debug(`Pokémon: ${pokemonName}`);
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
@@ -281,7 +280,7 @@ const PokemonCmd = {
 
         switch (subCommand) {
             case SearchStringCode.buddyKm:
-                title = `${SearchStringName.buddyKm}: ${value}`;
+                title = `${SearchStringName.buddyKm}: ${value} km`;
                 masterPokemonSearchObj.buddyDistanceKm = value;
                 break;
             case SearchStringCode.purifyStardust:

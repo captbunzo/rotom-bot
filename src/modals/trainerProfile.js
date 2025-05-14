@@ -16,7 +16,7 @@ const trainerProfile = {
 
     async show(interaction) {
         const client = interaction.client;
-        const trainer = await Trainer.get({id: interaction.user.id, unique: true});
+        const trainer = await Trainer.get({ id: interaction.user.id, unique: true });
 
         // Create the modal
         const modal = new ModalBuilder()
@@ -90,7 +90,7 @@ const trainerProfile = {
     
     async handle(interaction) {
         const client = interaction.client;
-        var trainer = await Trainer.get({id: interaction.user.id, unique: true});
+        let trainer = await Trainer.get({ id: interaction.user.id, unique: true });
         
         //client.logger.log(`Interaction User ID = ${interaction.user.id}`);
         //client.logger.log(`Trainer = ${trainer}`);
@@ -100,11 +100,11 @@ const trainerProfile = {
         //client.logger.log(`Trainer Team = ${trainer.team}`);
         //client.logger.log(trainer.name);
 
-        var name = interaction.fields.getTextInputValue('name');
-        var code = interaction.fields.getTextInputValue('code');
-        var level = interaction.fields.getTextInputValue('level');
-        var aboutMe = interaction.fields.getTextInputValue('aboutMe');
-        var favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
+        const name = interaction.fields.getTextInputValue('name');
+        const code = interaction.fields.getTextInputValue('code');
+        const level = interaction.fields.getTextInputValue('level');
+        const aboutMe = interaction.fields.getTextInputValue('aboutMe');
+        const favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
 
         //if (code.length == 0) code = null;
         //if (level.length == 0) level = null;

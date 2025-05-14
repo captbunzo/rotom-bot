@@ -18,17 +18,15 @@ const MasterTranslationCmd = {
     data: new SlashCommandBuilder()
         .setName('master-translation')
         .setDescription('Manage Master Translation data')
-        .addSubcommand(subCommand =>
-            subCommand
-                .setName('load')
-                .setDescription('Load Master Translation data file')
-                .addStringOption(option =>
-                    option
-                        .setName('language')
-                        .setDescription('Language to load')
-                        .setRequired(true)
-                        .setChoices(Translation.LanguageChoices)
-                )
+        .addSubcommand(subCommand => subCommand
+            .setName('load')
+            .setDescription('Load Master Translation data file')
+            .addStringOption(option => option
+                .setName('language')
+                .setDescription('Language to load')
+                .setRequired(true)
+                .setChoices(Translation.LanguageChoices)
+            )
         ),
     
     async execute(interaction) {
