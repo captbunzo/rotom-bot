@@ -141,7 +141,8 @@ export default class Translation extends DatabaseTable {
         Gigantamax: 'Gigantamax Battle'
     }
 
-    static MegaName = 'Mega';
+    static MegaName   = 'Mega';
+    static ShadowName = 'Shadow';
 
     // *********** //
     // * Getters * //
@@ -195,6 +196,10 @@ export default class Translation extends DatabaseTable {
 
     static getMegaName(language = Translation.Language.English) {
         return this.MegaName;
+    }
+
+    static getShadowName(language = Translation.Language.English) {
+        return this.ShadowName;
     }
 
     static async getPokemonName(pokedexId, language = Translation.Language.English) {

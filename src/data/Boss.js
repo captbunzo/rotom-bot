@@ -10,7 +10,7 @@ import StringFunctions from '../functions/StringFunctions.js';
 import DatabaseTable from '../DatabaseTable.js';
 import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
-import Translation   from '../data/Translation.js';
+import Translation   from './Translation.js';
 
 export default class Boss extends DatabaseTable {
     static schema = this.parseSchema({
@@ -99,6 +99,10 @@ export default class Boss extends DatabaseTable {
         return await this.getChoices('form', formPrefix, conditions);
     }
 
+    static async getIdChoices(idPrefix, conditions = {}) {
+        return await this.getChoices('id', idPrefix, conditions);
+    }
+
     // ******************** //
     // * Instance Methods * //
     // ******************** //
@@ -127,6 +131,10 @@ export default class Boss extends DatabaseTable {
 
         if (this.isMega) {
             title += ' [Mega]';
+        }
+
+        if (this.isShadow) {
+            title += ' [Shadow]';
         }
 
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
@@ -165,6 +173,7 @@ export default class Boss extends DatabaseTable {
         
         embed = embed
             .addFields(
+                { name: 'Boss ID', value: this.id },
                 { name: 'Pokémon Type', value: pokemonType },
                 { name: 'Pokémon Form', value: pokemonForm},
             );
@@ -176,8 +185,10 @@ export default class Boss extends DatabaseTable {
         embed = embed
             .addFields(
                 { name: 'Tier', value: `${this.tier}`, inline: true },
-                { name: 'Shiny', value: `${this.isActive ? 'Can be Shiny' : 'Cannot be Shiny'}`, inline: true },
-                { name: 'Status', value: `${this.isActive ? 'Active' : 'Inactive'}`, inline: true }
+                { name: 'Shiny', value: `${this.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny'}`, inline: true },
+                { name: 'Status', value: `${this.isActive ? 'Active' : 'Inactive'}`, inline: true },
+                { name: 'Mega', value: `${this.isMega ? 'Yes' : 'No'}`, inline: true },
+                { name: 'Shadow', value: `${this.isShadow ? 'Yes' : 'No'}`, inline: true }
             );
         
         embed = embed
@@ -194,5 +205,9 @@ export default class Boss extends DatabaseTable {
           //.setFooter({ text: `Raid hosted by ${raidHost}` });
 
         return embed;
+    }
+
+    async getBossTypeName() {
+        return await Translation.getBossTypeName(this.bossType);
     }
 }

@@ -11,6 +11,8 @@ import {
     BattleStatus
 } from '../Constants.js';
 
+import StringFunctions from '../functions/StringFunctions.js';
+
 import DatabaseTable from '../DatabaseTable.js';
 import BattleMember  from './BattleMember.js';
 import Boss          from './Boss.js';
@@ -91,10 +93,10 @@ export default class Battle extends DatabaseTable {
     }
     
     async buildEmbed() {
-        const bossRec           = await Boss.get({ id: this.bossId, unique: true });
-        const masterPokemon     = await MasterPokemon.get({ templateId: bossRec.templateId, unique: true });
-        const hostTrainer       = await Trainer.get({ id: this.hostTrainerId, unique: true });
-        const battleMemberArray = await BattleMember.get({ battleId: this.id });
+        const boss          = await Boss.get({ id: this.bossId, unique: true });
+        const masterPokemon = await MasterPokemon.get({ templateId: boss.templateId, unique: true });
+        const hostTrainer   = await Trainer.get({ id: this.hostTrainerId, unique: true });
+        const battleMembers = await BattleMember.get({ battleId: this.id });
 
         // Get some discord objects
         let hostDiscordGuild  = await client.guilds.fetch(this.guildId);
@@ -125,18 +127,24 @@ export default class Battle extends DatabaseTable {
         //client.logger.dump(hostDiscordMember);
         //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
-        let bossTypeName       = await Translation.getBossTypeName(bossRec.bossType);
-        let pokemonName        = await Translation.getPokemonName(masterPokemon.pokedexId);
-        let pokemonDescription = await Translation.getPokemonDescription(masterPokemon.pokedexId) ?? 'Description not available';
-        let shinyText          = bossRec.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny';
+        let bossTypeName       = await boss.getBossTypeName();
+        let pokemonName        = await masterPokemon.getName();
+        let pokemonDescription = await masterPokemon.getDescription() ?? 'Description not available';
 
-        let title = `${bossTypeName}: ${pokemonName}`;
-        if (masterPokemon.form != null) {
-            title += ` (${masterPokemon.form})`;
+        let title = `${bossTypeName}: `;
+
+        if (boss.isMega) {
+            title += `${await Translation.getMegaName()} `;
         }
 
-        if (bossRec.isMega) {
-            title = `${await Translation.getMegaName()} ${title}`;
+        if (boss.isShadow) {
+            title += `${await Translation.getShadowName()} `;
+        }
+
+        title += pokemonName;
+
+        if (masterPokemon.form !== null) {
+            title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
         }
 
         switch (this.status) {
@@ -154,39 +162,35 @@ export default class Battle extends DatabaseTable {
         let description = `To join this raid, please click join below. `
                         + `If the raid host is not yet on your friends list, please send a friend request to them with the code ${bold(hostTrainerCode)}.`;
 
-        let pokemonType = await Translation.getPokemonType(masterPokemon.type);
+        let pokemonType = await masterPokemon.getTypeName();
         if (masterPokemon.type2 != null) {
-            let pokemonType2 = await Translation.getPokemonType(masterPokemon.type2);
-            pokemonType += ` / ${pokemonType2}`;
+            pokemonType += ` / ${await masterPokemon.getType2Name()}`;
         }
 
         let raidHost = hostDiscordMember.nickname ?? hostDiscordMember.user.displayName;
 
-        let cpL20Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 20);
-        let cpL20Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 20);
-        let cpL25Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 25);
-        let cpL25Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 25);
+        let cpL20Min = await masterPokemon.getCombatPower(10, 10, 10, 20);
+        let cpL20Max = await masterPokemon.getCombatPower(15, 15, 15, 20);
+        let cpL25Min = await masterPokemon.getCombatPower(10, 10, 10, 25);
+        let cpL25Max = await masterPokemon.getCombatPower(15, 15, 15, 25);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
 
         let battleMembersText = 'No Battle Members Yet';
+        let battleMembersTextArray = [];
 
-        if (battleMemberArray.length > 0) {
-            let battleMembersTextArray = [];
-
-            for (let x = 0; x < battleMemberArray.length; x++) {
-                const battleMemberRec = battleMemberArray[x];
-
-                if (client.config.options.showBattleMemberTrainerNames) {
-                    const battleMemberTrainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true }); 
-                    battleMembersTextArray.push(battleMemberTrainerRec.name);
-                } else {
-                    const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMemberRec.trainerId);
-                    battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);
-                }
+        for (const battleMemberRec of battleMembers) {
+            if (client.config.options.showBattleMemberTrainerNames) {
+                const battleMemberTrainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true }); 
+                battleMembersTextArray.push(battleMemberTrainerRec.name);
+            } else {
+                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMemberRec.trainerId);
+                battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);
             }
+        }
             
+        if (battleMembersTextArray.length > 0) {
             battleMembersText = battleMembersTextArray.join('\n');
         }
 
@@ -206,7 +210,7 @@ export default class Battle extends DatabaseTable {
             .addFields(
                 { name: 'Pokémon Type', value: pokemonType, inline: true },
                 { name: 'Pokédex ID', value: `${masterPokemon.pokedexId}`, inline: true },
-                { name: 'Shiny', value: shinyText, inline: true }
+                { name: 'Shiny', value: boss.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny', inline: true }
             );
         
         //client.logger.debug(`Mark 2`);

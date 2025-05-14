@@ -128,6 +128,32 @@ const BossCmd = {
             )
         )
         .addSubcommand(subCommand => subCommand
+            .setName('update')
+            .setDescription('Update a Boss Pokémon')
+            .addStringOption(option => option
+                .setName('pokemon')
+                .setDescription('Pokémon Name')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+            .addStringOption(option => option
+                .setName('id')
+                .setDescription('Boss ID')
+                .setRequired(true)
+                .setAutocomplete(true)
+            )
+            .addBooleanOption(option => option
+                .setName('shinyable')
+                .setDescription('Can be shiny?')
+                .setRequired(false)
+            )
+            .addBooleanOption(option => option
+                .setName('active')
+                .setDescription('Boss is Active')
+                .setRequired(false)
+            )
+        )
+        .addSubcommand(subCommand => subCommand
             .setName('enable')
             .setDescription('Enable a Boss Pokémon')
             .addStringOption(option => option
@@ -210,6 +236,7 @@ const BossCmd = {
         switch (subCommand) {
             case 'load'        : this.executeLoad(interaction); break;
             case 'list'        : this.executeList(interaction); break;
+            case 'update'      : this.executeUpdate(interaction); break;
             case 'enable'      : this.executeToggleActive(interaction, true); break;
             case 'disable'     : this.executeToggleActive(interaction, false); break;
             case 'disable-all' : this.executeDisableAll(interaction); break;
@@ -225,6 +252,7 @@ const BossCmd = {
         switch (subCommand) {
             case 'load'    : this.autocompleteLoad(interaction); break;
             case 'list'    : this.autocompleteSearch(interaction); break;
+            case 'update'  : this.autocompleteUpdate(interaction); break;
             case 'enable'  : this.autocompleteSearch(interaction); break;
             case 'disable' : this.autocompleteSearch(interaction); break;
             default :
@@ -323,7 +351,7 @@ const BossCmd = {
     async autocompleteLoad(interaction) {
         const client = interaction.client;
         const focusedOption = interaction.options.getFocused(true);
-        client.logger.debug(`Initiating autocomplete for boss -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+        client.logger.debug(`Initiating autocomplete for boss load -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
 
         let choices = [];
         let pokemonId;
@@ -477,6 +505,129 @@ const BossCmd = {
                 flags: MessageFlags.Ephemeral
             })
         }
+    },
+
+    /************************/
+    /* Subcommand :: Update */
+    /************************/
+
+    async executeUpdate(interaction) {
+        const client = interaction.client;
+        const table  = 'boss';
+
+        const pokemonId   = interaction.options.getString('pokemon');
+        const id          = interaction.options.getString('id');
+        const isShinyable = interaction.options.getBoolean('shinyable');
+        const isActive    = interaction.options.getBoolean('active');
+
+        client.logger.debug(`pokemonId   = ${pokemonId}`);
+        client.logger.debug(`boss id     = ${id}`);
+        client.logger.debug(`isShinyable = ${isShinyable}`);
+        client.logger.debug(`isActive    = ${isActive}`);
+
+        // Get the Boss record
+        const boss = await Boss.get({id: id, unique: true});
+        client.logger.debug('Boss Record');
+        client.logger.dump(boss);
+
+        if (!boss) {
+            await interaction.reply({
+                content: `Could not find boss with that ID`,
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        if (isShinyable === null && isActive === null) {
+            await interaction.reply({
+                content: `No changes requested`,
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        // Update the boss object
+        if (isShinyable !== null) {
+            boss.isShinyable = isShinyable;
+        }
+
+        if (isActive !== null) {
+            boss.isActive = isActive;
+        }
+
+        await boss.update();
+        const bossEmbed = await boss.buildEmbed();
+
+        await interaction.reply({
+            content: `Boss updated`,
+            embeds: [ bossEmbed ]
+        });
+    },
+
+    async autocompleteUpdate(interaction) {
+        const client = interaction.client;
+        const focusedOption = interaction.options.getFocused(true);
+        client.logger.debug(`Initiating autocomplete for boss update -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+
+        let choices = [];
+        let pokemonId;
+        let templateId;
+
+        switch (focusedOption.name) {
+            case 'pokemon':
+                choices = await Boss.getPokemonIdChoices(focusedOption.value);
+                break;
+            case 'id':
+                pokemonId = interaction.options.getString('pokemon');
+                choices = await Boss.getIdChoices(focusedOption.value, { pokemonId: pokemonId });
+                break;
+        }
+
+        //const filtered = choices.filter(choice => choice.startsWith(focusedOption.value));
+
+        client.logger.debug(`focusedOption.name choices =`);
+        client.logger.dump(choices);
+
+        if (choices.length <= MaxAutoCompleteChoices) {
+            await interaction.respond(
+                choices.map(choice => ({ name: choice, value: choice })),
+            );
+            return;
+        }
+
+        let prefix = StringFunctions.getPrefix(choices);
+        client.logger.debug(`prefix = ${prefix}`);
+
+        let choicesPrefixed = [];
+        for (let choiceFull of choices) {
+            let choice = choiceFull.slice(0, prefix.length + 1);
+            
+            if (choice == prefix) {
+                choicesPrefixed.push(choice);
+            } else {
+                choicesPrefixed.push(choice + '*');
+            }
+        }
+
+        client.logger.debug(`choicesPrefixed =`);
+        client.logger.dump(choicesPrefixed);
+
+        let choicesSubset = new Set(choicesPrefixed);
+        client.logger.debug(`choicesPrchoicesSubsetefixed =`);
+        client.logger.dump(choicesSubset);
+
+        choices = [...choicesSubset];
+        client.logger.debug(`choices =`);
+        client.logger.dump(choices);
+
+        if (choices.length <= MaxAutoCompleteChoices) {
+            await interaction.respond(
+                choices.map(choice => ({ name: choice, value: choice })),
+            );
+            return;
+        }
+
+        await interaction.respond([]);
     },
 
     /************************************/
