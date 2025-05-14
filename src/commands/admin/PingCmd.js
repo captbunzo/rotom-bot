@@ -9,15 +9,15 @@ async function sleep(ms) {
 }
 
 const PingCmd = {
-	global: true,
+	global: false,
 	data: new SlashCommandBuilder()
 		.setName('ping')
 		.setDescription('Replies with Pong!'),
 	
 	async execute(interaction) {
-		await interaction.reply({ content: 'Rotom is alive!', flags: MessageFlags.Ephemeral });
-		//await sleep(2_000);
-		//await interaction.editReply({ content: 'Rotom is still alive!!', flags: MessageFlags.Ephemeral });
+		await interaction.reply({ content: 'Rotom is alive!' });
+		await sleep(2_000);
+		await interaction.editReply({ content: 'Rotom is still alive!!' });
 	}
 };
 
