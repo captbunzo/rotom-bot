@@ -52,12 +52,12 @@ export default class SchemaHistory extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set logDate    (value) { this.setField(value, 'logDate'); }
-    set logType    (value) { this.setField(value, 'logType'); }
-    set objectName (value) { this.setField(value, 'objectName'); }
-    set objectType (value) { this.setField(value, 'objectType'); }
-    set status     (value) { this.setField(value, 'status'); }
-    set comment    (value) { this.setField(value, 'comment'); }
+    set logDate    (value) { this.setField('logDate', value); }
+    set logType    (value) { this.setField('logType', value); }
+    set objectName (value) { this.setField('objectName', value); }
+    set objectType (value) { this.setField('objectType', value); }
+    set status     (value) { this.setField('status', value); }
+    set comment    (value) { this.setField('comment', value); }
 
     /**
      * Get schema histories based on a given set of conditions in an optional order.

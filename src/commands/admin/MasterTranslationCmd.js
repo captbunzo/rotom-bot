@@ -81,6 +81,7 @@ const MasterTranslationCmd = {
 
         let processedCount = 0;
         let loadedCount    = 0;
+        
         let followUpMsg = await interaction.followUp({
             content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`
         });

@@ -53,13 +53,13 @@ export default class Trainer extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id              (value) { this.setField(value, 'id'); }
-    set name            (value) { this.setField(value, 'name'); }
-    set code            (value) { this.setField(value, 'code'); }
-    set level           (value) { this.setField(value, 'level'); }
-    set team            (value) { this.setField(value, 'team'); }
-    set aboutMe         (value) { this.setField(value, 'aboutMe'); }
-    set favoritePokemon (value) { this.setField(value, 'favoritePokemon'); }
+    set id              (value) { this.setField('id', value); }
+    set name            (value) { this.setField('name', value); }
+    set code            (value) { this.setField('code', value); }
+    set level           (value) { this.setField('level', value); }
+    set team            (value) { this.setField('team', value); }
+    set aboutMe         (value) { this.setField('aboutMe', value); }
+    set favoritePokemon (value) { this.setField('favoritePokemon', value); }
     
     // ***************** //
     // * Class Methods * //

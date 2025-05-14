@@ -16,10 +16,10 @@ import StringFunctions from '../functions/StringFunctions.js';
 import DatabaseTable from '../DatabaseTable.js';
 import BattleMember  from './BattleMember.js';
 import Boss          from './Boss.js';
-import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
 import Trainer       from './Trainer.js';
 import Translation   from './Translation.js';
+import WikiLink      from './WikiLink.js';
 
 export default class Battle extends DatabaseTable {
     static schema = this.parseSchema({
@@ -55,12 +55,12 @@ export default class Battle extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id            (value) { this.setField(value, 'id'); }
-    set bossId        (value) { this.setField(value, 'bossId'); }
-    set hostTrainerId (value) { this.setField(value, 'hostTrainerId'); }
-    set guildId       (value) { this.setField(value, 'guildId'); }
-    set status        (value) { this.setField(value, 'status'); }
-    set messageId     (value) { this.setField(value, 'messageId'); }
+    set id            (value) { this.setField('id', value); }
+    set bossId        (value) { this.setField('bossId', value); }
+    set hostTrainerId (value) { this.setField('hostTrainerId', value); }
+    set guildId       (value) { this.setField('guildId', value); }
+    set status        (value) { this.setField('status', value); }
+    set messageId     (value) { this.setField('messageId', value); }
     
     // ***************** //
     // * Class Methods * //
@@ -128,11 +128,13 @@ export default class Battle extends DatabaseTable {
         //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
         let bossTypeName       = await boss.getBossTypeName();
+        let battleTypeName     = await boss.getBattleTypeName();
         let pokemonName        = await masterPokemon.getName();
         let pokemonDescription = await masterPokemon.getDescription() ?? 'Description not available';
 
         let title = `${bossTypeName}: `;
 
+        // TODO - Handle Primal Groudon and Kyogre
         if (boss.isMega) {
             title += `${await Translation.getMegaName()} `;
         }
@@ -154,13 +156,18 @@ export default class Battle extends DatabaseTable {
             case BattleStatus.Cancelled: title += ' -- Cancelled'; break;
         }
 
+        const wikiLink = await WikiLink.get(boss);
+        client.logger.debug(`Wiki Link Record =`);
+        client.logger.dump(wikiLink);
+
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
+        let link = wikiLink.page;
+        let thumbnail = wikiLink.image;
 
         let hostTrainerCode = hostTrainer.formattedCode;
-        let description = `To join this raid, please click join below. `
-                        + `If the raid host is not yet on your friends list, please send a friend request to them with the code ${bold(hostTrainerCode)}.`;
+        let description =
+            `To join this ${battleTypeName.toLowerCase()}, please click join below. `
+          + `If the ${battleTypeName.toLowerCase()} host is not yet on your friends list, please send a friend request to them with the code. ${bold(hostTrainerCode)}.`;
 
         let pokemonType = await masterPokemon.getTypeName();
         if (masterPokemon.type2 != null) {
@@ -267,5 +274,5 @@ export default class Battle extends DatabaseTable {
         
         //client.logger.debug(`Mark 7`);
         return embed;
-    }
+    }    
 }

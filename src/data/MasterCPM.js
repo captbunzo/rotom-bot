@@ -29,8 +29,8 @@ export default class MasterCPM extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set level (value) { this.setField(value, 'level'); }
-    set cpm   (value) { this.setField(value, 'cpm'); }
+    set level (value) { this.setField('level', value); }
+    set cpm   (value) { this.setField('cpm', value); }
     
     // ***************** //
     // * Class Methods * //

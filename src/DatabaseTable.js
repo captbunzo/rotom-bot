@@ -539,7 +539,7 @@ export default class DatabaseTable {
     // TODO - We really should figure out how to make these getters and setters properly dynamic
     //
     
-    setField(value, camelName) {
+    setField(camelName, value) {
         const snakeName = StringFunctions.camelToSnakeCase(camelName);
         this.validateFieldName(snakeName);
         
@@ -596,8 +596,8 @@ export default class DatabaseTable {
     }
     
     // Standard datetime fields
-    set createdAt (value) { this.setField(value, 'createdAt'); }
-    set updatedAt (value) { this.setField(value, 'updatedAt'); }
+    set createdAt (value) { this.setField('createdAt', value); }
+    set updatedAt (value) { this.setField('updatedAt', value); }
     
     // Object identifier fields
         

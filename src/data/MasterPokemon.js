@@ -58,19 +58,19 @@ export default class MasterPokemon extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set templateId      (value) { this.setField(value, 'templateId'); }
-    set pokemonId       (value) { this.setField(value, 'pokemonId'); }
-    set pokedexId       (value) { this.setField(value, 'pokedexId'); }
-    set type            (value) { this.setField(value, 'type'); }
-    set type2           (value) { this.setField(value, 'type2'); }
-    set form            (value) { this.setField(value, 'form'); }
-    set formMaster      (value) { this.setField(value, 'formMaster'); }
-    set baseAttack      (value) { this.setField(value, 'baseAttack'); }
-    set baseDefense     (value) { this.setField(value, 'baseDefense'); }
-    set baseStamina     (value) { this.setField(value, 'baseStamina'); }
-    set candyToEvolve   (value) { this.setField(value, 'candyToEvolve'); }
-    set buddyDistanceKm (value) { this.setField(value, 'buddyDistanceKm'); }
-    set purifyStardust  (value) { this.setField(value, 'purifyStardust'); }
+    set templateId      (value) { this.setField('templateId', value); }
+    set pokemonId       (value) { this.setField('pokemonId', value); }
+    set pokedexId       (value) { this.setField('pokedexId', value); }
+    set type            (value) { this.setField('type', value); }
+    set type2           (value) { this.setField('type2', value); }
+    set form            (value) { this.setField('form', value); }
+    set formMaster      (value) { this.setField('formMaster', value); }
+    set baseAttack      (value) { this.setField('baseAttack', value); }
+    set baseDefense     (value) { this.setField('baseDefense', value); }
+    set baseStamina     (value) { this.setField('baseStamina', value); }
+    set candyToEvolve   (value) { this.setField('candyToEvolve', value); }
+    set buddyDistanceKm (value) { this.setField('buddyDistanceKm', value); }
+    set purifyStardust  (value) { this.setField('purifyStardust', value); }
 
     // ***************** //
     // * Class Methods * //
@@ -88,7 +88,7 @@ export default class MasterPokemon extends DatabaseTable {
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            return await super.get(conditions, likeConditions, orderBy);
+            return await super.get(conditions, orderBy);
         }
         
         return await super.get(conditions, orderBy);

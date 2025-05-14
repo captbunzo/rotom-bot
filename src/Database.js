@@ -15,6 +15,7 @@ import Boss          from './data/Boss.js';
 import Trainer       from './data/Trainer.js';
 import Battle        from './data/Battle.js';
 import BattleMember  from './data/BattleMember.js';
+import WikiLink from './data/WikiLink.js';
 
 const newTables = [];
 
@@ -22,12 +23,13 @@ knex.discordBotDatabaseInit = async () => {
     const Tables = [
         SchemaHistory,
         MasterPokemon,
-        MasterCPM,
-        Translation,
-        Trainer,
-        Boss,
         Battle,
-        BattleMember
+        BattleMember,
+        Boss,
+        MasterCPM,
+        Trainer,
+        Translation,
+        WikiLink
     ];
     
     client.logger.log(`Creating database tables`);

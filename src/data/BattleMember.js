@@ -29,9 +29,9 @@ export default class BattleMember extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set battleId  (value) { this.setField(value, 'battleId'); }
-    set trainerId (value) { this.setField(value, 'trainerId'); }
-    set status    (value) { this.setField(value, 'status'); }
+    set battleId  (value) { this.setField('battleId', value); }
+    set trainerId (value) { this.setField('trainerId', value); }
+    set status    (value) { this.setField('status', value); }
     
     // ***************** //
     // * Class Methods * //

@@ -162,15 +162,15 @@ export default class Translation extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id        (value) { this.setField(value, 'id'); }
-    set name      (value) { this.setField(value, 'name'); }
-    set key       (value) { this.setField(value, 'key'); }
-    set variant   (value) { this.setField(value, 'variant'); }
-    set variantId (value) { this.setField(value, 'variantId'); }
-    set isPlural  (value) { this.setField(value, 'isPlural'); }
-    set language  (value) { this.setField(value, 'language'); }
-    set value     (value) { this.setField(value, 'value'); }
-    set code      (value) { this.setField(value, 'code'); }
+    set id        (value) { this.setField('id', value); }
+    set name      (value) { this.setField('name', value); }
+    set key       (value) { this.setField('key', value); }
+    set variant   (value) { this.setField('variant', value); }
+    set variantId (value) { this.setField('variantId', value); }
+    set isPlural  (value) { this.setField('isPlural', value); }
+    set language  (value) { this.setField('language', value); }
+    set value     (value) { this.setField('value', value); }
+    set code      (value) { this.setField('code', value); }
   
     // ***************** //
     // * Class Methods * //

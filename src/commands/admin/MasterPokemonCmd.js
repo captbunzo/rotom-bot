@@ -122,30 +122,31 @@ const MasterPokemonCmd = {
             client.logger.debug('Master Pokémon Object');
             client.logger.dump(masterPokemonObj);
 
-            let masterPokemonRec = await MasterPokemon.get({ templateId: masterPokemonObj.templateId, unique: true });
+            let masterPokemon = await MasterPokemon.get({ templateId: masterPokemonObj.templateId, unique: true });
 
-            if (!masterPokemonRec) {
-                masterPokemonRec = new MasterPokemon(masterPokemonObj);
-                await masterPokemonRec.create();
+            if (!masterPokemon) {
+                masterPokemon = new MasterPokemon(masterPokemonObj);
+                await masterPokemon.create();
             } else {
-                masterPokemonRec.templateId           = masterPokemonObj.templateId;
-                masterPokemonRec.pokemonId            = masterPokemonObj.pokemonId;
-                masterPokemonRec.pokedexId            = masterPokemonObj.pokedexId;
-                masterPokemonRec.type                 = masterPokemonObj.type;
-                masterPokemonRec.type2                = masterPokemonObj.type2;
-                masterPokemonRec.form                 = masterPokemonObj.form;
-                masterPokemonRec.formMaster           = masterPokemonObj.formMaster;
-                masterPokemonRec.baseAttack           = masterPokemonObj.baseAttack;
-                masterPokemonRec.baseDefense          = masterPokemonObj.baseDefense;
-                masterPokemonRec.baseStamina          = masterPokemonObj.baseStamina;
-                masterPokemonRec.candyToEvolve        = masterPokemonObj.candyToEvolve;
-                masterPokemonRec.buddyDistanceKm      = masterPokemonObj.buddyDistanceKm;
-                masterPokemonRec.purifyStardust       = masterPokemonObj.purifyStardust;
-                await masterPokemonRec.update();
+                masterPokemon.templateId           = masterPokemonObj.templateId;
+                masterPokemon.pokemonId            = masterPokemonObj.pokemonId;
+                masterPokemon.pokedexId            = masterPokemonObj.pokedexId;
+                masterPokemon.type                 = masterPokemonObj.type;
+                masterPokemon.type2                = masterPokemonObj.type2;
+                masterPokemon.form                 = masterPokemonObj.form;
+                masterPokemon.formMaster           = masterPokemonObj.formMaster;
+                masterPokemon.baseAttack           = masterPokemonObj.baseAttack;
+                masterPokemon.baseDefense          = masterPokemonObj.baseDefense;
+                masterPokemon.baseStamina          = masterPokemonObj.baseStamina;
+                masterPokemon.candyToEvolve        = masterPokemonObj.candyToEvolve;
+                masterPokemon.buddyDistanceKm      = masterPokemonObj.buddyDistanceKm;
+                masterPokemon.purifyStardust       = masterPokemonObj.purifyStardust;
+                
+                await masterPokemon.update();
             }                
 
             client.logger.debug('Master Pokémon Record');
-            client.logger.dump(masterPokemonRec);
+            client.logger.dump(masterPokemon);
 
             if (count % InterimLoadUpdates == 0) {
                 interaction.editReply({

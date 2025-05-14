@@ -10,6 +10,7 @@ import StringFunctions from '../functions/StringFunctions.js';
 import DatabaseTable from '../DatabaseTable.js';
 import MasterCPM     from './MasterCPM.js';
 import MasterPokemon from './MasterPokemon.js';
+import WikiLink      from './WikiLink.js';
 import Translation   from './Translation.js';
 
 export default class Boss extends DatabaseTable {
@@ -45,8 +46,8 @@ export default class Boss extends DatabaseTable {
     get form        () { return this.getField('form') }
     get tier        () { return this.getField('tier') }
     get isMega      () { return this.getField('isMega') }
-    get isActive    () { return this.getField('isActive') }
     get isShadow    () { return this.getField('isShadow') }
+    get isActive    () { return this.getField('isActive') }
     get isShinyable () { return this.getField('isShinyable') }
     get templateId  () { return this.getField('templateId') }
     
@@ -62,16 +63,16 @@ export default class Boss extends DatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id          (value) { this.setField(value, 'id') }
-    set bossType    (value) { this.setField(value, 'bossType') }
-    set pokemonId   (value) { this.setField(value, 'pokemonId') }
-    set form        (value) { this.setField(value, 'form') }
-    set tier        (value) { this.setField(value, 'tier') }
-    set isMega      (value) { this.setField(value, 'isMega') }
-    set isShadow    (value) { this.setField(value, 'isShadow') }
-    set isActive    (value) { this.setField(value, 'isActive') }
-    set isShinyable (value) { this.setField(value, 'isShinyable') }
-    set templateId  (value) { this.setField(value, 'templateId') }
+    set id          (value) { this.setField('id', value) }
+    set bossType    (value) { this.setField('bossType', value) }
+    set pokemonId   (value) { this.setField('pokemonId', value) }
+    set form        (value) { this.setField('form', value) }
+    set tier        (value) { this.setField('tier', value) }
+    set isMega      (value) { this.setField('isMega', value) }
+    set isShadow    (value) { this.setField('isShadow', value) }
+    set isActive    (value) { this.setField('isActive', value) }
+    set isShinyable (value) { this.setField('isShinyable', value) }
+    set templateId  (value) { this.setField('templateId', value) }
     
     // ***************** //
     // * Class Methods * //
@@ -121,25 +122,38 @@ export default class Boss extends DatabaseTable {
         client.logger.debug(`Master Pokémon Record =`);
         client.logger.dump(masterPokemon);
 
-        let title = `#${masterPokemon.pokedexId} - ${await masterPokemon.getName()}`;
+        let bossTypeName       = await this.getBossTypeName();
+        let pokemonName        = await masterPokemon.getName();
+        let pokemonDescription = await masterPokemon.getDescription() ?? 'Description not available';
+
+        let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
 
         if (masterPokemon.form != null) {
             title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
         }
 
-        title += ` ${Translation.getBossTypeName(this.bossType)}`;
-
+        // TODO - Handle Primal Groudon and Kyogre
         if (this.isMega) {
-            title += ' [Mega]';
+            title += `${await Translation.getMegaName()} `;
         }
 
         if (this.isShadow) {
-            title += ' [Shadow]';
+            title += `${await Translation.getShadowName()} `;
         }
 
+        title += pokemonName;
+
+        if (masterPokemon.form !== null) {
+            title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
+        }
+
+        const wikiLink = await WikiLink.get(this);
+        client.logger.debug(`Wiki Link Record =`);
+        client.logger.dump(wikiLink);
+
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
+        let link = await wikiLink.page;
+        let thumbnail = await wikiLink.image;
         let pokemonType = await masterPokemon.getTypeName();
 
         if (masterPokemon.type2 != null) {
@@ -159,6 +173,8 @@ export default class Boss extends DatabaseTable {
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
         let cpL50 = `${cpL50Min} - ${cpL50Max}`;
 
+        client.logger.debug(`link = ${link}`);
+        client.logger.debug(`thumbnail = ${thumbnail}`);
         client.logger.debug(`pokemonType = ${pokemonType}`);
         client.logger.debug(`pokemonForm = ${pokemonForm}`);
         client.logger.debug(`typeColor = ${typeColor}`);
@@ -209,5 +225,9 @@ export default class Boss extends DatabaseTable {
 
     async getBossTypeName() {
         return await Translation.getBossTypeName(this.bossType);
+    }
+    
+    async getBattleTypeName() {
+        return await Translation.getBattleTypeName(this.bossType);
     }
 }
