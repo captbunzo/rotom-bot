@@ -239,6 +239,37 @@ export default class DatabaseTable {
         return knex(this.schema.tableName);
     }
 
+    static async update(conditions, setFields) {
+        let parsedConditions = conditions;
+        let parsedSetFields = setFields;
+        
+        // Parse the select conditions
+        if (typeof parsedConditions == 'object') {
+            parsedConditions = this.parseConditions(parsedConditions);
+            parsedConditions = this.parseFieldConditions(parsedConditions);
+        }
+
+        // Parse the set conditions
+        if (typeof parsedSetFields == 'object') {
+            parsedSetFields = this.parseConditions(parsedSetFields);
+            parsedSetFields = this.parseFieldConditions(parsedSetFields);
+        }
+        
+        // For debugging purposes, generate the sql
+        const sqlBuilder = knex(this.schema.tableName)
+            .where(parsedConditions)
+            .update(parsedSetFields);
+        const sql = sqlBuilder.toSQL();
+        
+        client.logger.sql(`Executing SQL: ${sql.sql}`);
+        client.logger.sql(`With Bindings: ${sql.bindings}`);
+        
+        return await sqlBuilder
+            .then(result => {
+                return result;
+            });
+    }
+
     static async delete(conditions) {
         let parsedConditions = conditions;
         

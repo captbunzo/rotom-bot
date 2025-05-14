@@ -198,16 +198,21 @@ const BossCmd = {
                 .setDescription('Mega Boss')
                 .setRequired(false)
             )
+        )
+        .addSubcommand(subCommand => subCommand
+            .setName('disable-all')
+            .setDescription('Disable all Boss Pokémon')
         ),
     
     async execute(interaction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load'    : this.executeLoad(interaction); break;
-            case 'list'    : this.executeList(interaction); break;
-            case 'enable'  : this.executeToggleActive(interaction, true); break;
-            case 'disable' : this.executeToggleActive(interaction, false); break;
+            case 'load'        : this.executeLoad(interaction); break;
+            case 'list'        : this.executeList(interaction); break;
+            case 'enable'      : this.executeToggleActive(interaction, true); break;
+            case 'disable'     : this.executeToggleActive(interaction, false); break;
+            case 'disable-all' : this.executeDisableAll(interaction); break;
             default :
                 await interaction.reply({ content: `Boss management command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }); 
         }
@@ -599,6 +604,19 @@ const BossCmd = {
         }
 
         await interaction.respond([]);
+    },
+
+    /*****************************/
+    /* Subcommand :: Disable All */
+    /*****************************/
+
+    async executeDisableAll(interaction) {
+        const client = interaction.client;
+        const table  = 'boss';
+
+        // Disable all bosses
+        await Boss.update({}, { isActive: false });
+        await interaction.reply({ content: `All bosses have been disabled`, flags: MessageFlags.Ephemeral });
     }
 };
 
