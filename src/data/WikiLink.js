@@ -79,11 +79,20 @@ export default class WikiLink extends DatabaseTable {
      * @returns {Promise<MasterPokemon|MasterPokemon[]>} The MasterPokemon(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
+        client.logger.debug(`typeof conditions = ${typeof conditions}`);
+        client.logger.debug(`conditions.constructor.name = ${conditions.constructor.name}`);
+        client.logger.debug(`conditions =`);
+        client.logger.dump(conditions);
+
         if (typeof conditions == 'object' && conditions.constructor.name == 'Boss') {
             let boss = conditions;
             let masterPokemon = await MasterPokemon.get({ templateId: boss.templateId, unique: true });
             
-            let wikiLinkSearchObj = {
+            let wikiLinkSearchObj = null;
+            let wikiLink = null;
+
+            // First check for the wiki link record with the full search parameters
+            wikiLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 isMega: boss.isMega,
                 isShadow: boss.isShadow,
@@ -91,12 +100,22 @@ export default class WikiLink extends DatabaseTable {
                 isGigantamax: ( boss.bossType == BossType.Gigantamax),
                 unique: true
             };
+            wikiLink = await WikiLink.get(wikiLinkSearchObj);
+            if (wikiLink !== null) {
+                return wikiLink;
+            }
 
-            //client.logger.debug(`wikiLinkSearchObj [A] = `);
-            //client.logger.dump(wikiLinkSearchObj);
-
-            // First check for the wiki link record with the full search parameters
-            let wikiLink = await WikiLink.get(wikiLinkSearchObj);
+            // Next check based on the pokemon name
+            wikiLinkSearchObj = {
+                pokemonId: masterPokemon.pokemonId,
+                form: null,
+                isMega: boss.isMega,
+                isShadow: boss.isShadow,
+                isDynamax: ( boss.bossType == BossType.Dynamax),
+                isGigantamax: ( boss.bossType == BossType.Gigantamax),
+                unique: true
+            };
+            wikiLink = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLink !== null) {
                 return wikiLink;
             }
@@ -110,14 +129,27 @@ export default class WikiLink extends DatabaseTable {
                 isGigantamax: false,
                 unique: true
             };
-
-            //client.logger.debug(`wikiLinkSearchObj [B] = `);
-            //client.logger.dump(wikiLinkSearchObj);
-
             wikiLink = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLink !== null) {
                 return wikiLink;
             }
+
+            // And finally check for the base record with the pokemon name
+            wikiLinkSearchObj = {
+                pokemonId: masterPokemon.pokemonId,
+                form: null,
+                isMega: false,
+                isShadow: false,
+                isDynamax: false,
+                isGigantamax: false,
+                unique: true
+            };
+            wikiLink = await WikiLink.get(wikiLinkSearchObj);
+            if (wikiLink !== null) {
+                return wikiLink;
+            }
+
+            return null;
         }
 
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {

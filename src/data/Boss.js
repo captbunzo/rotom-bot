@@ -128,10 +128,6 @@ export default class Boss extends DatabaseTable {
 
         let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
 
-        if (masterPokemon.form != null) {
-            title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
-        }
-
         // TODO - Handle Primal Groudon and Kyogre
         if (this.isMega) {
             title += `${await Translation.getMegaName()} `;
@@ -152,8 +148,8 @@ export default class Boss extends DatabaseTable {
         client.logger.dump(wikiLink);
 
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
-        let link = await wikiLink.page;
-        let thumbnail = await wikiLink.image;
+        let link = wikiLink !== null ? wikiLink.page : null;
+        let thumbnail = wikiLink !== null ? wikiLink.image : null;
         let pokemonType = await masterPokemon.getTypeName();
 
         if (masterPokemon.type2 != null) {
