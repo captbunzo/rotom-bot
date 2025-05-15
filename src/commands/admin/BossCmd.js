@@ -14,7 +14,7 @@ import StringFunctions from '../../functions/StringFunctions.js';
 import Boss          from '../../data/Boss.js';
 import MasterPokemon from '../../data/MasterPokemon.js';
 
-// TODO-boss - Add boss edit command
+// TODO - Add boss edit command
 
 const BossCmd = {
     global: false,
@@ -22,8 +22,8 @@ const BossCmd = {
         .setName('boss')
         .setDescription('Manage Pokémon boss data')
         .addSubcommand(subCommand => subCommand
-            .setName('load')
-            .setDescription('Load Boss Pokémon data')
+            .setName('create')
+            .setDescription('Create a Boss Pokémon')
             .addStringOption(option => option
                 .setName('pokemon')
                 .setDescription('Pokémon Name')
@@ -234,7 +234,7 @@ const BossCmd = {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load'        : this.executeLoad(interaction); break;
+            case 'create'      : this.executeCreate(interaction); break;
             case 'list'        : this.executeList(interaction); break;
             case 'update'      : this.executeUpdate(interaction); break;
             case 'enable'      : this.executeToggleActive(interaction, true); break;
@@ -250,7 +250,7 @@ const BossCmd = {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load'    : this.autocompleteLoad(interaction); break;
+            case 'create'  : this.autocompleteCreate(interaction); break;
             case 'list'    : this.autocompleteSearch(interaction); break;
             case 'update'  : this.autocompleteUpdate(interaction); break;
             case 'enable'  : this.autocompleteSearch(interaction); break;
@@ -264,7 +264,7 @@ const BossCmd = {
     /* Subcommand :: Load */
     /**********************/
 
-    async executeLoad(interaction) {
+    async executeCreate(interaction) {
         const client = interaction.client;
         const table  = 'boss';
 
@@ -348,7 +348,7 @@ const BossCmd = {
         });
     },
 
-    async autocompleteLoad(interaction) {
+    async autocompleteCreate(interaction) {
         const client = interaction.client;
         const focusedOption = interaction.options.getFocused(true);
         client.logger.debug(`Initiating autocomplete for boss load -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
