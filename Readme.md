@@ -4,6 +4,10 @@ Add details here
 
 # TODO
 
+## Administration
+
+1. Create a better version of /boss list output to show active raid bosses
+
 ## Using the bot in Guilds
 
 1. Add guild level configuration
