@@ -239,8 +239,8 @@ const BattlePlanningButtons = {
         const battleMemberTrainerNames = [];
         const battleMemberDiscordPings = [];
 
-        for (const battleMemberRec of battleMembers ) {
-            let battleMemberTrainer = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
+        for (const battleMember of battleMembers ) {
+            let battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true });
             battleMemberTrainerNames.push(battleMemberTrainer.name);
             battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
         }
@@ -279,9 +279,9 @@ const BattlePlanningButtons = {
         }
         
         // Delete the battle members
-        //const battleMemberRecs = await BattleMember.get({ battleId: battleRec.id });
-        //for (const battleMemberRec of battleMemberRecs ) {
-        //    await battleMemberRec.delete();
+        //const battleMembers = await BattleMember.get({ battleId: battle.id });
+        //for (const battleMembe of battleMembers ) {
+        //    await battleMember.delete();
         //}
 
         // Update the battle record
@@ -314,8 +314,8 @@ const BattlePlanningButtons = {
         if (battleMembers.length > 0) {
             const battleMemberDiscordPings = [];
 
-            for (const battleMemberRec of battleMembers ) {
-                let battleMemberTrainer = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
+            for (const battleMember of battleMembers ) {
+                let battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true });
                 battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
             }
             const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');

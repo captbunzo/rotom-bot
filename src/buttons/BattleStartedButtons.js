@@ -224,8 +224,8 @@ const BattleStartedButtons = {
         if (battleMembers.length > 0) {
             const battleMemberDiscordPings = [];
 
-            for (const battleMemberRec of battleMembers ) {
-                const battleMemberTrainer = await Trainer.get({ id: battleMemberRec.trainerId, unique: true });
+            for (const battleMember of battleMembers ) {
+                const battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true });
                 battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
             }
             const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');

@@ -191,12 +191,12 @@ const MasterPokemonCmd = {
         };
 
         let masterPokemonArray = await MasterPokemon.get(masterPokemonSearchObj);
-        let masterPokemonRec = masterPokemonArray[0];
+        let masterPokemon = masterPokemonArray[0];
 
-        let pokemonName = await Translation.getPokemonName(masterPokemonRec.pokedexId);
-        let description = await Translation.getPokemonDescription(masterPokemonRec.pokedexId);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemonRec.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemonRec.pokemonId.toLowerCase()}-main.png`;
+        let pokemonName = await Translation.getPokemonName(masterPokemon.pokedexId);
+        let description = await Translation.getPokemonDescription(masterPokemon.pokedexId);
+        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
+        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
         
       //client.logger.debug(`Master Pokémon Array =`);
       //client.logger.dump(masterPokemonArray);
@@ -206,8 +206,8 @@ const MasterPokemonCmd = {
         let templateIdArrayChars = 0;
         
         for (let x = 0; x < masterPokemonArray.length; x++) {
-            masterPokemonRec = masterPokemonArray[x];
-            let templateId = masterPokemonRec.templateId;
+            masterPokemon = masterPokemonArray[x];
+            let templateId = masterPokemon.templateId;
 
             if (templateIdArrayChars + templateId.length > FieldValueMaxSize) {
                 templateIdFieldArray.push({

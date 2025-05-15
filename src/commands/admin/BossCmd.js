@@ -662,18 +662,18 @@ const BossCmd = {
         }   
 
         // Run the query
-        let bossRecArray = await Boss.get(bossSearchObj);
+        let bosses = await Boss.get(bossSearchObj);
 
-        if (bossRecArray.length == 0) {
+        if (bosses.length == 0) {
             await interaction.reply({ content: `Could not find boss with those parameters`, flags: MessageFlags.Ephemeral });
-        } else if (bossRecArray.length > 1) {
+        } else if (bosses.length > 1) {
             await interaction.reply({ content: `More than one boss found with those parameters`, flags: MessageFlags.Ephemeral });
         } else {
-            const bossRec = bossRecArray[0];
-            bossRec.isActive = isActive;
-            await bossRec.update();
+            const boss = bosses[0];
+            boss.isActive = isActive;
+            await boss.update();
             
-            const embed = await bossRec.buildEmbed();
+            const embed = await boss.buildEmbed();
             await interaction.reply({
                 content: `Boss updated`,
                 embeds: [embed]

@@ -211,8 +211,8 @@ export default class Translation extends DatabaseTable {
             unique: true
         };
 
-        const translationRec = await this.get(translationSearchObj);
-        return translationRec.value;
+        const translation = await this.get(translationSearchObj);
+        return translation.value;
     }
 
     static async getPokemonDescription(pokedexId, language = Translation.Language.English) {
@@ -224,8 +224,8 @@ export default class Translation extends DatabaseTable {
             unique: true
         };
 
-        const translationRec = await this.get(translationSearchObj);
-        return translationRec.value;
+        const translation = await this.get(translationSearchObj);
+        return translation.value;
     }
 
     static async getPokemonType(type, language = Translation.Language.English) {
@@ -260,8 +260,8 @@ export default class Translation extends DatabaseTable {
             unique: true
         }
 
-        const translationRec = await this.get(translationSearchObj);
-        return translationRec.value;
+        const translation = await this.get(translationSearchObj);
+        return translation.value;
     }
     
     // ******************** //

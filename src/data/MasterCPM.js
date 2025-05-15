@@ -50,19 +50,19 @@ export default class MasterCPM extends DatabaseTable {
         return await super.get(conditions, orderBy);
     }
     
-    static async getCombatPower(masterPokemonRec, attackIV, defenseIV, staminaIV, level) {
-        const masterCpmRec = await MasterCPM.get({ level: level, unique: true });
+    static async getCombatPower(masterPokemon, attackIV, defenseIV, staminaIV, level) {
+        const masterCPM = await MasterCPM.get({ level: level, unique: true });
         client.logger.debug('Master CP Multiplier Record');
-        client.logger.dump(masterCpmRec);
+        client.logger.dump(masterCPM);
 
         //
         // Combat Power (CP) = FLOOR(((Attack + Attack IV) * SQRT(Defense + Defense IV) * SQRT(Stamina + Stamina IV) * (CPM_AT_LEVEL(Level) ^ 2)) / 10)
         //
         
-        const attackTotal  = masterPokemonRec.baseAttack  + attackIV;
-        const defenseTotal = masterPokemonRec.baseDefense + defenseIV;
-        const staminaTotal = masterPokemonRec.baseStamina + staminaIV;
-        const cp = Math.floor(((attackTotal * Math.sqrt(defenseTotal) * Math.sqrt(staminaTotal) * Math.pow(masterCpmRec.cpm, 2)) / 10));
+        const attackTotal  = masterPokemon.baseAttack  + attackIV;
+        const defenseTotal = masterPokemon.baseDefense + defenseIV;
+        const staminaTotal = masterPokemon.baseStamina + staminaIV;
+        const cp = Math.floor(((attackTotal * Math.sqrt(defenseTotal) * Math.sqrt(staminaTotal) * Math.pow(masterCPM.cpm, 2)) / 10));
 
         return cp;
     }

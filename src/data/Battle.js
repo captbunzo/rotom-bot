@@ -116,9 +116,9 @@ export default class Battle extends DatabaseTable {
         //client.logger.debug(`Battle Record =`);
         //client.logger.dump(this);
         //client.logger.debug(`Boss Record =`);
-        //client.logger.dump(bossRec);
+        //client.logger.dump(boss);
         //client.logger.debug(`Master Pokémon Record =`);
-        //client.logger.dump(masterPokemonRec);
+        //client.logger.dump(masterPokemon);
         //client.logger.debug(`Host Trainer =`);
         //client.logger.dump(hostTrainer);
         //client.logger.debug(`Battle Member Array`);
@@ -187,12 +187,12 @@ export default class Battle extends DatabaseTable {
         let battleMembersText = 'No Battle Members Yet';
         let battleMembersTextArray = [];
 
-        for (const battleMemberRec of battleMembers) {
+        for (const battleMember of battleMembers) {
             if (client.config.options.showBattleMemberTrainerNames) {
-                const battleMemberTrainerRec = await Trainer.get({ id: battleMemberRec.trainerId, unique: true }); 
-                battleMembersTextArray.push(battleMemberTrainerRec.name);
+                const battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true }); 
+                battleMembersTextArray.push(battleMemberTrainer.name);
             } else {
-                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMemberRec.trainerId);
+                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMember.trainerId);
                 battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);
             }
         }

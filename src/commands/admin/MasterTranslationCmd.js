@@ -204,13 +204,13 @@ const MasterTranslationCmd = {
                 client.logger.dump(translationSearch);
                 */
 
-                let translationRec = await Translation.get(translationSearch);
-                if (!translationRec) {
-                    translationRec = new Translation(translationObj);
-                    await translationRec.create();
+                let translation = await Translation.get(translationSearch);
+                if (!translation) {
+                    translation = new Translation(translationObj);
+                    await translation.create();
                 } else {
-                    translationRec.value = translationObj.value;
-                    await translationRec.update();
+                    translation.value = translationObj.value;
+                    await translation.update();
                 }
             }
 

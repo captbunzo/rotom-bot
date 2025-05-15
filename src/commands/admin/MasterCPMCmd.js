@@ -84,15 +84,15 @@ const MasterCPMCmd = {
                 cpm:   cpmValue
             }
 
-            let masterCpmRecord = await MasterCPM.get({ level: masterCpmObject.level, unique: true });
+            let masterCPM = await MasterCPM.get({ level: masterCpmObject.level, unique: true });
 
-            if (!masterCpmRecord) {
-                masterCpmRecord = new MasterCPM(masterCpmObject);
-                await masterCpmRecord.create();
+            if (!masterCPM) {
+                masterCPM = new MasterCPM(masterCpmObject);
+                await masterCPM.create();
             } else {
-                masterCpmRecord.level = masterCpmObject.level;
-                masterCpmRecord.cpm   = masterCpmObject.cpm;
-                await masterCpmRecord.update();
+                masterCPM.level = masterCpmObject.level;
+                masterCPM.cpm   = masterCpmObject.cpm;
+                await masterCPM.update();
             }
             
             if (count % InterimLoadUpdates == 0) {
