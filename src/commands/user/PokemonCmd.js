@@ -322,7 +322,11 @@ const PokemonCmd = {
             }
         }
 
-        const pokedexRangesString = pokedexIdRanges.join(',');
+        let pokedexRangesString = pokedexIdRanges.join(',');
+        
+        if (subCommand == SearchStringCode.purifyStardust) {
+          pokedexRangesString += ' & shadow';
+        }
         client.logger.debug(`Pokédex IDs: ${pokedexRangesString}`);
         await interaction.reply({
             content: title
