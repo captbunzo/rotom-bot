@@ -1,19 +1,13 @@
 
-export const Team = {
-    Instinct: 'Instinct',
-    Mystic:   'Mystic',
-    Valor:    'Valor'
-}
-
-export const TeamColor = {
-    Instinct: 0xFFD300,
-    Mystic:   0x0076F2,
-    Valor:    0xF61208
-}
-
 export const InterimLoadUpdates     = 100;
 export const MaxAutoCompleteChoices = 25;
 export const FieldValueMaxSize      = 1024;
+
+export const RotomReturnCode = {
+    Success: 0,
+    Error:   1,
+    Restart: 255
+}
 
 export const BossType = {
     Raid:       'RAID',
@@ -34,44 +28,6 @@ export const BattleMemberStatus = {
     Completed:   'COMPLETED',
     Failed:      'FAILED',
     NotReceived: 'NOT-RECEIVED'
-}
-
-export const SearchStringBuddyKmName = {
-    distance1k:  '1 km',
-    distance3k:  '3 km',
-    distance5k:  '5 km',
-    distance20k: '20 km'
-}
-
-export const SearchStringCode = {
-    buddyKm: 'search-buddy-km',
-    purifyStardust: 'search-purify-stardust'
-}
-
-export const SearchStringName = {
-    buddyKm: 'Buddy Walking Distance',
-    purifyStardust: 'Buddy Purification Stardust'
-}
-
-export const SearchStringBuddyKmValue = {
-    distance1k:  1,
-    distance3k:  3,
-    distance5k:  5,
-    distance20k: 20
-}
-
-export const SearchStringPurifyStardustName = {
-    stardust1k:  '1,000',
-    stardust3k:  '3,000',
-    stardust5k:  '5,000',
-    stardust20k: '20,000'
-}
-
-export const SearchStringPurifyStardustValue = {
-    stardust1k:  1000,
-    stardust3k:  3000,
-    stardust5k:  5000,
-    stardust20k: 20000
 }
 
 export const PokemonType = {
@@ -116,7 +72,56 @@ export const PokemonTypeColor = {
     Water:    0x539DDF
 }
 
-// Discord API errors
+export const SearchStringCode = {
+    buddyKm: 'search-buddy-km',
+    purifyStardust: 'search-purify-stardust'
+}
+
+export const SearchStringName = {
+    buddyKm: 'Buddy Walking Distance',
+    purifyStardust: 'Buddy Purification Stardust'
+}
+
+export const SearchStringBuddyKmName = {
+    distance1k:  '1 km',
+    distance3k:  '3 km',
+    distance5k:  '5 km',
+    distance20k: '20 km'
+}
+
+export const SearchStringBuddyKmValue = {
+    distance1k:  1,
+    distance3k:  3,
+    distance5k:  5,
+    distance20k: 20
+}
+
+export const SearchStringPurifyStardustName = {
+    stardust1k:  '1,000',
+    stardust3k:  '3,000',
+    stardust5k:  '5,000',
+    stardust20k: '20,000'
+}
+
+export const SearchStringPurifyStardustValue = {
+    stardust1k:  1000,
+    stardust3k:  3000,
+    stardust5k:  5000,
+    stardust20k: 20000
+}
+
+export const Team = {
+    Instinct: 'Instinct',
+    Mystic:   'Mystic',
+    Valor:    'Valor'
+}
+
+export const TeamColor = {
+    Instinct: 0xFFD300,
+    Mystic:   0x0076F2,
+    Valor:    0xF61208
+}
+
 export const DiscordErrorUnknown = {
     Account:     10001,
     Application: 10002,

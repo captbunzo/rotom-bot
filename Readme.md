@@ -4,15 +4,16 @@ Add details here
 
 # TODO
 
-## First
+## Using the bot in Guilds
 
-1. Add support for tagging a role when creating battle
+1. Add guild level configuration
+2. Add support for tagging a role when creating battle
 
-## Later
+## Coding Practices
 
-1. Create deploy commands command
-2. Figure out how to dynamically reload the bot, or reload the bot with a command
-3. Switch to typescript
-4. Convert commands from data structures to proper classes
-5. Build proper usage of other languages
-6. Add guild level configuration
+1. Convert commands from data structures to proper classes
+2. Switch to typescript
+
+## Wishlist Enhancements
+
+1. Build proper usage of other languages
