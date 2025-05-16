@@ -48,14 +48,14 @@ const trainerProfile = {
         
         const aboutMeInput = new TextInputBuilder()
             .setCustomId('aboutMe')
-            .setLabel('About Me')
+            .setLabel('About Me (optional)')
             .setStyle(TextInputStyle.Paragraph)
             .setMaxLength(256)
             .setRequired(false);
 
         const favoritePokemonInput = new TextInputBuilder()
             .setCustomId('favoritePokemon')
-            .setLabel('Favorite Pokémon')
+            .setLabel('Favorite Pokémon (optional)')
             .setStyle(TextInputStyle.Short)
             .setRequired(false);
 

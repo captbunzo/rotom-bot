@@ -4,9 +4,13 @@ Add details here
 
 # TODO
 
-## Administration
+## Commands
 
 1. Create a better version of /boss list output to show active raid bosses
+
+## Administration
+
+1. Configure an admin channel for the bot to send status messages and errors to
 
 ## Using the bot in Guilds
 
