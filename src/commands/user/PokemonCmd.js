@@ -138,17 +138,15 @@ const PokemonCmd = {
         let   stamina = interaction.options.getInteger('stamina');
         let   level   = interaction.options.getInteger('level');
         
-        if (form == null) {
-            await interaction.reply({
-                content: `Searching for Pokémon: ${name}`,
-                flags: MessageFlags.Ephemeral
-            });
-        } else {
-            await interaction.reply({
-                content: `Searching for Pokémon: ${name} (${form})`,
-                flags: MessageFlags.Ephemeral
-            });
-        }
+        //if (form == null) {
+        //    await interaction.reply({
+        //        content: `Searching for Pokémon: ${name}`
+        //    });
+        //} else {
+        //    await interaction.reply({
+        //        content: `Searching for Pokémon: ${name} (${form})`
+        //    });
+        //}
 
         const nameSearchValue = name.toUpperCase();
         const formSearchValue = form ? form.toUpperCase() : null;
@@ -156,13 +154,13 @@ const PokemonCmd = {
         let masterPokemon = null;
 
         if (masterPokemons.length > 1) {
-            await interaction.followUp({
+            await interaction.reply({
                 content: `Multiple Pokémon found for name = ${nameSearchValue}, form = ${formSearchValue}`,
                 flags: MessageFlags.Ephemeral
             });
 
             for (let masterPokemon of masterPokemons) {
-                await interaction.followUp({
+                await interaction.reply({
                     content: `Pokémon: ${masterPokemon.pokemonId}, Form: ${masterPokemon.form}, Type: ${masterPokemon.type}, Type2: ${masterPokemon.type2}`,
                     flags: MessageFlags.Ephemeral
                 });
@@ -177,7 +175,7 @@ const PokemonCmd = {
         
         if (attack != null || defense != null || stamina != null) {
             if (attack == null || defense == null || stamina == null) {
-                await interaction.followUp({
+                await interaction.reply({
                     content: `All or none of Attack, Defense, and Stamina must be provided`,
                     flags: MessageFlags.Ephemeral
                 });
@@ -185,7 +183,7 @@ const PokemonCmd = {
             }
 
             if (attack < 0 || attack > 15 || defense < 0 || defense > 15 || stamina < 0 || stamina > 15) {
-                await interaction.followUp({
+                await interaction.reply({
                     content: `Attack, Defense, and Stamina must be between 0 and 15`,
                     flags: MessageFlags.Ephemeral
                 });
@@ -201,40 +199,47 @@ const PokemonCmd = {
             pokemonName += ` (${form})`;
         }
 
+        let embed = await masterPokemon.buildEmbed();
+
         if (level != null) {
             const cp = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, level);
 
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
             client.logger.debug(`CP Level ${level}: ${cp}`);
 
-            await interaction.followUp({
-                content: `Pokémon: ${pokemonName}\n`
-                       + `IVs: ${attack} / ${defense} / ${stamina}\n`
-                       + `CP Level ${level}: ${cp}`
-            });
-
+            embed = embed
+                .addFields(
+                    { name: 'IVs', value: `${attack} / ${defense} / ${stamina}` },
+                    { name: 'Level', value: `${level}`, inline: true },
+                    { name: 'CP', value: `${cp}`, inline: true }
+                );
         } else {
             const cpLevel15 = await masterPokemon.getCombatPower(attack, defense, stamina, 15);
             const cpLevel20 = await masterPokemon.getCombatPower(attack, defense, stamina, 20);
             const cpLevel25 = await masterPokemon.getCombatPower(attack, defense, stamina, 25);
-            const cpLevel50 = await masterPokemon.getCombatPower(attack, defense, stamina, 50);
 
             client.logger.debug(`Pokémon: ${pokemonName}`);
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
             client.logger.debug(`CP Level 15: ${cpLevel15}`);
             client.logger.debug(`CP Level 20: ${cpLevel20}`);
             client.logger.debug(`CP Level 25: ${cpLevel25}`);
-            client.logger.debug(`CP Level 50: ${cpLevel50}`);
 
-            await interaction.followUp({
-                content: `Pokémon: ${pokemonName}\n`
-                    + `IVs: ${attack} / ${defense} / ${stamina}\n`
-                    + `CP Level 15: ${cpLevel15}\n`
-                    + `CP Level 20: ${cpLevel20}\n`
-                    + `CP Level 25: ${cpLevel25}\n`
-                    + `CP Level 50: ${cpLevel50}`
-            });
+            embed = embed
+                .addFields(
+                    { name: 'IVs', value: `${attack} / ${defense} / ${stamina}` }
+                );
+            
+            embed = embed
+                .addFields(
+                    { name: 'CP Level 15\n(Research)', value: `${cpLevel15}`, inline: true },
+                    { name: 'CP Level 20\n(Battle)', value: `${cpLevel20}`, inline: true },
+                    { name: 'CP Level 25\n(Battle WB)', value: `${cpLevel25}`, inline: true }
+                );
         }
+
+        await interaction.reply({
+            embeds: [embed]
+        });
 	},
 
     async autocompleteCP(interaction) {

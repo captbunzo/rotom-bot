@@ -162,12 +162,9 @@ export default class Boss extends DatabaseTable {
         let cpL20Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 20);
         let cpL25Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 25);
         let cpL25Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 25);
-        let cpL50Min = await MasterCPM.getCombatPower(masterPokemon, 10, 10, 10, 50);
-        let cpL50Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 50);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
-        let cpL50 = `${cpL50Min} - ${cpL50Max}`;
 
         client.logger.debug(`link = ${link}`);
         client.logger.debug(`thumbnail = ${thumbnail}`);
@@ -205,16 +202,13 @@ export default class Boss extends DatabaseTable {
         
         embed = embed
             .addFields(
-              //{ name: '\u200B', value: '\u200B' },
                 { name: 'CP Range', value: '10/10/10 - 15/15/15' },
                 { name: 'CP L20', value: cpReg, inline: true },
-                { name: 'CP L25 (WB)', value: cpWb, inline: true },
-                { name: 'CP L50', value: cpL50, inline: true }
+                { name: 'CP L25 (WB)', value: cpWb, inline: true }
             );
         
         embed = embed
             .setTimestamp()
-          //.setFooter({ text: `Raid hosted by ${raidHost}` });
 
         return embed;
     }

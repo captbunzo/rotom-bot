@@ -6,9 +6,14 @@ import {
     PokemonTypeColor
 } from '../Constants.js';
 
+import {
+    EmbedBuilder
+} from 'discord.js';
+
 import DatabaseTable from '../DatabaseTable.js';
 import MasterCPM     from './MasterCPM.js';
 import Translation   from './Translation.js';
+import WikiLink      from './WikiLink.js';
 
 export default class MasterPokemon extends DatabaseTable {
     static schema = this.parseSchema({
@@ -184,5 +189,53 @@ export default class MasterPokemon extends DatabaseTable {
     
     async getHundoCombatPower(level) {
         return await MasterCPM.getCombatPower(this, 15, 15, 15, level);
+    }
+
+    async buildEmbed() {
+        let title = `#${this.pokedexId} - ${await this.getName()}`;
+
+        if (this.form !== null) {
+            title += ` (${StringFunctions.titleCase(this.form)})`;
+        }
+        
+        const description = await this.getDescription() ?? 'Description not available';
+        const wikiLink = await WikiLink.get(this);
+        client.logger.debug(`Wiki Link Record =`);
+        client.logger.dump(wikiLink);
+
+        let typeColor = this.getTypeColor(this.type);
+        let link = wikiLink !== null ? wikiLink.page : null;
+        let thumbnail = wikiLink !== null ? wikiLink.image : null;
+        let pokemonType = await this.getTypeName();
+
+        if (this.type2 != null) {
+            pokemonType += ` / ${await this.getType2Name()}`;
+        }
+
+        let pokemonForm = this.form != null ? StringFunctions.titleCase(this.form) : 'No Form';
+
+        client.logger.debug(`link = ${link}`);
+        client.logger.debug(`thumbnail = ${thumbnail}`);
+        client.logger.debug(`pokemonType = ${pokemonType}`);
+        client.logger.debug(`pokemonForm = ${pokemonForm}`);
+        client.logger.debug(`typeColor = ${typeColor}`);
+
+        let embed =  new EmbedBuilder()
+            .setColor(typeColor)
+            .setTitle(title)
+            .setURL(link)
+            .setDescription(description)
+            .setThumbnail(thumbnail);
+        
+        embed = embed
+            .addFields(
+                { name: 'Pokémon Type', value: pokemonType, inline: true },
+                { name: 'Pokémon Form', value: pokemonForm, inline: true }
+            );
+        
+        embed = embed
+            .setTimestamp();
+
+        return embed;
     }
 }

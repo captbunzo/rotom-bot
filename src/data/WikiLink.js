@@ -152,6 +152,45 @@ export default class WikiLink extends DatabaseTable {
             return null;
         }
 
+        if (typeof conditions == 'object' && conditions.constructor.name == 'MasterPokemon') {
+            let masterPokemon = conditions;
+
+            let wikiLinkSearchObj = null;
+            let wikiLink = null;
+
+            // First check for the base record
+            wikiLinkSearchObj = {
+                templateId: masterPokemon.templateId,
+                form: masterPokemon.form,
+                isMega: false,
+                isShadow: false,
+                isDynamax: false,
+                isGigantamax: false,
+                unique: true
+            };
+            wikiLink = await WikiLink.get(wikiLinkSearchObj);
+            if (wikiLink !== null) {
+                return wikiLink;
+            }
+            
+            // Otherwise check for the base record without the form
+            wikiLinkSearchObj = {
+                pokemonId: masterPokemon.pokemonId,
+                form: null,
+                isMega: false,
+                isShadow: false,
+                isDynamax: false,
+                isGigantamax: false,
+                unique: true
+            };
+            wikiLink = await WikiLink.get(wikiLinkSearchObj);
+            if (wikiLink !== null) {
+                return wikiLink;
+            }
+
+            return null;
+        }
+
         if (typeof conditions == 'object' && conditions.id && conditions.unique) {
             return await super.get(conditions, orderBy);
         }
