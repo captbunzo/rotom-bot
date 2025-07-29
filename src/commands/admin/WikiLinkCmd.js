@@ -9,10 +9,10 @@ import {
 
 import {
     InterimLoadUpdates
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import MasterPokemon from '../../data/MasterPokemon.js';
-import WikiLink      from '../../data/WikiLink.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
+import WikiLink      from '#src/data/WikiLink.js';
 
 const CodePrefixForms = [
     { prefix: 'alolan-', form: 'ALOLA' },

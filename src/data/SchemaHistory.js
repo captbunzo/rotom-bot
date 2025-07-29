@@ -1,7 +1,6 @@
 
-import client from '../Client.js';
-
-import DatabaseTable from '../DatabaseTable.js';
+import client from '#src/Client.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
 
 export default class SchemaHistory extends DatabaseTable {
     static schema = this.parseSchema({

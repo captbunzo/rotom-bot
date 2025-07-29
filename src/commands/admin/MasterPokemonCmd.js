@@ -12,10 +12,10 @@ import {
     FieldValueMaxSize,
     InterimLoadUpdates,
     MaxAutoCompleteChoices
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import MasterPokemon from '../../data/MasterPokemon.js';
-import Translation   from '../../data/Translation.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
+import Translation   from '#src/data/Translation.js';
 
 const MasterPokemonCmd = {
     global: false,

@@ -6,7 +6,7 @@ export function init(config) {
     Sentry.init({
         dsn: config.sentry.dsn,
         environment: config.environment,
-        release: 'rotom-bot@1.00.00',
+        release: config.sentry.release,
         
         // Set tracesSampleRate to 1.0 to capture 100%
         // of transactions for performance monitoring.

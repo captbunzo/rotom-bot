@@ -1,5 +1,5 @@
 
-import client from './Client.js';
+import client from '#src/Client.js';
 
 // Load the database client
 import Knex from 'knex';
@@ -7,26 +7,30 @@ const knex = Knex(client.config.database);
 client.logger.log('Connected to database');
 
 // Import the database objects
-import SchemaHistory from './data/SchemaHistory.js';
-import MasterPokemon from './data/MasterPokemon.js';
-import MasterCPM     from './data/MasterCPM.js';
-import Translation   from './data/Translation.js';
-import Boss          from './data/Boss.js';
-import Trainer       from './data/Trainer.js';
-import Battle        from './data/Battle.js';
-import BattleMember  from './data/BattleMember.js';
-import WikiLink from './data/WikiLink.js';
+import SchemaHistory    from '#src/data/SchemaHistory.js';
+import Battle           from '#src/data/Battle.js';
+import BattleMember     from '#src/data/BattleMember.js';
+import Boss             from '#src/data/Boss.js';
+import GuildBattleAlert from '#src/data/GuildBattleAlert.js';
+import GuildTeamRole    from '#src/data/GuildTeamRole.js';
+import MasterCPM        from '#src/data/MasterCPM.js';
+import MasterPokemon    from '#src/data/MasterPokemon.js';
+import Translation      from '#src/data/Translation.js';
+import Trainer          from '#src/data/Trainer.js';
+import WikiLink         from '#src/data/WikiLink.js';
 
 const newTables = [];
 
 knex.discordBotDatabaseInit = async () => {
     const Tables = [
         SchemaHistory,
-        MasterPokemon,
         Battle,
         BattleMember,
         Boss,
+        GuildBattleAlert,
+        GuildTeamRole,
         MasterCPM,
+        MasterPokemon,
         Trainer,
         Translation,
         WikiLink

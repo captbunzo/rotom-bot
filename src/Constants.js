@@ -3,10 +3,15 @@ export const InterimLoadUpdates     = 100;
 export const MaxAutoCompleteChoices = 25;
 export const FieldValueMaxSize      = 1024;
 
-export const RotomReturnCode = {
+export const BotReturnCode = {
     Success: 0,
     Error:   1,
     Restart: 255
+}
+
+export const MessageType = {
+    Reply:    'REPLY',
+    FollowUp: 'FOLLOW-UP'
 }
 
 export const BossType = {

@@ -7,26 +7,32 @@ import {
 } from 'discord.js';
 
 import {
+    MessageType,
     Team
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import Trainer from '../data/Trainer.js';
+import Trainer from '#src/data/Trainer.js';
 
 const ClearTeam = 'Clear Team';
+const Cancel = 'Cancel';
 
 const TrainerTeamButtons = {
     data: {
         name: 'TrainerTeam'
     },
 
-    async show(interaction) {
+    async show(interaction, messageType = MessageType.Reply) {
         const client = interaction.client;
         
+        // TODO - Add team emoji to rotom discord and figure out how to use them in these buttons cause that would be awesome
+        // const teamEmoji = client.emojis.cache.get(Team.Instinct.emojiId
+
         // Create the buttons
         const instinctButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${Team.Instinct}`)
             .setLabel(Team.Instinct)
-            .setStyle(ButtonStyle.Primary);
+            .setStyle(ButtonStyle.Primary)
+            //.setEmoji(client.emojis.cache.get(Team.Instinct.emojiId));
         
         const mysticButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${Team.Mystic}`)
@@ -43,14 +49,27 @@ const TrainerTeamButtons = {
             .setLabel(ClearTeam)
             .setStyle(ButtonStyle.Danger);
         
-        const teamRow = new ActionRowBuilder()
-            .addComponents(instinctButton, mysticButton, valorButton, clearButton);
+        const cancelButton = new ButtonBuilder()
+            .setCustomId(`${this.data.name}.${Cancel}`)
+            .setLabel(Cancel)
+            .setStyle(ButtonStyle.Secondary);
         
-            await interaction.reply({
-                content: 'Please select your team',
-                components: [teamRow],
-                flags: MessageFlags.Ephemeral
-            });
+        const teamRow = new ActionRowBuilder()
+            .addComponents(instinctButton, mysticButton, valorButton, clearButton, cancelButton);
+
+            if (!interaction.replied) {
+                await interaction.reply({
+                    content: 'Please select your team',
+                    components: [teamRow],
+                    flags: MessageFlags.Ephemeral
+                });
+            } else {
+                await interaction.followUp({
+                    content: 'Please select your team',
+                    components: [teamRow],
+                    flags: MessageFlags.Ephemeral
+                });
+            }
     },
     
     async handle(interaction) {
@@ -58,6 +77,14 @@ const TrainerTeamButtons = {
         const trainer = await Trainer.get({id: interaction.user.id, unique: true});
         const team = interaction.customId.split('.')[1];
 
+        if (team == Cancel) {
+            await interaction.reply({
+                content: 'Team selection cancelled',
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+        
         trainer.team = ( team == ClearTeam ? null : team );
         await trainer.update();
 

@@ -9,9 +9,9 @@ import {
 
 import {
     InterimLoadUpdates
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import Translation from '../../data/Translation.js';
+import Translation from '#src/data/Translation.js';
 
 const MasterTranslationCmd = {
     global: false,

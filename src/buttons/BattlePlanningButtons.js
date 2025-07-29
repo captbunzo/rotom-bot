@@ -9,14 +9,14 @@ import {
 import {
     BattleStatus,
     BattleMemberStatus
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import Battle       from '../data/Battle.js';
-import BattleMember from '../data/BattleMember.js';
-import Boss         from '../data/Boss.js';
-import Trainer      from '../data/Trainer.js';
+import Battle       from '#src/data/Battle.js';
+import BattleMember from '#src/data/BattleMember.js';
+import Boss         from '#src/data/Boss.js';
+import Trainer      from '#src/data/Trainer.js';
 
-import BattleStartedButtons from './BattleStartedButtons.js';
+import BattleStartedButtons from '#src/buttons/BattleStartedButtons.js';
 
 const BattlePlanningButtons = {
     data: {
@@ -135,7 +135,7 @@ const BattlePlanningButtons = {
         });
 
         await interaction.followUp({
-            content: `${hostTrainer.formattedCode} -- ${hostTrainer.name}`,
+            content: `${hostTrainer.formattedCode} -- ${hostTrainer.trainerName}`,
             flags: MessageFlags.Ephemeral
         });
 
@@ -241,7 +241,7 @@ const BattlePlanningButtons = {
 
         for (const battleMember of battleMembers ) {
             let battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true });
-            battleMemberTrainerNames.push(battleMemberTrainer.name);
+            battleMemberTrainerNames.push(battleMemberTrainer.trainerName);
             battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
         }
         const battleMemberTrainerList = battleMemberTrainerNames.join(',');
@@ -249,7 +249,7 @@ const BattlePlanningButtons = {
 
         // Ping the battle members
         await interaction.followUp({
-            content: `${battleMemberDiscordPingList} -- ${battleTypeName} started, please look for a invite from ${trainer.name}`
+            content: `${battleMemberDiscordPingList} -- ${battleTypeName} started, please look for a invite from ${trainer.trainerName}`
         });
 
         // Message the host with the battle member trainer names

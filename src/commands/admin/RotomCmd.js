@@ -5,8 +5,8 @@ import {
 } from 'discord.js';
 
 import {
-    RotomReturnCode
-} from '../../Constants.js';
+    BotReturnCode
+} from '#src/Constants.js';
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -61,11 +61,11 @@ const RotomCmd = {
             case 'restart' :
                 await interaction.reply({ content: `Restarting Rotom bot`, flags: MessageFlags.Ephemeral });
                 await client.destroy();
-                process.exit(RotomReturnCode.Restart);
+                process.exit(BotReturnCode.Restart);
             case 'stop' :
                 await interaction.reply({ content: `Stopping Rotom bot`, flags: MessageFlags.Ephemeral });
                 await client.destroy();
-                process.exit(RotomReturnCode.Success);
+                process.exit(BotReturnCode.Success);
         }
     },
 

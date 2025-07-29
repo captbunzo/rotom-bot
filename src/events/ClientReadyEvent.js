@@ -3,7 +3,7 @@ import {
 	Events
 } from 'discord.js';
 
-const clientReady = {
+const ClientReadyEvent = {
 	name: Events.ClientReady,
 	once: true,
 	
@@ -15,4 +15,4 @@ const clientReady = {
 	},
 };
 
-export default clientReady;
+export default ClientReadyEvent;

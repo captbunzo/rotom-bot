@@ -1,17 +1,17 @@
 
 
-import client from '../Client.js';
-
 import {
     SnowflakeUtil
 } from 'discord.js';
 
+import client from '#src/Client.js';
+
 import {
     BossType,
     PokemonType
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import DatabaseTable from '../DatabaseTable.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
 
 export default class Translation extends DatabaseTable {
     static schema = this.parseSchema({

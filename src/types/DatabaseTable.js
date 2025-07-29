@@ -1,13 +1,13 @@
 
 // Load our classes
-import Timestamp from './Timestamp.js';
+import Timestamp from '#src/types/Timestamp.js';
 
 // Load external modules and functions
-import StringFunctions from './functions/StringFunctions.js';
+import StringFunctions from '#src/functions/StringFunctions.js';
 
 // Load singletons
-import client from './Client.js';
-import knex from './Database.js';
+import client from '#src/Client.js';
+import knex from '#src/Database.js';
 
 export default class DatabaseTable {
     static schema = {

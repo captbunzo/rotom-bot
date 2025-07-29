@@ -9,9 +9,9 @@ import {
 
 import {
     InterimLoadUpdates
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import MasterCPM from '../../data/MasterCPM.js';
+import MasterCPM from '#src/data/MasterCPM.js';
 
 const MasterCPMCmd = {
     global: false,

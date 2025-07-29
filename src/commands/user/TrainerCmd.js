@@ -7,9 +7,9 @@ import {
 import {
 	MaxAutoCompleteChoices,
 	Team
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import Trainer from '../../data/Trainer.js';
+import Trainer from '#src/data/Trainer.js';
 
 const ClearTeam = 'Clear Team';
 
@@ -25,17 +25,6 @@ const TrainerCmd = {
 		.addSubcommand(subCommand => subCommand
 			.setName('team')
 			.setDescription('Set your team')
-			.addStringOption(option => option
-				.setName('team')
-				.setDescription('Traner Team')
-				.setRequired(true)
-				.setChoices(
-					{ name: Team.Instinct, value: Team.Instinct },
-					{ name: Team.Mystic, value: Team.Mystic },
-					{ name: Team.Valor, value: Team.Valor },
-					{ name: ClearTeam, value: ClearTeam }
-				)
-			)
 		)
 		.addSubcommand(subCommand => subCommand
 			.setName('delete')
@@ -45,12 +34,12 @@ const TrainerCmd = {
 			.setName('code')
 			.setDescription('Get trainer code')
 			.addUserOption(option => option
-				.setName('user')
+				.setName('discord-username')
 				.setDescription('Trainer discord user')
 				.setRequired(false)
 			)
 			.addStringOption(option => option
-				.setName('name')
+				.setName('trainer-name')
 				.setDescription('Trainer name')
 				.setAutocomplete(true)
 				.setRequired(false)
@@ -60,12 +49,12 @@ const TrainerCmd = {
 			.setName('show')
 			.setDescription('Show a trainer profile')
 			.addUserOption(option => option
-				.setName('user')
+				.setName('discord-username')
 				.setDescription('Trainer discord user')
 				.setRequired(false)
 			)
 			.addStringOption(option => option
-				.setName('name')
+				.setName('trainer-name')
 				.setDescription('Trainer name')
 				.setAutocomplete(true)
 				.setRequired(false)
@@ -103,34 +92,34 @@ const TrainerCmd = {
 	},
 
 	async executeProfile(interaction) {
-		const modal = interaction.client.modals.get('trainerProfile');
-		await modal.show(interaction);
+		const trainerProfileModal = interaction.client.modals.get('trainerProfile');
+		await trainerProfileModal.show(interaction);
 	},
 	
-  //async executeTeam(interaction) {
-  //	const button = interaction.client.buttons.get('TrainerTeam');
-  //	await button.show(interaction);
-  //},
-
 	async executeTeam(interaction) {
-		const client = interaction.client;
-        const team = interaction.options.getString('team');
-		const trainer = await Trainer.get({ id: interaction.user.id, unique: true });
-
-		if (!trainer) {
-			interaction.reply(Trainer.getSetupTrainerFirstMessage());
-			return;
-		}
-		
-		trainer.team = ( team == ClearTeam ? null : team );
-		await trainer.update();
-
-		const message = ( team == ClearTeam
-			? `Trainer team cleared`
-			: `Trainer team set to ${team}`
-		);
-		await interaction.reply({ content: message, flags: MessageFlags.Ephemeral });
+  		const trainerTeamButtons = interaction.client.buttons.get('TrainerTeam');
+  		await trainerTeamButtons.show(interaction);
 	},
+
+	//async executeTeam(interaction) {
+	//	const client = interaction.client;
+    //    const team = interaction.options.getString('team');
+	//	const trainer = await Trainer.get({ id: interaction.user.id, unique: true });
+	//
+	//	if (!trainer) {
+	//		interaction.reply(Trainer.getSetupTrainerFirstMessage());
+	//		return;
+	//	}
+	//	
+	//	trainer.team = ( team == ClearTeam ? null : team );
+	//	await trainer.update();
+	//
+	//	const message = ( team == ClearTeam
+	//		? `Trainer team cleared`
+	//		: `Trainer team set to ${team}`
+	//	);
+	//	await interaction.reply({ content: message, flags: MessageFlags.Ephemeral });
+	//},
 
 	async executeDelete(interaction) {
 		await interaction.reply({ content: `Delete -- Trainer profile management not yet implemented`, flags: MessageFlags.Ephemeral });
@@ -138,8 +127,8 @@ const TrainerCmd = {
 
 	async executeShowOrCode(interaction, subCommand) {
 		const client = interaction.client;
-		let name = interaction.options.getString('name');
-		let user = interaction.options.getUser('user');
+		let name = interaction.options.getString('trainer-name');
+		let user = interaction.options.getUser('discord-username');
 
 		if (!user && !name) {
 			user = interaction.user;
@@ -188,8 +177,8 @@ const TrainerCmd = {
 		client.logger.debug(`Initiating autocomplete for ${subCommand} -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
 
 		let choices = [];
-		if (focusedOption.name == 'name') {
-			choices = await Trainer.getNameChoices(focusedOption.value);
+		if (focusedOption.name == 'trainer-name') {
+			choices = await Trainer.getTrainerNameChoices(focusedOption.value);
 		}
 
 		if (choices.length <= MaxAutoCompleteChoices) {

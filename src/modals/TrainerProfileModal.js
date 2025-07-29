@@ -1,17 +1,22 @@
 
 import {
     ActionRowBuilder,
+    InteractionType,
     MessageFlags,
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle
 } from 'discord.js';
 
-import Trainer from '../data/Trainer.js';
+import {
+    MessageType
+} from '#src/Constants.js';
 
-const trainerProfile = {
+import Trainer from '#src/data/Trainer.js';
+
+const TrainerProfileModal = {
     data: {
-        name: 'trainerProfile'
+        name: 'TrainerProfile',
     },
 
     async show(interaction) {
@@ -24,11 +29,17 @@ const trainerProfile = {
             .setTitle('Trainer Profile');
 
         // Create the text input components -- name, code, level, team
-        const nameInput = new TextInputBuilder()
-            .setCustomId('name')
+        const trainerNameInput = new TextInputBuilder()
+            .setCustomId('trainerName')
             .setLabel('Trainer Name')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
+        
+        const firstNameInput = new TextInputBuilder()
+            .setCustomId('firstName')
+            .setLabel('First Name')
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false);
         
         const codeInput = new TextInputBuilder()
             .setCustomId('code')
@@ -46,13 +57,6 @@ const trainerProfile = {
             .setMaxLength(2)
             .setRequired(false);
         
-        const aboutMeInput = new TextInputBuilder()
-            .setCustomId('aboutMe')
-            .setLabel('About Me (optional)')
-            .setStyle(TextInputStyle.Paragraph)
-            .setMaxLength(256)
-            .setRequired(false);
-
         const favoritePokemonInput = new TextInputBuilder()
             .setCustomId('favoritePokemon')
             .setLabel('Favorite Pokémon (optional)')
@@ -60,7 +64,11 @@ const trainerProfile = {
             .setRequired(false);
 
         if (trainer) {
-            nameInput.setValue(trainer.name);
+            trainerNameInput.setValue(trainer.trainerName);
+
+            if (trainer.firstName) {
+                firstNameInput.setValue(trainer.firstName);
+            }
 
             if (trainer.code) {
                 codeInput.setValue(trainer.code);
@@ -77,10 +85,10 @@ const trainerProfile = {
 
         // Create rows and add them to the modal
         modal.addComponents(
-            new ActionRowBuilder().addComponents(nameInput),
+            new ActionRowBuilder().addComponents(trainerNameInput),
+            new ActionRowBuilder().addComponents(firstNameInput),
             new ActionRowBuilder().addComponents(codeInput),
             new ActionRowBuilder().addComponents(levelInput),
-            new ActionRowBuilder().addComponents(aboutMeInput),
             new ActionRowBuilder().addComponents(favoritePokemonInput)
         );
 
@@ -94,16 +102,17 @@ const trainerProfile = {
         
         //client.logger.log(`Interaction User ID = ${interaction.user.id}`);
         //client.logger.log(`Trainer = ${trainer}`);
-        //client.logger.log(`Trainer Name = ${trainer.name}`);
+        //client.logger.log(`Trainer Name = ${trainer.trainerName}`);
+        //client.logger.log(`Trainer First Name = ${trainer.firstName}`);
         //client.logger.log(`Trainer Code = ${trainer.code}`);
         //client.logger.log(`Trainer Level = ${trainer.level}`);
         //client.logger.log(`Trainer Team = ${trainer.team}`);
-        //client.logger.log(trainer.name);
+        //client.logger.log(`Trainer Favorite Pokemon = ${trainer.favoritePokemon}`);
 
-        const name = interaction.fields.getTextInputValue('name');
+        const trainerName = interaction.fields.getTextInputValue('trainerName');
+        const firstName = interaction.fields.getTextInputValue('firstName');
         const code = interaction.fields.getTextInputValue('code');
         const level = interaction.fields.getTextInputValue('level');
-        const aboutMe = interaction.fields.getTextInputValue('aboutMe');
         const favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
 
         //if (code.length == 0) code = null;
@@ -112,18 +121,18 @@ const trainerProfile = {
         if (!trainer) {
             trainer = new Trainer({
                 id: interaction.user.id,
-                name: name,
+                trainerName: trainerName,
+                firstName: firstName,
                 code: code,
                 level: level,
-                aboutMe: aboutMe,
                 favoritePokemon: favoritePokemon
             });
             await trainer.create();
         } else {
-            trainer.name = name;
+            trainer.trainerName = trainerName;
+            trainer.firstName = firstName;
             trainer.code = code;
             trainer.level = level;
-            trainer.aboutMe = aboutMe;
             trainer.favoritePokemon = favoritePokemon;
             await trainer.update();
         }
@@ -132,7 +141,13 @@ const trainerProfile = {
             content: `Trainer profile updated`,
             flags: MessageFlags.Ephemeral
         });
+
+        // Prompt the user to set their team if not already set
+        if (!trainer.team) {
+            const trainerTeamButtons = interaction.client.buttons.get('TrainerTeam');
+            await trainerTeamButtons.show(interaction);
+        }
     }
 };
 
-export default trainerProfile;
+export default TrainerProfileModal;

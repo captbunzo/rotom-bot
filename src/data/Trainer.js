@@ -1,30 +1,31 @@
 
-import client from '../Client.js';
-
 import {
     EmbedBuilder,
     MessageFlags
 } from 'discord.js';
 
+import client from '#src/Client.js';
+
 import {
     Team,
     TeamColor
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import DatabaseTable from '../DatabaseTable.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
 
 export default class Trainer extends DatabaseTable {
     static schema = this.parseSchema({
         tableName: 'trainer',
-        orderBy: ['name'],
+        orderBy: ['trainer_name'],
         fields: {
             'id':               { type: 'snowflake', nullable: false },
-            'name':             { type: 'string',    nullable: false, length: 32 },
-            'code':             { type: 'string',    nullable: true, length: 12 },
+            'trainer_name':     { type: 'string',    nullable: false, length: 32 },
+            'first_name':       { type: 'string',    nullable: true,  length: 32 },
+            'code':             { type: 'string',    nullable: true,  length: 12 },
             'level':            { type: 'integer',   nullable: true },
-            'team':             { type: 'string',    nullable: true, length: 8 },
-            'about_me':         { type: 'string',    nullable: true, length: 256 },
-            'favorite_pokemon': { type: 'string',    nullable: true, length: 24 }
+            'team':             { type: 'string',    nullable: true,  length: 8 },
+            'about_me':         { type: 'string',    nullable: true,  length: 256 },
+            'favorite_pokemon': { type: 'string',    nullable: true,  length: 24 }
         },
         primaryKey: ['id']
     });
@@ -38,11 +39,11 @@ export default class Trainer extends DatabaseTable {
     // *********** //
 
     get id              () { return this.getField('id'); }
-    get name            () { return this.getField('name'); }
+    get trainerName     () { return this.getField('trainer_name'); }
+    get firstName       () { return this.getField('first_name'); }
     get code            () { return this.getField('code'); }
     get level           () { return this.getField('level'); }
     get team            () { return this.getField('team'); }
-    get aboutMe         () { return this.getField('aboutMe'); }
     get favoritePokemon () { return this.getField('favoritePokemon'); }
 
     get formattedCode() {
@@ -54,11 +55,11 @@ export default class Trainer extends DatabaseTable {
     // *********** //
     
     set id              (value) { this.setField('id', value); }
-    set name            (value) { this.setField('name', value); }
+    set trainerName     (value) { this.setField('trainer_name', value); }
+    set firstName       (value) { this.setField('first_name', value); }
     set code            (value) { this.setField('code', value); }
     set level           (value) { this.setField('level', value); }
     set team            (value) { this.setField('team', value); }
-    set aboutMe         (value) { this.setField('aboutMe', value); }
     set favoritePokemon (value) { this.setField('favoritePokemon', value); }
     
     // ***************** //
@@ -83,13 +84,13 @@ export default class Trainer extends DatabaseTable {
         return await super.get(conditions, orderBy);
     }
     
-    static async getNameChoices(namePrefix, conditions = {}) {
-        return await this.getChoices('name', namePrefix, conditions);
+    static async getTrainerNameChoices(namePrefix, conditions = {}) {
+        return await this.getChoices('trainerName', namePrefix, conditions);
     }
 
     static getSetupTrainerFirstMessage() {
         return {
-            content: `Please setup your profile first with /trainer profile`,
+            content: `Please setup your profile first with /setup-profile`,
             flags: MessageFlags.Ephemeral
         };
     }
@@ -98,17 +99,6 @@ export default class Trainer extends DatabaseTable {
     // * Instance Methods * //
     // ******************** //
     
-    async create() {  
-        // If need be, retrieve the username
-        if (!this.name) {
-            const user = await client.users.fetch(this.id);
-            if (user) this.name = user.name;
-        }
-        
-        // Attempt to create it
-        await DatabaseTable.prototype.create.call(this);
-    }
-
     async buildEmbed() {
         client.logger.debug(`Trainer Record =`);
         client.logger.dump(this);
@@ -120,14 +110,12 @@ export default class Trainer extends DatabaseTable {
 
         let embed = new EmbedBuilder()
             .setColor(color)
-            .setTitle(`${this.name}'s Profile`)
+            .setTitle(`${this.trainerName}'s Profile`)
             .setDescription(`Trainer Code: ${this.formattedCode}`)
             .addFields(
+                { name: 'First Name', value: this.firstName ?? 'N/A', inline: true },
                 { name: 'Team', value: this.team ?? 'N/A', inline: true },
                 { name: 'Level', value: this.level ? this.level.toString() : 'N/A', inline: true }
-            )
-            .addFields(
-                { name: 'About Me', value: this.aboutMe ?? 'N/A' }
             )
             .addFields(
                 { name: 'Favorite Pokemon', value: this.favoritePokemon ?? 'N/A' }

@@ -7,12 +7,12 @@ import {
 import {
     BossType,
     MaxAutoCompleteChoices
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import StringFunctions from '../../functions/StringFunctions.js';
+import StringFunctions from '#src/functions/StringFunctions.js';
 
-import Boss          from '../../data/Boss.js';
-import MasterPokemon from '../../data/MasterPokemon.js';
+import Boss          from '#src/data/Boss.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
 
 // TODO - Add boss edit command
 

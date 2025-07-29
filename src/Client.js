@@ -1,10 +1,11 @@
 
-import config from '../config.json' with { type: 'json' };
+import config from '#root/config.json' with { type: 'json' };
 
 import fs from 'fs';
 import path from 'node:path';
 import chalk from 'chalk';
-import Logger from './Logger.js';
+//import Logger from '#src/Logger.js';
+import DrossLogger from '@drossjs/dross-logger';
 
 import Discord, { GatewayIntentBits } from 'discord.js';
 
@@ -42,7 +43,7 @@ class Client extends DiscordClient {
                 
         // Attach the config and logger
         this.config = config;
-        this.logger = new Logger();
+        this.logger = new DrossLogger();
         
         // Set the log level
         this.logger.logLevel = this.config.logLevel;

@@ -4,7 +4,7 @@ import {
 	MessageFlags
 } from 'discord.js';
 
-const interactionCreate = {
+const InteractionCreateEvent = {
 	name: Events.InteractionCreate,
 
 	/**
@@ -100,4 +100,4 @@ const interactionCreate = {
 	},
 };
 
-export default interactionCreate;
+export default InteractionCreateEvent;

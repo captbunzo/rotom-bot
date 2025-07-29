@@ -1,19 +1,19 @@
 
-import client from '../Client.js';
-
-import {
-    PokemonType,
-    PokemonTypeColor
-} from '../Constants.js';
-
 import {
     EmbedBuilder
 } from 'discord.js';
 
-import DatabaseTable from '../DatabaseTable.js';
-import MasterCPM     from './MasterCPM.js';
-import Translation   from './Translation.js';
-import WikiLink      from './WikiLink.js';
+import client from '#src/Client.js';
+
+import {
+    PokemonType,
+    PokemonTypeColor
+} from '#src/Constants.js';
+
+import DatabaseTable from '#src/types/DatabaseTable.js';
+import MasterCPM     from '#src/data/MasterCPM.js';
+import Translation   from '#src/data/Translation.js';
+import WikiLink      from '#src/data/WikiLink.js';
 
 export default class MasterPokemon extends DatabaseTable {
     static schema = this.parseSchema({

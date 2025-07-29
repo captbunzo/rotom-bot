@@ -1,17 +1,16 @@
 
-import client from '../Client.js';
-
 import {
     EmbedBuilder
 } from 'discord.js';
 
-import StringFunctions from '../functions/StringFunctions.js';
+import client from '#src/Client.js';
+import StringFunctions from '#src/functions/StringFunctions.js';
 
-import DatabaseTable from '../DatabaseTable.js';
-import MasterCPM     from './MasterCPM.js';
-import MasterPokemon from './MasterPokemon.js';
-import WikiLink      from './WikiLink.js';
-import Translation   from './Translation.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
+import MasterCPM     from '#src/data/MasterCPM.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
+import WikiLink      from '#src/data/WikiLink.js';
+import Translation   from '#src/data/Translation.js';
 
 export default class Boss extends DatabaseTable {
     static schema = this.parseSchema({

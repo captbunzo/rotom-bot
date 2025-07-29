@@ -1,12 +1,12 @@
 
-import client from '../Client.js';
+import client from '#src/Client.js';
 
 import {
     BossType
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import DatabaseTable from '../DatabaseTable.js';
-import MasterPokemon from './MasterPokemon.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
 
 export default class WikiLink extends DatabaseTable {
     static schema = this.parseSchema({

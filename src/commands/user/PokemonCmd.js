@@ -12,10 +12,10 @@ import {
     SearchStringBuddyKmValue,
     SearchStringPurifyStardustName,
     SearchStringPurifyStardustValue
-} from '../../Constants.js';
+} from '#src/Constants.js';
 
-import MasterCPM     from '../../data/MasterCPM.js';
-import MasterPokemon from '../../data/MasterPokemon.js';
+import MasterCPM     from '#src/data/MasterCPM.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
 
 // TODO - Think about framework for moving all command, subcommand, and option names to constants in the command objects
 // TODO - Think about turning these into proper classes

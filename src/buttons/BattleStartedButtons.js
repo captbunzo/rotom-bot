@@ -9,12 +9,12 @@ import {
 import {
     BattleStatus,
     BattleMemberStatus
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import Battle       from '../data/Battle.js';
-import BattleMember from '../data/BattleMember.js';
-import Boss from '../data/Boss.js';
-import Trainer      from '../data/Trainer.js';
+import Battle       from '#src/data/Battle.js';
+import BattleMember from '#src/data/BattleMember.js';
+import Boss         from '#src/data/Boss.js';
+import Trainer      from '#src/data/Trainer.js';
 
 const BattleStartedButtons = {
     data: {

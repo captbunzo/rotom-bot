@@ -1,25 +1,24 @@
 
-import client from '../Client.js';
-
 import {
     bold,
     EmbedBuilder,
     SnowflakeUtil
 } from 'discord.js';
 
+import client from '#src/Client.js';
+import StringFunctions from '#src/functions/StringFunctions.js';
+
 import {
     BattleStatus
-} from '../Constants.js';
+} from '#src/Constants.js';
 
-import StringFunctions from '../functions/StringFunctions.js';
-
-import DatabaseTable from '../DatabaseTable.js';
-import BattleMember  from './BattleMember.js';
-import Boss          from './Boss.js';
-import MasterPokemon from './MasterPokemon.js';
-import Trainer       from './Trainer.js';
-import Translation   from './Translation.js';
-import WikiLink      from './WikiLink.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
+import BattleMember  from '#src/data/BattleMember.js';
+import Boss          from '#src/data/Boss.js';
+import MasterPokemon from '#src/data/MasterPokemon.js';
+import Trainer       from '#src/data/Trainer.js';
+import Translation   from '#src/data/Translation.js';
+import WikiLink      from '#src/data/WikiLink.js';
 
 export default class Battle extends DatabaseTable {
     static schema = this.parseSchema({
@@ -190,7 +189,7 @@ export default class Battle extends DatabaseTable {
         for (const battleMember of battleMembers) {
             if (client.config.options.showBattleMemberTrainerNames) {
                 const battleMemberTrainer = await Trainer.get({ id: battleMember.trainerId, unique: true }); 
-                battleMembersTextArray.push(battleMemberTrainer.name);
+                battleMembersTextArray.push(battleMemberTrainer.trainerName);
             } else {
                 const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMember.trainerId);
                 battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);

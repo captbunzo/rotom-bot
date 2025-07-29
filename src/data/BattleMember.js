@@ -1,5 +1,6 @@
 
-import DatabaseTable from '../DatabaseTable.js';
+import client from '#src/Client.js';
+import DatabaseTable from '#src/types/DatabaseTable.js';
 
 export default class BattleMember extends DatabaseTable {
     static schema = this.parseSchema({

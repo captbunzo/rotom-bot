@@ -7,5 +7,5 @@ export NVM_DIR="$HOME/.nvm"
 fnm use 22
 
 echo "Deploying Rotom commands..."
-node ./deploy-commands.js
+node ./app-deploy-commands.js
 
