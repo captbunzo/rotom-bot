@@ -35,7 +35,7 @@ class Client extends DiscordClient {
                         
         // Attach the config and logger
         this.config = config;
-        this.logger = new DrossLogger();
+        this.logger = new DrossLogger(config.logLevel, config.logSql);
         
         // Set the log level
         this.logger.logLevel = this.config.logLevel;
