@@ -1,19 +1,13 @@
 
-
-import {
-    SnowflakeUtil
-} from 'discord.js';
-
-import client from '#src/Client.js';
+import { SnowflakeUtil } from 'discord.js';
+import { DrossDatabaseTable } from '@drossjs/dross-database';
 
 import {
     BossType,
     PokemonType
 } from '#src/Constants.js';
 
-import DatabaseTable from '#src/types/DatabaseTable.js';
-
-export default class Translation extends DatabaseTable {
+class Translation extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'translation',
         orderBy: ['name', 'key', 'variant', 'is_plural', 'language'],
@@ -283,7 +277,7 @@ export default class Translation extends DatabaseTable {
         }
 
         // Attempt to create it
-        await DatabaseTable.prototype.create.call(this);
+        await DrossDatabaseTable.prototype.create.call(this);
     }
 
     //async update() {
@@ -296,6 +290,8 @@ export default class Translation extends DatabaseTable {
     //    };
     //
     //    // Attempt to update it
-    //    await DatabaseTable.prototype.update.call(this, conditions);
+    //    await DrossDatabaseTable.prototype.update.call(this, conditions);
     //}
 }
+
+export default Translation;

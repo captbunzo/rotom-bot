@@ -6,11 +6,14 @@ import {
     roleMention
 } from 'discord.js';
 
-import client from '#src/Client.js';
-import DatabaseTable from '#src/types/DatabaseTable.js';
+import {
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
+
 import Translation from '#src/data/Translation.js';
 
-export default class GuildBattleAlert extends DatabaseTable {
+class GuildBattleAlert extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'guild_battle_alert',
         orderBy: ['id'],
@@ -84,12 +87,12 @@ export default class GuildBattleAlert extends DatabaseTable {
             this.id = SnowflakeUtil.generate();
         }
         
-        await DatabaseTable.prototype.create.call(this);
+        await DrossDatabaseTable.prototype.create.call(this);
     }
     
     async buildEmbed() {
-        client.logger.debug(`Guild Battle Record =`);
-        client.logger.dump(this);
+        DrossDatabase.logger.debug(`Guild Battle Record =`);
+        DrossDatabase.logger.dump(this);
 
         const color = 0x595761;
         const channelText  = (this.channelId !== null) ? channelMention(this.channelId) : 'All';
@@ -118,3 +121,5 @@ export default class GuildBattleAlert extends DatabaseTable {
         return embed;
     }
 }
+
+export default GuildBattleAlert;

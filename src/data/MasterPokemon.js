@@ -1,21 +1,21 @@
 
-import {
-    EmbedBuilder
-} from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
-import client from '#src/Client.js';
+import {
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
 
 import {
     PokemonType,
     PokemonTypeColor
 } from '#src/Constants.js';
 
-import DatabaseTable from '#src/types/DatabaseTable.js';
-import MasterCPM     from '#src/data/MasterCPM.js';
-import Translation   from '#src/data/Translation.js';
-import WikiLink      from '#src/data/WikiLink.js';
+import MasterCPM   from '#src/data/MasterCPM.js';
+import Translation from '#src/data/Translation.js';
+import WikiLink    from '#src/data/WikiLink.js';
 
-export default class MasterPokemon extends DatabaseTable {
+class MasterPokemon extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'master_pokemon',
         orderBy: ['template_id'],
@@ -135,8 +135,8 @@ export default class MasterPokemon extends DatabaseTable {
             case PokemonType.Water    : typeColor = PokemonTypeColor.Water;     break;
         }
 
-        client.logger.debug(`type = ${type}`);
-        client.logger.debug(`typeColor = ${typeColor}`);
+        DrossDatabase.logger.debug(`type = ${type}`);
+        DrossDatabase.logger.debug(`typeColor = ${typeColor}`);
 
         return typeColor;
     };
@@ -146,11 +146,11 @@ export default class MasterPokemon extends DatabaseTable {
     // ******************** //
         
     async update(condition = { templateId: this.templateId }) {
-        await DatabaseTable.prototype.update.call(this, condition);
+        await DrossDatabaseTable.prototype.update.call(this, condition);
     }
     
     async delete(condition = { templateId: this.templateId }) {
-        await DatabaseTable.prototype.delete.call(this, condition);
+        await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 
     async getName(language = Translation.Language.English) {
@@ -200,8 +200,8 @@ export default class MasterPokemon extends DatabaseTable {
         
         const description = await this.getDescription() ?? 'Description not available';
         const wikiLink = await WikiLink.get(this);
-        client.logger.debug(`Wiki Link Record =`);
-        client.logger.dump(wikiLink);
+        DrossDatabase.logger.debug(`Wiki Link Record =`);
+        DrossDatabase.logger.dump(wikiLink);
 
         let typeColor = this.getTypeColor(this.type);
         let link = wikiLink !== null ? wikiLink.page : null;
@@ -214,11 +214,11 @@ export default class MasterPokemon extends DatabaseTable {
 
         let pokemonForm = this.form != null ? StringFunctions.titleCase(this.form) : 'No Form';
 
-        client.logger.debug(`link = ${link}`);
-        client.logger.debug(`thumbnail = ${thumbnail}`);
-        client.logger.debug(`pokemonType = ${pokemonType}`);
-        client.logger.debug(`pokemonForm = ${pokemonForm}`);
-        client.logger.debug(`typeColor = ${typeColor}`);
+        DrossDatabase.logger.debug(`link = ${link}`);
+        DrossDatabase.logger.debug(`thumbnail = ${thumbnail}`);
+        DrossDatabase.logger.debug(`pokemonType = ${pokemonType}`);
+        DrossDatabase.logger.debug(`pokemonForm = ${pokemonForm}`);
+        DrossDatabase.logger.debug(`typeColor = ${typeColor}`);
 
         let embed =  new EmbedBuilder()
             .setColor(typeColor)
@@ -239,3 +239,5 @@ export default class MasterPokemon extends DatabaseTable {
         return embed;
     }
 }
+
+export default MasterPokemon;

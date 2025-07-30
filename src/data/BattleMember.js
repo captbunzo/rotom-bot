@@ -1,8 +1,7 @@
 
-import client from '#src/Client.js';
-import DatabaseTable from '#src/types/DatabaseTable.js';
+import { DrossDatabaseTable } from '@drossjs/dross-database';
 
-export default class BattleMember extends DatabaseTable {
+class BattleMember extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'battle_member',
         orderBy: ['battle_id', 'created_at'],
@@ -57,10 +56,12 @@ export default class BattleMember extends DatabaseTable {
     // ******************** //
     
     async update(conditions = {battleId: this.battleId, trainerId: this.trainerId}) {
-        await DatabaseTable.prototype.update.call(this, conditions);
+        await DrossDatabaseTable.prototype.update.call(this, conditions);
     }
     
     async delete(conditions = {battleId: this.battleId, trainerId: this.trainerId}) {
-        await DatabaseTable.prototype.delete.call(this, conditions);
+        await DrossDatabaseTable.prototype.delete.call(this, conditions);
     }
 }
+
+export default BattleMember;

@@ -1,3 +1,2 @@
-
-import Rotom from '#src/Rotom.js';
-Rotom.start();
+import Bot from '#src/Bot.js';
+Bot.start();

@@ -1,4 +1,6 @@
 
+// TODO - Turn this into a dross package
+
 import * as Sentry from '@sentry/node';
 import Tracing from '@sentry/tracing';
 

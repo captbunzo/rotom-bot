@@ -4,16 +4,17 @@ import {
     MessageFlags
 } from 'discord.js';
 
-import client from '#src/Client.js';
+import {
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
 
 import {
     Team,
     TeamColor
 } from '#src/Constants.js';
 
-import DatabaseTable from '#src/types/DatabaseTable.js';
-
-export default class Trainer extends DatabaseTable {
+class Trainer extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'trainer',
         orderBy: ['trainer_name'],
@@ -100,8 +101,8 @@ export default class Trainer extends DatabaseTable {
     // ******************** //
     
     async buildEmbed() {
-        client.logger.debug(`Trainer Record =`);
-        client.logger.dump(this);
+        DrossDatabase.logger.debug(`Trainer Record =`);
+        DrossDatabase.logger.dump(this);
 
         const color = this.team == Team.Instinct ? TeamColor.Instinct :
                       this.team == Team.Mystic   ? TeamColor.Mystic :
@@ -124,3 +125,5 @@ export default class Trainer extends DatabaseTable {
         return embed;
     }
 }
+
+export default Trainer;

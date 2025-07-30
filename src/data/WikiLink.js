@@ -1,14 +1,13 @@
 
-import client from '#src/Client.js';
-
 import {
-    BossType
-} from '#src/Constants.js';
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
 
-import DatabaseTable from '#src/types/DatabaseTable.js';
+import { BossType } from '#src/Constants.js';
 import MasterPokemon from '#src/data/MasterPokemon.js';
 
-export default class WikiLink extends DatabaseTable {
+class WikiLink extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'wiki_link',
         orderBy: ['id'],
@@ -79,10 +78,10 @@ export default class WikiLink extends DatabaseTable {
      * @returns {Promise<MasterPokemon|MasterPokemon[]>} The MasterPokemon(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        client.logger.debug(`typeof conditions = ${typeof conditions}`);
-        client.logger.debug(`conditions.constructor.name = ${conditions.constructor.name}`);
-        client.logger.debug(`conditions =`);
-        client.logger.dump(conditions);
+        DrossDatabase.logger.debug(`typeof conditions = ${typeof conditions}`);
+        DrossDatabase.logger.debug(`conditions.constructor.name = ${conditions.constructor.name}`);
+        DrossDatabase.logger.debug(`conditions =`);
+        DrossDatabase.logger.dump(conditions);
 
         if (typeof conditions == 'object' && conditions.constructor.name == 'Boss') {
             let boss = conditions;
@@ -203,3 +202,5 @@ export default class WikiLink extends DatabaseTable {
     // ******************** //
         
 }
+
+export default WikiLink;

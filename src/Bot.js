@@ -19,26 +19,12 @@ Sentry.init(config);
 
 // Load singletons - which here in .js is actually initializing them
 import client from '#src/Client.js';
-import knex   from '#src/Database.js';
+import database from '#src/Database.js';
 
-// We are doing real fancy node 8 async/await stuff here, and to do that we
-// need to wrap stuff in an anonymous function. It is annoying but it works.
-
-import Trainer from '#src/data/Trainer.js';
-
-/* const init = async () => {
-    // Initialize the database
-    await knex.discordBotDatabaseInit();
-    
-    // Initialize the client
-    await client.init();
-};
- */
-
-export default class Rotom {
+export default class Bot {
     static async start() {
         // Initialize the database
-        await knex.discordBotDatabaseInit();
+        await database.init(config);
         
         // Initialize the client
         await client.init();

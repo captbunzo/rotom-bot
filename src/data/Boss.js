@@ -1,18 +1,19 @@
 
-import {
-    EmbedBuilder
-} from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
-import client from '#src/Client.js';
+import {
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
+
 import StringFunctions from '#src/functions/StringFunctions.js';
 
-import DatabaseTable from '#src/types/DatabaseTable.js';
 import MasterCPM     from '#src/data/MasterCPM.js';
 import MasterPokemon from '#src/data/MasterPokemon.js';
 import WikiLink      from '#src/data/WikiLink.js';
 import Translation   from '#src/data/Translation.js';
 
-export default class Boss extends DatabaseTable {
+class Boss extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'boss',
         orderBy: ['id'],
@@ -103,7 +104,7 @@ export default class Boss extends DatabaseTable {
         return await this.getChoices('id', idPrefix, conditions);
     }
 
-    // ******************** //
+// ******************** //
     // * Instance Methods * //
     // ******************** //
     
@@ -116,10 +117,10 @@ export default class Boss extends DatabaseTable {
     async buildEmbed() {
         const masterPokemon = await MasterPokemon.get({ templateId: this.templateId, unique: true });
 
-        client.logger.debug(`Boss Record =`);
-        client.logger.dump(this);
-        client.logger.debug(`Master Pokémon Record =`);
-        client.logger.dump(masterPokemon);
+        DrossDatabase.logger.debug(`Boss Record =`);
+        DrossDatabase.logger.dump(this);
+        DrossDatabase.logger.debug(`Master Pokémon Record =`);
+        DrossDatabase.logger.dump(masterPokemon);
 
         let bossTypeName       = await this.getBossTypeName();
         let pokemonName        = await masterPokemon.getName();
@@ -143,8 +144,8 @@ export default class Boss extends DatabaseTable {
         }
 
         const wikiLink = await WikiLink.get(this);
-        client.logger.debug(`Wiki Link Record =`);
-        client.logger.dump(wikiLink);
+        DrossDatabase.logger.debug(`Wiki Link Record =`);
+        DrossDatabase.logger.dump(wikiLink);
 
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
         let link = wikiLink !== null ? wikiLink.page : null;
@@ -165,11 +166,11 @@ export default class Boss extends DatabaseTable {
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
         let cpWb  = `${cpL25Min} - ${cpL25Max}`;
 
-        client.logger.debug(`link = ${link}`);
-        client.logger.debug(`thumbnail = ${thumbnail}`);
-        client.logger.debug(`pokemonType = ${pokemonType}`);
-        client.logger.debug(`pokemonForm = ${pokemonForm}`);
-        client.logger.debug(`typeColor = ${typeColor}`);
+        DrossDatabase.logger.debug(`link = ${link}`);
+        DrossDatabase.logger.debug(`thumbnail = ${thumbnail}`);
+        DrossDatabase.logger.debug(`pokemonType = ${pokemonType}`);
+        DrossDatabase.logger.debug(`pokemonForm = ${pokemonForm}`);
+        DrossDatabase.logger.debug(`typeColor = ${typeColor}`);
 
         let embed =  new EmbedBuilder()
             .setColor(typeColor)
@@ -220,3 +221,5 @@ export default class Boss extends DatabaseTable {
         return await Translation.getBattleTypeName(this.bossType);
     }
 }
+
+export default Boss;

@@ -5,14 +5,15 @@ import {
     SnowflakeUtil
 } from 'discord.js';
 
+import { 
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
+
 import client from '#src/Client.js';
 import StringFunctions from '#src/functions/StringFunctions.js';
+import { BattleStatus } from '#src/Constants.js';
 
-import {
-    BattleStatus
-} from '#src/Constants.js';
-
-import DatabaseTable from '#src/types/DatabaseTable.js';
 import BattleMember  from '#src/data/BattleMember.js';
 import Boss          from '#src/data/Boss.js';
 import MasterPokemon from '#src/data/MasterPokemon.js';
@@ -20,7 +21,7 @@ import Trainer       from '#src/data/Trainer.js';
 import Translation   from '#src/data/Translation.js';
 import WikiLink      from '#src/data/WikiLink.js';
 
-export default class Battle extends DatabaseTable {
+class Battle extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'battle',
         orderBy: ['id'],
@@ -88,7 +89,7 @@ export default class Battle extends DatabaseTable {
             this.id = SnowflakeUtil.generate();
         }
         
-        await DatabaseTable.prototype.create.call(this);
+        await DrossDatabaseTable.prototype.create.call(this);
     }
     
     async buildEmbed() {
@@ -104,27 +105,27 @@ export default class Battle extends DatabaseTable {
             hostDiscordGuild = await hostDiscordGuild.first().fetch();
         }
 
-        //client.logger.debug(`Host Discord Guild =`);
-        //client.logger.dump(hostDiscordGuild);
-        //client.logger.debug(`hostDiscordGuild.name = ${hostDiscordGuild.name}`);
-        //client.logger.dump(hostDiscordGuild.members);
+        //DrossDatabase.logger.debug(`Host Discord Guild =`);
+        //DrossDatabase.logger.dump(hostDiscordGuild);
+        //DrossDatabase.logger.debug(`hostDiscordGuild.name = ${hostDiscordGuild.name}`);
+        //DrossDatabase.logger.dump(hostDiscordGuild.members);
 
         const hostDiscordMember = await hostDiscordGuild.members.fetch(hostTrainer.id);
 
         // Log records for debugging
-        //client.logger.debug(`Battle Record =`);
-        //client.logger.dump(this);
-        //client.logger.debug(`Boss Record =`);
-        //client.logger.dump(boss);
-        //client.logger.debug(`Master Pokémon Record =`);
-        //client.logger.dump(masterPokemon);
-        //client.logger.debug(`Host Trainer =`);
-        //client.logger.dump(hostTrainer);
-        //client.logger.debug(`Battle Member Array`);
-        //client.logger.dump(battleMemberArray);
-        //client.logger.debug(`hostDiscordUser =`);
-        //client.logger.dump(hostDiscordMember);
-        //client.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
+        //DrossDatabase.logger.debug(`Battle Record =`);
+        //DrossDatabase.logger.dump(this);
+        //DrossDatabase.logger.debug(`Boss Record =`);
+        //DrossDatabase.logger.dump(boss);
+        //DrossDatabase.logger.debug(`Master Pokémon Record =`);
+        //DrossDatabase.logger.dump(masterPokemon);
+        //DrossDatabase.logger.debug(`Host Trainer =`);
+        //DrossDatabase.logger.dump(hostTrainer);
+        //DrossDatabase.logger.debug(`Battle Member Array`);
+        //DrossDatabase.logger.dump(battleMemberArray);
+        //DrossDatabase.logger.debug(`hostDiscordUser =`);
+        //DrossDatabase.logger.dump(hostDiscordMember);
+        //DrossDatabase.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
         let bossTypeName       = await boss.getBossTypeName();
         let battleTypeName     = await boss.getBattleTypeName();
@@ -156,8 +157,8 @@ export default class Battle extends DatabaseTable {
         }
 
         const wikiLink = await WikiLink.get(boss);
-        client.logger.debug(`Wiki Link Record =`);
-        client.logger.dump(wikiLink);
+        DrossDatabase.logger.debug(`Wiki Link Record =`);
+        DrossDatabase.logger.dump(wikiLink);
 
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
         let link = wikiLink.page;
@@ -200,9 +201,9 @@ export default class Battle extends DatabaseTable {
             battleMembersText = battleMembersTextArray.join('\n');
         }
 
-        //client.logger.debug(`typeColor = ${typeColor}`);
+        //DrossDatabase.logger.debug(`typeColor = ${typeColor}`);
 
-        //client.logger.debug(`Mark 1`);
+        //DrossDatabase.logger.debug(`Mark 1`);
         let embed = new EmbedBuilder()
             .setColor(typeColor)
             .setTitle(title)
@@ -211,7 +212,7 @@ export default class Battle extends DatabaseTable {
             .setDescription(description)
             .setThumbnail(thumbnail);
 
-        //client.logger.debug(`Mark 2`);
+        //DrossDatabase.logger.debug(`Mark 2`);
         embed = embed
             .addFields(
                 { name: 'Pokémon Type', value: pokemonType, inline: true },
@@ -219,14 +220,14 @@ export default class Battle extends DatabaseTable {
                 { name: 'Shiny', value: boss.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny', inline: true }
             );
         
-        //client.logger.debug(`Mark 2`);
+        //DrossDatabase.logger.debug(`Mark 2`);
         embed = embed
             .addFields(
                 { name: 'Description', value: pokemonDescription }
             );
         
         // client 
-        //client.logger.debug(`Mark 4`);
+        //DrossDatabase.logger.debug(`Mark 4`);
         embed = embed
             .addFields(
               //{ name: '\u200B', value: '\u200B' },
@@ -235,13 +236,13 @@ export default class Battle extends DatabaseTable {
                 { name: 'CP L25 (WB)', value: cpWb, inline: true },
             );
         
-        //client.logger.debug(`Mark 5`);
+        //DrossDatabase.logger.debug(`Mark 5`);
         embed = embed
             .addFields(
                 { name: 'Battle Members', value: battleMembersText }
             );
         
-        //client.logger.debug(`Mark 5.5`);
+        //DrossDatabase.logger.debug(`Mark 5.5`);
 
         let battleStatusText;
         switch (this.status) {
@@ -266,12 +267,14 @@ export default class Battle extends DatabaseTable {
                 );
         }
 
-        //client.logger.debug(`Mark 6`);
+        //DrossDatabase.logger.debug(`Mark 6`);
         embed = embed
             .setTimestamp()
             .setFooter({ text: `Raid hosted by ${raidHost}` });
         
-        //client.logger.debug(`Mark 7`);
+        //DrossDatabase.logger.debug(`Mark 7`);
         return embed;
     }    
 }
+
+export default Battle;

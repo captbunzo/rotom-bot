@@ -1,8 +1,7 @@
 
-import client from '#src/Client.js';
-import DatabaseTable from '#src/types/DatabaseTable.js';
+import { DrossDatabaseTable } from '@drossjs/dross-database';
 
-export default class GuildTeamRole extends DatabaseTable {
+class GuildTeamRole extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'guild_team_role',
         orderBy: ['guild_id', 'team'],
@@ -57,10 +56,12 @@ export default class GuildTeamRole extends DatabaseTable {
     // ******************** //
 
     async update(condition = { guildId: this.guildId, team: this.team }) {
-        await DatabaseTable.prototype.update.call(this, condition);
+        await DrossDatabaseTable.prototype.update.call(this, condition);
     }
 
     async delete(condition = { guildId: this.guildId, team: this.team }) {
-        await DatabaseTable.prototype.delete.call(this, condition);
+        await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 }
+
+export default GuildTeamRole;

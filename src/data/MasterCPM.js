@@ -1,8 +1,10 @@
 
-import client from '#src/Client.js';
-import DatabaseTable from '#src/types/DatabaseTable.js';
+import {
+    DrossDatabase,
+    DrossDatabaseTable
+} from '@drossjs/dross-database';
 
-export default class MasterCPM extends DatabaseTable {
+class MasterCPM extends DrossDatabaseTable {
     static schema = this.parseSchema({
         tableName: 'master_cpm',
         orderBy: ['level'],
@@ -51,8 +53,8 @@ export default class MasterCPM extends DatabaseTable {
     
     static async getCombatPower(masterPokemon, attackIV, defenseIV, staminaIV, level) {
         const masterCPM = await MasterCPM.get({ level: level, unique: true });
-        client.logger.debug('Master CP Multiplier Record');
-        client.logger.dump(masterCPM);
+        DrossDatabase.logger.debug('Master CP Multiplier Record');
+        DrossDatabase.logger.dump(masterCPM);
 
         //
         // Combat Power (CP) = FLOOR(((Attack + Attack IV) * SQRT(Defense + Defense IV) * SQRT(Stamina + Stamina IV) * (CPM_AT_LEVEL(Level) ^ 2)) / 10)
@@ -71,10 +73,12 @@ export default class MasterCPM extends DatabaseTable {
     // ******************** //
     
     async update(condition = { level: this.level }) {
-        await DatabaseTable.prototype.update.call(this, condition);
+        await DrossDatabaseTable.prototype.update.call(this, condition);
     }
     
     async delete(condition = { level: this.level }) {
-        await DatabaseTable.prototype.delete.call(this, condition);
+        await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 }
+
+export default MasterCPM;

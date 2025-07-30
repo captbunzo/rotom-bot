@@ -4,7 +4,6 @@ import config from '#root/config.json' with { type: 'json' };
 import fs from 'fs';
 import path from 'node:path';
 import chalk from 'chalk';
-//import Logger from '#src/Logger.js';
 import DrossLogger from '@drossjs/dross-logger';
 
 import Discord, { GatewayIntentBits } from 'discord.js';
@@ -33,14 +32,7 @@ class Client extends DiscordClient {
         this.colorizeCommand = this.chalk.green;
         this.colorizeAlias   = this.chalk.cyan;
         this.colorizeAction  = this.chalk.yellow;
-        
-        // Set some database colors
-        this.colorizeTable   = this.chalk.cyan;
-        this.colorizeField   = this.chalk.green;
-        this.colorizeType    = this.chalk.yellow;
-        this.colorizeNotNull = this.chalk.red;
-        this.colorizeFkName  = this.chalk.magenta;
-                
+                        
         // Attach the config and logger
         this.config = config;
         this.logger = new DrossLogger();
