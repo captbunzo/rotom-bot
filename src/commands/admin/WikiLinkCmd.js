@@ -345,7 +345,7 @@ const WikiLinkCmd = {
             }
 
             if (processedCount % InterimLoadUpdates == 0) {
-                interaction.editReply({
+                await interaction.editReply({
                     message: followUpMsg,
                     content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
                 });

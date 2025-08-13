@@ -37,20 +37,6 @@ class MasterCPM extends DrossDatabaseTable {
     // * Class Methods * //
     // ***************** //
     
-    /**
-     * Get MasterCPM(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the MasterCPM(s) to retrieve
-     * @param {object} [orderBy] The order in which the MasterCPM(s) will be returned
-     * @returns {Promise<MasterCPM|MasterCPM[]>} The MasterCPM(s) retrieved
-     */
-    static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            return await super.get(conditions, orderBy);
-        }
-        
-        return await super.get(conditions, orderBy);
-    }
-    
     static async getCombatPower(masterPokemon, attackIV, defenseIV, staminaIV, level) {
         const masterCPM = await MasterCPM.get({ level: level, unique: true });
         DrossDatabase.logger.debug('Master CP Multiplier Record');

@@ -96,7 +96,7 @@ const MasterCPMCmd = {
             }
             
             if (count % InterimLoadUpdates == 0) {
-                interaction.editReply({
+                await interaction.editReply({
                     message: followUpMsg,
                     content: `Loaded ${count} records into ${table} table`
                 });

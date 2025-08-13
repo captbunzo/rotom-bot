@@ -116,7 +116,11 @@ const MasterPokemonCmd = {
             }
 
             if (masterPokemonObj.formMaster != null) {
-                masterPokemonObj.form = masterPokemonObj.formMaster.replace(new RegExp('^' + masterPokemonJSON.pokemonId + '_'), '');
+                if (typeof masterPokemonObj.formMaster === 'string') {
+                    masterPokemonObj.form = masterPokemonObj.formMaster.replace(new RegExp('^' + masterPokemonJSON.pokemonId + '_'), '');
+                } else {
+                    masterPokemonObj.form = masterPokemonObj.formMaster;
+                }
             }
 
             client.logger.debug('Master Pokémon Object');

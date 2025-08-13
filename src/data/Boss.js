@@ -10,6 +10,7 @@ import StringFunctions from '#src/functions/StringFunctions.js';
 
 import MasterCPM     from '#src/data/MasterCPM.js';
 import MasterPokemon from '#src/data/MasterPokemon.js';
+import PogoHubLink   from '#src/data/PogoHubLink.js';
 import WikiLink      from '#src/data/WikiLink.js';
 import Translation   from '#src/data/Translation.js';
 
@@ -78,20 +79,6 @@ class Boss extends DrossDatabaseTable {
     // * Class Methods * //
     // ***************** //
         
-    /**
-     * Get Boss(es) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the Boss(es) to retrieve
-     * @param {object} [orderBy] The order in which the Boss(es) will be returned
-     * @returns {Promise<Boss|Boss[]>} The Boss(es) retrieved
-     */
-    static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            return await super.get(conditions, orderBy);            
-        }
-        
-        return await super.get(conditions, orderBy);
-    }
-    
     static async getPokemonIdChoices(pokemonIdPrefix, conditions = {}) {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }
@@ -144,12 +131,27 @@ class Boss extends DrossDatabaseTable {
         }
 
         const wikiLink = await WikiLink.get(this);
+        const pogoHubLink = await PogoHubLink.get(this);
+
         DrossDatabase.logger.debug(`Wiki Link Record =`);
         DrossDatabase.logger.dump(wikiLink);
 
+        DrossDatabase.logger.debug(`PogoHub Link Record =`);
+        DrossDatabase.logger.dump(pogoHubLink);
+
+        let link = null;
+        let thumbnail = null;
+
+        if (wikiLink !== null) {
+            link = wikiLink.page;
+            thumbnail = wikiLink.image;
+        }
+        
+        if (pogoHubLink !== null) {
+            link = pogoHubLink.page;
+        }
+
         let typeColor = masterPokemon.getTypeColor(masterPokemon.type);
-        let link = wikiLink !== null ? wikiLink.page : null;
-        let thumbnail = wikiLink !== null ? wikiLink.image : null;
         let pokemonType = await masterPokemon.getTypeName();
 
         if (masterPokemon.type2 != null) {

@@ -7,6 +7,7 @@ import GuildBattleAlert from '#src/data/GuildBattleAlert.js';
 import GuildTeamRole    from '#src/data/GuildTeamRole.js';
 import MasterCPM        from '#src/data/MasterCPM.js';
 import MasterPokemon    from '#src/data/MasterPokemon.js';
+import PogoHubLink      from '#src/data/PogoHubLink.js';
 import Translation      from '#src/data/Translation.js';
 import Trainer          from '#src/data/Trainer.js';
 import WikiLink         from '#src/data/WikiLink.js';
@@ -19,6 +20,7 @@ const tables = [
     GuildTeamRole,
     MasterCPM,
     MasterPokemon,
+    PogoHubLink,
     Trainer,
     Translation,
     WikiLink

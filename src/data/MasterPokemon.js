@@ -11,7 +11,10 @@ import {
     PokemonTypeColor
 } from '#src/Constants.js';
 
+import StringFunctions from '#src/functions/StringFunctions.js';
+
 import MasterCPM   from '#src/data/MasterCPM.js';
+import PogoHubLink from '#src/data/PogoHubLink.js';
 import Translation from '#src/data/Translation.js';
 import WikiLink    from '#src/data/WikiLink.js';
 
@@ -200,12 +203,27 @@ class MasterPokemon extends DrossDatabaseTable {
         
         const description = await this.getDescription() ?? 'Description not available';
         const wikiLink = await WikiLink.get(this);
+        const pogoHubLink = await PogoHubLink.get(this);
+
         DrossDatabase.logger.debug(`Wiki Link Record =`);
         DrossDatabase.logger.dump(wikiLink);
 
+        DrossDatabase.logger.debug(`PogoHub Link Record =`);
+        DrossDatabase.logger.dump(pogoHubLink);
+
+        let link = null;
+        let thumbnail = null;
+
+        if (wikiLink !== null) {
+            link = wikiLink.page;
+            thumbnail = wikiLink.image;
+        }
+        
+        if (pogoHubLink !== null) {
+            link = pogoHubLink.page;
+        }
+
         let typeColor = this.getTypeColor(this.type);
-        let link = wikiLink !== null ? wikiLink.page : null;
-        let thumbnail = wikiLink !== null ? wikiLink.image : null;
         let pokemonType = await this.getTypeName();
 
         if (this.type2 != null) {
@@ -231,6 +249,30 @@ class MasterPokemon extends DrossDatabaseTable {
             .addFields(
                 { name: 'Pokémon Type', value: pokemonType, inline: true },
                 { name: 'Pokémon Form', value: pokemonForm, inline: true }
+            );
+ 
+        /*
+        const baseAttack = this.baseAttack !== null ? this.baseAttack.toString() : 'N/A';
+        const baseDefense = this.baseDefense !== null ? this.baseDefense.toString() : 'N/A';
+        const baseStamina = this.baseStamina !== null ? this.baseStamina.toString() : 'N/A';
+        
+        embed = embed
+            .addFields(
+                { name: 'Base Attack', value: baseAttack, inline: true },
+                { name: 'Base Defense', value: baseDefense, inline: true },
+                { name: 'Base Stamina', value: baseStamina, inline: true }
+            );
+        */
+        
+        const candyToEvolve = this.candyToEvolve !== null ? this.candyToEvolve.toString() : 'Does not evolve';
+        const buddyDistanceKm = this.buddyDistanceKm !== null ? `${this.buddyDistanceKm.toString()} km` : 'Unknown';
+        const purifyStardust = this.purifyStardust !== null ? this.purifyStardust.toLocaleString() : 'Unknown';
+
+        embed = embed
+            .addFields(
+                { name: 'Candy to Evolve', value: candyToEvolve, inline: true },
+                { name: 'Buddy Distance', value: buddyDistanceKm, inline: true },
+                { name: 'Purification Stardust', value: purifyStardust, inline: true }
             );
         
         embed = embed

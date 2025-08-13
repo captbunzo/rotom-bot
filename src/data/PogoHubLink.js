@@ -4,23 +4,21 @@ import {
     DrossDatabaseTable
 } from '@drossjs/dross-database';
 
-import { BossType } from '#src/Constants.js';
 import MasterPokemon from '#src/data/MasterPokemon.js';
 
-class WikiLink extends DrossDatabaseTable {
+// TODO - Maybe merge this and the wiki links table
+class PogoHubLink extends DrossDatabaseTable {
     static schema = this.parseSchema({
-        tableName: 'wiki_link',
+        tableName: 'pogo_hub_link',
         orderBy: ['id'],
         fields: {
             'id':            { type: 'string',    nullable: false, length: 64 },
             'pokemon_id':    { type: 'string',    nullable: false, length: 20 },
             'pokedex_id':    { type: 'smallint',  nullable: false, unsigned: true },
             'is_mega':       { type: 'tinyint',   nullable: false, unsigned: true },
-            'is_shadow':     { type: 'tinyint',   nullable: false, unsigned: true },
-            'is_dynamax':    { type: 'tinyint',   nullable: false, unsigned: true },
             'is_gigantamax': { type: 'tinyint',   nullable: false, unsigned: true },
             'page':          { type: 'string',    nullable: false, length: 128 },
-            'image':         { type: 'string',    nullable: false, length: 128 },
+            'image':         { type: 'string',    nullable: true, length: 128 },
             'template_id':   { type: 'string',    nullable: false, length: 64 },
             'form':          { type: 'string',    nullable: true,  length: 64 }
         },
@@ -39,8 +37,6 @@ class WikiLink extends DrossDatabaseTable {
     get pokemonId    () { return this.getField('pokemonId'); }
     get pokedexId    () { return this.getField('pokedexId'); }
     get isMega       () { return this.getField('isMega'); }
-    get isShadow     () { return this.getField('isShadow'); }
-    get isDynamax    () { return this.getField('isDynamax'); }
     get isGigantamax () { return this.getField('isGigantamax'); }
     get page         () { return this.getField('page'); }
     get image        () { return this.getField('image'); }
@@ -55,8 +51,6 @@ class WikiLink extends DrossDatabaseTable {
     set pokemonId    (value) { this.setField('pokemonId', value); }
     set pokedexId    (value) { this.setField('pokedexId', value); }
     set isMega       (value) { this.setField('isMega', value); }
-    set isShadow     (value) { this.setField('isShadow', value); }
-    set isDynamax    (value) { this.setField('isDynamax', value); }
     set isGigantamax (value) { this.setField('isGigantamax', value); }
     set page         (value) { this.setField('page', value); }
     set image        (value) { this.setField('image', value); }
@@ -72,10 +66,10 @@ class WikiLink extends DrossDatabaseTable {
     }
         
     /**
-     * Get WikiLink(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the WikiLink(s) to retrieve
-     * @param {object} [orderBy] The order in which the WikiLink(s) will be returned
-     * @returns {Promise<WikiLink|WikiLink[]>} The WikiLink(s) retrieved
+     * Get PogoHubLink(s) based on a given set of conditions in an optional order.
+     * @param {object} [conditions] The criteria for the PogoHubLink(s) to retrieve
+     * @param {object} [orderBy] The order in which the PogoHubLink(s) will be returned
+     * @returns {Promise<PogoHubLink|PogoHubLink[]>} The PogoHubLink(s) retrieved
      */
     static async get(conditions = {}, orderBy = this.schema.orderBy) {
         DrossDatabase.logger.debug(`typeof conditions = ${typeof conditions}`);
@@ -87,61 +81,53 @@ class WikiLink extends DrossDatabaseTable {
             let boss = conditions;
             let masterPokemon = await MasterPokemon.get({ templateId: boss.templateId, unique: true });
             
-            let wikiLinkSearchObj = null;
-            let wikiLink = null;
+            let pogoHubLinkSearchObj = null;
+            let pogoHubLink = null;
 
             // First check for the wiki link record with the full search parameters
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 isMega: boss.isMega,
-                isShadow: boss.isShadow,
-                isDynamax: ( boss.bossType == BossType.Dynamax),
                 isGigantamax: ( boss.bossType == BossType.Gigantamax)
             };
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
             // Next check based on the pokemon name
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: boss.isMega,
-                isShadow: boss.isShadow,
-                isDynamax: ( boss.bossType == BossType.Dynamax),
                 isGigantamax: ( boss.bossType == BossType.Gigantamax)
             };
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
             // Otherwise check for the base record
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 isMega: false,
-                isShadow: false,
-                isDynamax: false,
                 isGigantamax: false
             };
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
             // And finally check for the base record with the pokemon name
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isShadow: false,
-                isDynamax: false,
                 isGigantamax: false
             };
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
             return null;
@@ -150,51 +136,45 @@ class WikiLink extends DrossDatabaseTable {
         if (typeof conditions == 'object' && conditions.constructor.name == 'MasterPokemon') {
             let masterPokemon = conditions;
 
-            let wikiLinkSearchObj = null;
-            let wikiLink = null;
+            let pogoHubLinkSearchObj = null;
+            let pogoHubLink = null;
 
             // First check for the base record
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 form: masterPokemon.form,
                 isMega: false,
-                isShadow: false,
-                isDynamax: false,
                 isGigantamax: false
             };
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
             
             // Otherwise check for the base record without the form
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isShadow: false,
-                isDynamax: false,
                 isGigantamax: false
             };
 
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
-            wikiLinkSearchObj = {
+            pogoHubLinkSearchObj = {
                 id: masterPokemon.pokemonId.toLowerCase(),
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isShadow: false,
-                isDynamax: false,
                 isGigantamax: false
             };
 
-            wikiLink = await WikiLink.get(wikiLinkSearchObj);
-            if (wikiLink.length == 1) {
-                return wikiLink[0];
+            pogoHubLink = await PogoHubLink.get(pogoHubLinkSearchObj);
+            if (pogoHubLink.length == 1) {
+                return pogoHubLink[0];
             }
 
             return null;
@@ -209,4 +189,4 @@ class WikiLink extends DrossDatabaseTable {
         
 }
 
-export default WikiLink;
+export default PogoHubLink;

@@ -67,24 +67,6 @@ class Trainer extends DrossDatabaseTable {
     // * Class Methods * //
     // ***************** //
     
-    //static parseConditions(conditions) {
-    //    return conditions;
-    //}
-    
-    /**
-     * Get Trainer(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the Trainer(s) to retrieve
-     * @param {object} [orderBy] The order in which the Trainer(s) will be returned
-     * @returns {Promise<Trainer|Trainer[]>} The Trainer(s) retrieved
-     */
-    static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            return await super.get(conditions, orderBy);
-        }
-        
-        return await super.get(conditions, orderBy);
-    }
-    
     static async getTrainerNameChoices(namePrefix, conditions = {}) {
         return await this.getChoices('trainerName', namePrefix, conditions);
     }

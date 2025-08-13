@@ -37,19 +37,6 @@ class BattleMember extends DrossDatabaseTable {
     // * Class Methods * //
     // ***************** //
     
-    /**
-     * Get BattleMember(s) based on a given set of conditions in an optional order.
-     * @param {object} [conditions] The criteria for the BattleMember(s) to retrieve
-     * @param {object} [orderBy] The order in which the BattleMember(s) will be returned
-     * @returns {Promise<BattleMember|BattleMember[]>} The BattleMember(s) retrieved
-     */
-    static async get(conditions = {}, orderBy = this.schema.orderBy) {
-        if (typeof conditions == 'object' && conditions.id && conditions.unique) {
-            return await super.get(conditions, orderBy);
-        }
-        
-        return await super.get(conditions, orderBy);
-    }
     
     // ******************** //
     // * Instance Methods * //
