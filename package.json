@@ -2,10 +2,12 @@
   "name": "rotom-bot",
   "version": "1.0.0",
   "description": "Rotom Discord Bot",
-  "main": "app.js",
+  "main": "src/App.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsdown",
+    "dev": "export NODE_ENV=development && tsx watch ./src/App.ts",
+    "test": "exit 0"
   },
   "repository": {
     "type": "git",
@@ -18,8 +20,8 @@
   },
   "homepage": "https://github.com/captbunzo/rotom-bot#readme",
   "dependencies": {
-    "@drossjs/dross-database": "^1.0.17",
-    "@drossjs/dross-logger": "^1.0.12",
+    "@drossjs/dross-database": "^1.1.10",
+    "@drossjs/dross-logger": "^1.1.5",
     "@sentry/node": "^9.5.0",
     "@sentry/tracing": "^7.120.3",
     "discord.js": "^14.18.0",
@@ -28,5 +30,11 @@
   "imports": {
     "#src/*": "./src/*",
     "#root/*": "./*"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.27",
+    "tsdown": "^0.14.1",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
   }
 }
