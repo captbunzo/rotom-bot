@@ -1,6 +1,4 @@
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
@@ -9,7 +7,7 @@ import { BossType } from '#src/Constants.js';
 import Boss from '#src/models/Boss.js';
 import MasterPokemon from '#src/models/MasterPokemon.js';
 
-export interface WikiLinkData extends DrossTableData {
+export interface WikiLinkData {
     id: string;
     pokemonId: string;
     pokedexId: number;
@@ -20,10 +18,10 @@ export interface WikiLinkData extends DrossTableData {
     page: string;
     image: string;
     templateId: string;
-    form?: string | null;
+    form?: string | null | undefined;
 }
 
-export interface WikiLinkConditions extends DrossTableConditions {
+export interface WikiLinkConditions {
     id?: string;
     pokemonId?: string;
     pokedexId?: number;
@@ -34,10 +32,10 @@ export interface WikiLinkConditions extends DrossTableConditions {
     page?: string;
     image?: string;
     templateId?: string;
-    form?: string | null;
+    form?: string | null | undefined;
 }
 
-export default class WikiLink extends DrossDatabaseTable {
+export class WikiLink extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'wiki_link',
         orderBy: ['id'],
@@ -81,17 +79,17 @@ export default class WikiLink extends DrossDatabaseTable {
      * Setters *
      ***********/
     
-    set id           (value: string       ) { this.setField('id', value); }
-    set pokemonId    (value: string       ) { this.setField('pokemonId', value); }
-    set pokedexId    (value: number       ) { this.setField('pokedexId', value); }
-    set isMega       (value: boolean      ) { this.setField('isMega', value); }
-    set isShadow     (value: boolean      ) { this.setField('isShadow', value); }
-    set isDynamax    (value: boolean      ) { this.setField('isDynamax', value); }
-    set isGigantamax (value: boolean      ) { this.setField('isGigantamax', value); }
-    set page         (value: string       ) { this.setField('page', value); }
-    set image        (value: string       ) { this.setField('image', value); }
-    set templateId   (value: string       ) { this.setField('templateId', value); }
-    set form         (value: string | null) { this.setField('form', value); }
+    set id           ( value: string        ) { this.setField('id', value); }
+    set pokemonId    ( value: string        ) { this.setField('pokemonId', value); }
+    set pokedexId    ( value: number        ) { this.setField('pokedexId', value); }
+    set isMega       ( value: boolean       ) { this.setField('isMega', value); }
+    set isShadow     ( value: boolean       ) { this.setField('isShadow', value); }
+    set isDynamax    ( value: boolean       ) { this.setField('isDynamax', value); }
+    set isGigantamax ( value: boolean       ) { this.setField('isGigantamax', value); }
+    set page         ( value: string        ) { this.setField('page', value); }
+    set image        ( value: string        ) { this.setField('image', value); }
+    set templateId   ( value: string        ) { this.setField('templateId', value); }
+    set form         ( value: string | null ) { this.setField('form', value); }
 
     /**************************
      * Class Method Overrides *
@@ -101,7 +99,10 @@ export default class WikiLink extends DrossDatabaseTable {
         return await super.get(conditions, orderBy) as WikiLink[];
     }
 
-    static override async getUnique(conditions: WikiLinkConditions = {}, orderBy = this.schema.orderBy) {
+    static override async getUnique(
+        conditions: WikiLinkConditions | Boss | MasterPokemon = {},
+        orderBy = this.schema.orderBy
+    ) {
         this.database.logger.debug(`typeof conditions = ${typeof conditions}`);
         this.database.logger.debug(`conditions.constructor.name = ${conditions.constructor.name}`);
         this.database.logger.debug(`conditions =`);
@@ -251,3 +252,5 @@ export default class WikiLink extends DrossDatabaseTable {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }
 }
+
+export default WikiLink;

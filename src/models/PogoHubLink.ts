@@ -1,6 +1,4 @@
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
@@ -9,32 +7,32 @@ import { BossType } from '#src/Constants.js';
 import Boss from '#src/models/Boss.js';
 import MasterPokemon from '#src/models/MasterPokemon.js';
 
-export interface PogoHubLinkData extends DrossTableData {
+export interface PogoHubLinkData {
     id: string;
     pokemonId: string;
     pokedexId: number;
     isMega: boolean;
     isGigantamax: boolean;
     page: string;
-    image?: string | null;
+    image?: string | null | undefined;
     templateId: string;
-    form?: string | null;
+    form?: string | null | undefined;
 }
 
-export interface PogoHubLinkConditions extends DrossTableConditions {
+export interface PogoHubLinkConditions {
     id?: string;
     pokemonId?: string;
     pokedexId?: number;
     isMega?: boolean;
     isGigantamax?: boolean;
     page?: string;
-    image?: string | null;
+    image?: string | null | undefined;
     templateId?: string;
-    form?: string | null;
+    form?: string | null | undefined;
 }
 
 // TODO - Maybe merge this and the wiki links table
-export default class PogoHubLink extends DrossDatabaseTable {
+export class PogoHubLink extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'pogo_hub_link',
         orderBy: ['id'],
@@ -74,15 +72,15 @@ export default class PogoHubLink extends DrossDatabaseTable {
      * Setters *
      ***********/
     
-    set id           (value: string       ) { this.setField('id', value); }
-    set pokemonId    (value: string       ) { this.setField('pokemonId', value); }
-    set pokedexId    (value: number       ) { this.setField('pokedexId', value); }
-    set isMega       (value: boolean      ) { this.setField('isMega', value); }
-    set isGigantamax (value: boolean      ) { this.setField('isGigantamax', value); }
-    set page         (value: string       ) { this.setField('page', value); }
-    set image        (value: string | null) { this.setField('image', value); }
-    set templateId   (value: string       ) { this.setField('templateId', value); }
-    set form         (value: string | null) { this.setField('form', value); }
+    set id           ( value: string        ) { this.setField('id', value); }
+    set pokemonId    ( value: string        ) { this.setField('pokemonId', value); }
+    set pokedexId    ( value: number        ) { this.setField('pokedexId', value); }
+    set isMega       ( value: boolean       ) { this.setField('isMega', value); }
+    set isGigantamax ( value: boolean       ) { this.setField('isGigantamax', value); }
+    set page         ( value: string        ) { this.setField('page', value); }
+    set image        ( value: string | null ) { this.setField('image', value); }
+    set templateId   ( value: string        ) { this.setField('templateId', value); }
+    set form         ( value: string | null ) { this.setField('form', value); }
 
     /**************************
      * Class Method Overrides *
@@ -92,7 +90,10 @@ export default class PogoHubLink extends DrossDatabaseTable {
         return await super.get(conditions, orderBy) as PogoHubLink[];
     }
 
-    static override async getUnique(conditions: PogoHubLinkConditions = {}, orderBy = this.schema.orderBy) {
+    static override async getUnique(
+        conditions: PogoHubLinkConditions | Boss | MasterPokemon = {},
+        orderBy = this.schema.orderBy
+    ) {
         this.database.logger.debug(`typeof conditions = ${typeof conditions}`);
         this.database.logger.debug(`conditions.constructor.name = ${conditions.constructor.name}`);
         this.database.logger.debug(`conditions =`);
@@ -115,6 +116,7 @@ export default class PogoHubLink extends DrossDatabaseTable {
                 isMega: boss.isMega,
                 isGigantamax: ( boss.bossType == BossType.Gigantamax)
             };
+            
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -127,6 +129,7 @@ export default class PogoHubLink extends DrossDatabaseTable {
                 isMega: boss.isMega,
                 isGigantamax: ( boss.bossType == BossType.Gigantamax)
             };
+
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -138,6 +141,7 @@ export default class PogoHubLink extends DrossDatabaseTable {
                 isMega: false,
                 isGigantamax: false
             };
+
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -150,6 +154,7 @@ export default class PogoHubLink extends DrossDatabaseTable {
                 isMega: false,
                 isGigantamax: false
             };
+
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -160,7 +165,6 @@ export default class PogoHubLink extends DrossDatabaseTable {
 
         if (typeof conditions == 'object' && conditions.constructor.name == 'MasterPokemon') {
             let masterPokemon: MasterPokemon = conditions as MasterPokemon;
-
             let pogoHubLinkSearchObj: PogoHubLinkConditions | null = null;
             let pogoHubLinks: PogoHubLink[];
 
@@ -171,6 +175,7 @@ export default class PogoHubLink extends DrossDatabaseTable {
                 isMega: false,
                 isGigantamax: false
             };
+
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -227,3 +232,5 @@ export default class PogoHubLink extends DrossDatabaseTable {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }       
 }
+
+export default PogoHubLink;

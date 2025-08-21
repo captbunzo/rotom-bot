@@ -82,28 +82,6 @@ const InteractionCreateEvent = {
 		}
 	},
 
-	async executeModalSubmitInteraction(interaction: ModalSubmitInteraction) {
-		const client = interaction.client as unknown as Client;
-		const modal = client.modals.get(interaction.customId);
-
-		if (!modal) {
-			client.logger.error(`No modal matching ${interaction.customId} was found`);
-			return;
-		}
-
-		try {
-			await modal.handle(interaction);
-		} catch (error) {
-			client.logger.error(`Error submitting model ${interaction.customId}`);
-			client.logger.dump(error);
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
-			} else {
-				await interaction.reply({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
-			}
-		}
-	},
-
 	async executeButtonInteraction(interaction: ButtonInteraction) {
 		const client = interaction.client as unknown as Client;
 		const buttonName = interaction.customId.split('.')[0];
@@ -131,6 +109,28 @@ const InteractionCreateEvent = {
 			}
 		}
 	},
+
+	async executeModalSubmitInteraction(interaction: ModalSubmitInteraction) {
+		const client = interaction.client as unknown as Client;
+		const modal = client.modals.get(interaction.customId);
+
+		if (!modal) {
+			client.logger.error(`No modal matching ${interaction.customId} was found`);
+			return;
+		}
+
+		try {
+			await modal.handle(interaction);
+		} catch (error) {
+			client.logger.error(`Error submitting model ${interaction.customId}`);
+			client.logger.dump(error);
+			if (interaction.replied || interaction.deferred) {
+				await interaction.followUp({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+			} else {
+				await interaction.reply({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+			}
+		}
+	}
 };
 
 export default InteractionCreateEvent;

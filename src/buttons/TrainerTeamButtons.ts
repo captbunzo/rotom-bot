@@ -1,8 +1,9 @@
-
 import {
     ActionRowBuilder,
     ButtonBuilder,
+    ButtonInteraction,
     ButtonStyle,
+    ChatInputCommandInteraction,
     MessageFlags
 } from 'discord.js';
 
@@ -10,6 +11,10 @@ import {
     MessageType,
     Team
 } from '#src/Constants.js';
+
+import type {
+    TrainerConditions
+} from '#src/types/ModelTypes.js';
 
 import Trainer from '#src/models/Trainer.js';
 
@@ -21,9 +26,7 @@ const TrainerTeamButtons = {
         name: 'TrainerTeam'
     },
 
-    async show(interaction, messageType = MessageType.Reply) {
-        const client = interaction.client;
-        
+    async show(interaction: ChatInputCommandInteraction, _messageType = MessageType.Reply) {        
         // TODO - Add team emoji to rotom discord and figure out how to use them in these buttons cause that would be awesome
         // const teamEmoji = client.emojis.cache.get(Team.Instinct.emojiId
 
@@ -54,7 +57,7 @@ const TrainerTeamButtons = {
             .setLabel(Cancel)
             .setStyle(ButtonStyle.Secondary);
         
-        const teamRow = new ActionRowBuilder()
+        const teamRow = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(instinctButton, mysticButton, valorButton, clearButton, cancelButton);
 
             if (!interaction.replied) {
@@ -71,11 +74,19 @@ const TrainerTeamButtons = {
                 });
             }
     },
-    
-    async handle(interaction) {
-        const client = interaction.client;
-        const trainer = await Trainer.getUnique({ id: interaction.user.id });
+
+    async handle(interaction: ButtonInteraction) {
+        const trainerSearchObj: TrainerConditions = { discordId: interaction.user.id };
+        const trainer = await Trainer.getUnique(trainerSearchObj);
         const team = interaction.customId.split('.')[1];
+
+        if (!trainer) {
+            await interaction.reply({
+                content: 'Trainer not found',
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
 
         if (team == Cancel) {
             await interaction.reply({
@@ -85,6 +96,10 @@ const TrainerTeamButtons = {
             return;
         }
         
+        if (!team) {
+            throw new Error('Team not found');
+        }
+
         trainer.team = ( team == ClearTeam ? null : team );
         await trainer.update();
 

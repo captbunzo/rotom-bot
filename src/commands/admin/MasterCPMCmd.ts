@@ -9,7 +9,6 @@ import {
 
 import Client from '#src/Client.js';
 import { InterimLoadUpdates } from '#src/Constants.js';
-
 import MasterCPM from '#src/models/MasterCPM.js';
 
 const MasterCPMCmd = {
@@ -35,9 +34,9 @@ const MasterCPMCmd = {
         }
 	},
 
-    /**********************/
-    /* Subcommand :: Load */
-    /**********************/
+    /**********************
+     * Subcommand :: Load *
+     **********************/
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -48,11 +47,9 @@ const MasterCPMCmd = {
 
         let json;
         try {
-            json = JSON.parse(
-                await readFile(
-                    new URL(file, import.meta.url)
-                )
-            );
+            const url = new URL(file, import.meta.url);
+            const data = (await readFile(url)).toString();
+            json = JSON.parse(data);
         } catch (error) {
             await interaction.followUp({ content: `Error reading file` });
         }

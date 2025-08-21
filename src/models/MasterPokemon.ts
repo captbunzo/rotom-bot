@@ -1,8 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
@@ -12,7 +10,6 @@ import {
     PokemonTypeColor
 } from '#src/Constants.js';
 
-// @ts-expect-error - TODO - Fix this later
 import StringFunctions from '#src/functions/StringFunctions.js';
 
 import MasterCPM   from '#src/models/MasterCPM.js';
@@ -20,39 +17,39 @@ import PogoHubLink from '#src/models/PogoHubLink.js';
 import Translation from '#src/models/Translation.js';
 import WikiLink    from '#src/models/WikiLink.js';
 
-export interface MasterPokemonData extends DrossTableData {
+export interface MasterPokemonData {
     templateId: string;
     pokemonId: string;
     pokedexId: number;
     type: string;
-    type2?: string | null;
-    form?: string | null;
-    formMaster?: string | null;
-    baseAttack?: number | null;
-    baseDefense?: number | null;
-    baseStamina?: number | null;
-    candyToEvolve?: number | null;
+    type2?: string | null | undefined;
+    form?: string | null | undefined;
+    formMaster?: string | null | undefined;
+    baseAttack?: number | null | undefined;
+    baseDefense?: number | null | undefined;
+    baseStamina?: number | null | undefined;
+    candyToEvolve?: number | null | undefined;
     buddyDistanceKm: number;
-    purifyStardust?: number | null;
+    purifyStardust?: number | null | undefined;
 }
 
-export interface MasterPokemonConditions extends DrossTableConditions {
+export interface MasterPokemonConditions {
     templateId?: string;
     pokemonId?: string;
     pokedexId?: number;
     type?: string;
-    type2?: string | null;
-    form?: string | null;
-    formMaster?: string | null;
-    baseAttack?: number | null;
-    baseDefense?: number | null;
-    baseStamina?: number | null;
-    candyToEvolve?: number | null;
+    type2?: string | null | undefined;
+    form?: string | null | undefined;
+    formMaster?: string | null | undefined;
+    baseAttack?: number | null | undefined;
+    baseDefense?: number | null | undefined;
+    baseStamina?: number | null | undefined;
+    candyToEvolve?: number | null | undefined;
     buddyDistanceKm?: number;
-    purifyStardust?: number | null;
+    purifyStardust?: number | null | undefined;
 }
 
-export default class MasterPokemon extends DrossDatabaseTable {
+export class MasterPokemon extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'master_pokemon',
         orderBy: ['template_id'],
@@ -94,25 +91,25 @@ export default class MasterPokemon extends DrossDatabaseTable {
     get baseStamina     (): number | null { return this.getField('baseStamina'); }
     get candyToEvolve   (): number | null { return this.getField('candyToEvolve'); }
     get buddyDistanceKm (): number        { return this.getField('buddyDistanceKm'); }
-    get purifyStardust  (): number        { return this.getField('purifyStardust'); }
+    get purifyStardust  (): number | null { return this.getField('purifyStardust'); }
 
     /***********
      * Setters *
      ***********/
     
-    set templateId      (value: string       ) { this.setField('templateId', value); }
-    set pokemonId       (value: string       ) { this.setField('pokemonId', value); }
-    set pokedexId       (value: number       ) { this.setField('pokedexId', value); }
-    set type            (value: string       ) { this.setField('type', value); }
-    set type2           (value: string | null) { this.setField('type2', value); }
-    set form            (value: string | null) { this.setField('form', value); }
-    set formMaster      (value: string | null) { this.setField('formMaster', value); }
-    set baseAttack      (value: number | null) { this.setField('baseAttack', value); }
-    set baseDefense     (value: number | null) { this.setField('baseDefense', value); }
-    set baseStamina     (value: number | null) { this.setField('baseStamina', value); }
-    set candyToEvolve   (value: number | null) { this.setField('candyToEvolve', value); }
-    set buddyDistanceKm (value: number       ) { this.setField('buddyDistanceKm', value); }
-    set purifyStardust  (value: number       ) { this.setField('purifyStardust', value); }
+    set templateId      ( value: string        ) { this.setField('templateId', value); }
+    set pokemonId       ( value: string        ) { this.setField('pokemonId', value); }
+    set pokedexId       ( value: number        ) { this.setField('pokedexId', value); }
+    set type            ( value: string        ) { this.setField('type', value); }
+    set type2           ( value: string | null ) { this.setField('type2', value); }
+    set form            ( value: string | null ) { this.setField('form', value); }
+    set formMaster      ( value: string | null ) { this.setField('formMaster', value); }
+    set baseAttack      ( value: number | null ) { this.setField('baseAttack', value); }
+    set baseDefense     ( value: number | null ) { this.setField('baseDefense', value); }
+    set baseStamina     ( value: number | null ) { this.setField('baseStamina', value); }
+    set candyToEvolve   ( value: number | null ) { this.setField('candyToEvolve', value); }
+    set buddyDistanceKm ( value: number        ) { this.setField('buddyDistanceKm', value); }
+    set purifyStardust  ( value: number | null ) { this.setField('purifyStardust', value); }
 
     /**************************
      * Class Method Overrides *
@@ -325,3 +322,5 @@ export default class MasterPokemon extends DrossDatabaseTable {
         return embed;
     }
 }
+
+export default MasterPokemon;

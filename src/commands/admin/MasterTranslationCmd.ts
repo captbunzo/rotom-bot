@@ -10,6 +10,11 @@ import {
 import Client from '#src/Client.js';
 import { InterimLoadUpdates } from '#src/Constants.js';
 
+import type {
+    TranslationConditions,
+    TranslationData
+} from '#src/types/ModelTypes.js';
+
 import Translation from '#src/models/Translation.js';
 
 const MasterTranslationCmd = {
@@ -40,9 +45,9 @@ const MasterTranslationCmd = {
         }
     },
 
-    /**********************/
-    /* Subcommand :: Load */
-    /**********************/
+    /**********************
+     * Subcommand :: Load *
+     **********************/
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
         const client   = interaction.client as Client;
@@ -58,11 +63,9 @@ const MasterTranslationCmd = {
 
         let json;
         try {
-            json = JSON.parse(
-                await readFile(
-                    new URL(file, import.meta.url)
-                )
-            );
+            const url = new URL(file, import.meta.url);
+            const data = (await readFile(url)).toString();
+            json = JSON.parse(data);
         } catch (error) {
             await interaction.followUp({ content: `Error reading file` });
         }
@@ -132,7 +135,7 @@ const MasterTranslationCmd = {
                 let keyVariant = code.slice(name.length + 1);
                 client.logger.debug(`keyVariant <1> = ${keyVariant}`);
 
-                let translationObj = {
+                let translationObj: TranslationData = {
                     code: code,
                     name: name,
                     key: 0,
@@ -159,16 +162,21 @@ const MasterTranslationCmd = {
                 */
 
                 if ( (keyVariant.length > 0) && (keyVariantPartsArray.length > 0) ) {
-                    translationObj.key = keyVariantPartsArray[0];
+                    if (keyVariantPartsArray[0]) {
+                        translationObj.key = parseInt(keyVariantPartsArray[0]);
+                    }
 
                     if (keyVariantPartsArray.length > 1) {
-                        const variant        = keyVariantPartsArray[1]
-                        const variantId      = parseInt(variant);
-                        const variantIdFloat = parseFloat(variant);
+                        const variant = keyVariantPartsArray[1];
+                        
+                        if (variant) {
+                            const variantId      = parseInt(variant);
+                            const variantIdFloat = parseFloat(variant);
 
-                        translationObj.variant = variant;
-                        if (Number.isInteger(variantId) && variantId == variantIdFloat) {
-                            translationObj.variantId = variantId;
+                            translationObj.variant = variant;
+                            if (Number.isInteger(variantId) && variantId == variantIdFloat) {
+                                translationObj.variantId = variantId;
+                            }
                         }
                     }
                 }
@@ -178,7 +186,7 @@ const MasterTranslationCmd = {
                 client.logger.debug(`Translation Object <2> =`);
                 client.logger.dump(translationObj);
 
-                let translationSearch = {
+                let translationSearch: TranslationConditions = {
                     name: translationObj.name,
                     key: translationObj.key,
                     variant: translationObj.variant,

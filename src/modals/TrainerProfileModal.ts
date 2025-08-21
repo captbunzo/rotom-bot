@@ -1,4 +1,3 @@
-
 import {
     ActionRowBuilder,
     ChatInputCommandInteraction,
@@ -9,7 +8,11 @@ import {
     TextInputStyle
 } from 'discord.js';
 
-import Trainer from '#src/models/Trainer.js';
+import Client from '#src/Client.js';
+import {
+    type TrainerData,
+    Trainer
+} from '#src/models/Trainer.js';
 
 const TrainerProfileModal = {
     data: {
@@ -17,7 +20,7 @@ const TrainerProfileModal = {
     },
 
     async show(interaction: ChatInputCommandInteraction) {
-        const trainer = await Trainer.getUnique({ id: interaction.user.id });
+        const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
         // Create the modal
         const modal = new ModalBuilder()
@@ -79,13 +82,12 @@ const TrainerProfileModal = {
             }
         }
 
-        // Create rows and add them to the modal
         modal.addComponents(
-            new ActionRowBuilder().addComponents(trainerNameInput),
-            new ActionRowBuilder().addComponents(firstNameInput),
-            new ActionRowBuilder().addComponents(codeInput),
-            new ActionRowBuilder().addComponents(levelInput),
-            new ActionRowBuilder().addComponents(favoritePokemonInput)
+            new ActionRowBuilder<TextInputBuilder>().addComponents(trainerNameInput),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(firstNameInput),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(codeInput),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(levelInput),
+            new ActionRowBuilder<TextInputBuilder>().addComponents(favoritePokemonInput)
         );
 
         // Finally show the modal
@@ -93,7 +95,8 @@ const TrainerProfileModal = {
     },
     
     async handle(interaction: ModalSubmitInteraction) {
-        let trainer = await Trainer.getUnique({ id: interaction.user.id });
+        const client = interaction.client as Client;
+        let trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         
         //client.logger.log(`Interaction User ID = ${interaction.user.id}`);
         //client.logger.log(`Trainer = ${trainer}`);
@@ -104,24 +107,25 @@ const TrainerProfileModal = {
         //client.logger.log(`Trainer Team = ${trainer.team}`);
         //client.logger.log(`Trainer Favorite Pokemon = ${trainer.favoritePokemon}`);
 
-        const trainerName = interaction.fields.getTextInputValue('trainerName');
-        const firstName = interaction.fields.getTextInputValue('firstName');
-        const code = interaction.fields.getTextInputValue('code');
-        const level = parseInt(interaction.fields.getTextInputValue('level'));
+        const trainerName     = interaction.fields.getTextInputValue('trainerName');
+        const firstName       = interaction.fields.getTextInputValue('firstName');
+        const code            = interaction.fields.getTextInputValue('code');
+        const level           = parseInt(interaction.fields.getTextInputValue('level'));
         const favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
 
         //if (code.length == 0) code = null;
         //if (level.length == 0) level = null;
 
         if (!trainer) {
-            trainer = new Trainer({
-                id: interaction.user.id,
+            const trainerData: TrainerData = {
+                discordId: interaction.user.id,
                 trainerName: trainerName,
                 firstName: firstName,
                 code: code,
                 level: level,
                 favoritePokemon: favoritePokemon
-            });
+            };
+            trainer = new Trainer(trainerData);
             await trainer.create();
         } else {
             trainer.trainerName = trainerName;
@@ -139,7 +143,7 @@ const TrainerProfileModal = {
 
         // Prompt the user to set their team if not already set
         if (!trainer.team) {
-            const trainerTeamButtons = interaction.client.buttons.get('TrainerTeam');
+            const trainerTeamButtons = client.buttons.get('TrainerTeam');
             await trainerTeamButtons.show(interaction);
         }
     }

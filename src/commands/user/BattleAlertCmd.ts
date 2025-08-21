@@ -10,6 +10,11 @@ import {
     BossType
 } from '#src/Constants.js';
 
+import type {
+    GuildBattleAlertConditions,
+    GuildBattleAlertData
+} from '#src/types/ModelTypes.js';
+
 import GuildBattleAlert from '#src/models/GuildBattleAlert.js'
 import Translation      from '#src/models/Translation.js';
 
@@ -93,6 +98,10 @@ const BattleAlertCmd = {
      *************************************/
 
     async executeCreate(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
+
         const guildId  = interaction.guild.id;
         const role     = interaction.options.getRole('role');
         const channel  = interaction.options.getChannel('channel');
@@ -101,8 +110,12 @@ const BattleAlertCmd = {
         const isMega   = interaction.options.getBoolean('mega');
         const isShadow = interaction.options.getBoolean('shadow');
 
+        if (!role) {
+            throw new Error('Required option role does not have a value');
+        }
+
         // Check if an identical battle role already exists
-        const guildBattleAlertSearchObject = {
+        const guildBattleAlertSearchObject: GuildBattleAlertConditions = {
             guildId: guildId,
             roleId: role.id,
             channelId: (channel !== null) ? channel.id : null,
@@ -124,7 +137,7 @@ const BattleAlertCmd = {
         }
 
         // Create a new battle role
-        guildBattleAlert = new GuildBattleAlert({
+        const guildBattleAlertData: GuildBattleAlertData = {
             guildId: guildId,
             roleId: role.id,
             channelId: (channel !== null) ? channel.id : null,
@@ -132,7 +145,8 @@ const BattleAlertCmd = {
             tier: tier,
             isMega: isMega,
             isShadow: isShadow
-        });
+        };
+        guildBattleAlert = new GuildBattleAlert(guildBattleAlertData);
         await guildBattleAlert.create();
         const guildBattleAlertEmbed = await guildBattleAlert.buildEmbed();
 
@@ -147,6 +161,9 @@ const BattleAlertCmd = {
      ************************************/
 
     async executeList(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
         const guildId = interaction.guild.id;
 
         // Get all battle alerts for the guild
@@ -183,8 +200,16 @@ const BattleAlertCmd = {
      *************************************/
 
     async executeDelete(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
+
         const guildId = interaction.guild.id;
         const alertId = interaction.options.getString('id');
+
+        if (!alertId) {
+            throw new Error('Required option id does not have a value');
+        }
 
         // Get the battle alert by ID
         const guildBattleAlert = await GuildBattleAlert.getUnique({ id: alertId, guildId: guildId });

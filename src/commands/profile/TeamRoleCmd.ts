@@ -5,7 +5,6 @@ import {
 } from 'discord.js';
 
 import { Team } from '#src/Constants.js';
-
 import GuildTeamRole from '#src/models/GuildTeamRole.js';
 
 const TeamRoleCmd = {
@@ -75,9 +74,21 @@ const TeamRoleCmd = {
      *******************************/
 
     async executeSet(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
+
         const guildId = interaction.guild.id;
         const role = interaction.options.getRole('role');
         const team = interaction.options.getString('team');
+
+        if (!role) {
+            throw new Error('Required option role does not have a value');
+        }
+
+        if (!team) {
+            throw new Error('Required option team does not have a value');
+        }
 
         // Check if the team role already exists
         const guildTeamRole = await GuildTeamRole.getUnique({ guildId: guildId, team: team });
@@ -106,8 +117,16 @@ const TeamRoleCmd = {
      *********************************/
 
     async executeClear(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
+
         const guildId = interaction.guild.id;
         const team = interaction.options.getString('team');
+
+        if (!team) {
+            throw new Error('Required option team does not have a value');
+        }
 
         // Check if the team role exists
         const guildTeamRole = await GuildTeamRole.getUnique({ guildId: guildId, team: team });
@@ -130,6 +149,9 @@ const TeamRoleCmd = {
      **************************************/
 
     async executeClearAll(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
         const guildId = interaction.guild.id;
 
         // Get all team roles for the guild
@@ -155,6 +177,9 @@ const TeamRoleCmd = {
      *********************************/
 
     async executeList(interaction: ChatInputCommandInteraction) {
+        if (!interaction.guild) {
+            throw new Error('interaction.guild is undefined');
+        }
         const guildId = interaction.guild.id;
 
         // Get all team roles for the guild

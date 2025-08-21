@@ -1,8 +1,9 @@
-import { SnowflakeUtil } from 'discord.js';
+import {
+    type Snowflake,
+    SnowflakeUtil
+} from 'discord.js';
 
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
@@ -12,31 +13,31 @@ import {
     PokemonType
 } from '#src/Constants.js';
 
-export interface TranslationData extends DrossTableData {
-    id: string;
+export interface TranslationData {
+    id?: Snowflake;
     name: string;
     key: number;
     variant: string;
-    variantId?: number | null;
+    variantId?: number | null | undefined;
     isPlural: boolean;
     language: string;
     value: string;
     code: string;
 }
 
-export interface TranslationConditions extends DrossTableConditions {
-    id?: string;
+export interface TranslationConditions {
+    id?: Snowflake;
     name?: string;
     key?: number;
     variant?: string;
-    variantId?: number | null;
+    variantId?: number | null | undefined;
     isPlural?: boolean;
     language?: string;
     value?: string;
     code?: string;
 }
 
-export default class Translation extends DrossDatabaseTable {
+export class Translation extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'translation',
         orderBy: ['name', 'key', 'variant', 'is_plural', 'language'],
@@ -63,7 +64,7 @@ export default class Translation extends DrossDatabaseTable {
     // * Getters * //
     // *********** //
     
-    get id        (): string        { return this.getField('id'); }
+    get id        (): Snowflake     { return this.getField('id'); }
     get name      (): string        { return this.getField('name'); }
     get key       (): number        { return this.getField('key') };
     get variant   (): string        { return this.getField('variant'); }
@@ -77,15 +78,15 @@ export default class Translation extends DrossDatabaseTable {
     // * Setters * //
     // *********** //
     
-    set id        (value: string)        { this.setField('id', value); }
-    set name      (value: string)        { this.setField('name', value); }
-    set key       (value: number)        { this.setField('key', value); }
-    set variant   (value: string)        { this.setField('variant', value); }
-    set variantId (value: number | null) { this.setField('variantId', value); }
-    set isPlural  (value: boolean)       { this.setField('isPlural', value); }
-    set language  (value: string)        { this.setField('language', value); }
-    set value     (value: string)        { this.setField('value', value); }
-    set code      (value: string)        { this.setField('code', value); }
+    set id        ( value: Snowflake     ) { this.setField('id', value); }
+    set name      ( value: string        ) { this.setField('name', value); }
+    set key       ( value: number        ) { this.setField('key', value); }
+    set variant   ( value: string        ) { this.setField('variant', value); }
+    set variantId ( value: number | null ) { this.setField('variantId', value); }
+    set isPlural  ( value: boolean       ) { this.setField('isPlural', value); }
+    set language  ( value: string        ) { this.setField('language', value); }
+    set value     ( value: string        ) { this.setField('value', value); }
+    set code      ( value: string        ) { this.setField('code', value); }
 
     /**************************
      * Class Method Overrides *
@@ -330,3 +331,5 @@ export default class Translation extends DrossDatabaseTable {
         return translation ? translation.value : null;
     }
 }
+
+export default Translation;

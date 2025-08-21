@@ -1,10 +1,10 @@
-
 import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonInteraction,
     ButtonStyle,
-    MessageFlags
+    MessageFlags,
+    userMention
 } from 'discord.js';
 
 import {
@@ -12,7 +12,13 @@ import {
     BattleMemberStatus
 } from '#src/Constants.js';
 
-import Client       from '#src/Client.js';
+import Client from '#src/Client.js';
+
+import type {
+    BattleMemberConditions,
+    BattleMemberData,
+} from '#src/types/ModelTypes.js'
+
 import Battle       from '#src/models/Battle.js';
 import BattleMember from '#src/models/BattleMember.js';
 import Boss         from '#src/models/Boss.js';
@@ -32,7 +38,7 @@ const BattlePlanningButtons = {
         }       
     },  
 
-    async build() {
+    build(): ActionRowBuilder<ButtonBuilder> {
         // Create the buttons
         const joinButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${this.data.button.Join}`)
@@ -54,7 +60,7 @@ const BattlePlanningButtons = {
             .setLabel(this.data.button.Cancel)
             .setStyle(ButtonStyle.Danger);
         
-        return new ActionRowBuilder()
+        return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(joinButton, leaveButton, startButton, cancelButton);
     },
     
@@ -64,7 +70,15 @@ const BattlePlanningButtons = {
         const action = interaction.customId.split('.')[1];
 
         const battle  = await Battle.getUnique({ messageId: message.id });
-        const trainer = await Trainer.getUnique({ id: interaction.user.id });
+        const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
+
+        if (!battle) {
+            throw new Error(`Battle not found for message id ${message.id}`);
+        }
+
+        if (!trainer) {
+            throw new Error(`Trainer not found for user id ${interaction.user.id}`);
+        }
 
         // Log some stuff for debugging
         client.logger.debug(`Handling Battle Planning Button for Message ID = ${message.id}`);
@@ -89,12 +103,22 @@ const BattlePlanningButtons = {
 
     async handleJoin(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const client = interaction.client as Client;
-        const hostTrainer = await Trainer.getUnique({ id: battle.hostTrainerId });
+        
         const boss = await Boss.getUnique({ id: battle.bossId });
+        const hostTrainer = await Trainer.getUnique({ discordId: battle.hostDiscordId });
+
+        if (!hostTrainer) {
+            throw new Error(`Host trainer not found for battle id ${battle.id}`);
+        }
+
+        if (!boss) {
+            throw new Error(`Boss not found for battle id ${battle.id}`);
+        }
+
         const battleTypeName = boss.battleTypeName;
         
         // Check if the host is trying to join the raid
-        if ( client.config.options.blockBattleHostSelfJoin && (battle.battlehostTrainerId == trainer.id) ) {
+        if ( client.config.options.blockBattleHostSelfJoin && (battle.hostDiscordId == trainer.discordId) ) {
             await interaction.reply({
                 content: `You cannot join a ${battleTypeName.toLowerCase()} that you are hosting`,
                 flags: MessageFlags.Ephemeral
@@ -103,9 +127,9 @@ const BattlePlanningButtons = {
         }
 
         // Check if this trainer has already joined the battle
-        const battleMemberObj = {
+        const battleMemberObj: BattleMemberConditions = {
             battleId: battle.id,
-            trainerId: trainer.id
+            discordId: trainer.discordId
         };
 
         let battleMember = await BattleMember.getUnique(battleMemberObj);
@@ -119,7 +143,7 @@ const BattlePlanningButtons = {
 
         // Join the trainer to this battle
         battleMemberObj.status = BattleMemberStatus.Joined;
-        battleMember = new BattleMember(battleMemberObj);
+        battleMember = new BattleMember(battleMemberObj as BattleMemberData);
         await battleMember.create();
 
         // Update the embed
@@ -148,10 +172,14 @@ const BattlePlanningButtons = {
     async handleLeave(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const client = interaction.client as Client;
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for battle id ${battle.id}`);
+        }
+
         const battleTypeName = boss.battleTypeName;
 
         // Check if the host is trying to leave the raid
-        if ( client.config.options.blockBattleHostSelfJoin && (battle.hostTrainerId == trainer.id) ) {
+        if ( client.config.options.blockBattleHostSelfJoin && (battle.hostDiscordId == trainer.discordId) ) {
             await interaction.reply({
                 content:
                     `You cannot leave a ${battleTypeName.toLowerCase()} that you are hosting, `
@@ -162,9 +190,9 @@ const BattlePlanningButtons = {
         }
 
         // Check if this trainer has not yet joined the raid
-        const battleMemberObj = {
+        const battleMemberObj: BattleMemberConditions = {
             battleId: battle.id,
-            trainerId: trainer.id
+            discordId: trainer.discordId
         };
 
         const battleMember = await BattleMember.getUnique(battleMemberObj);
@@ -199,10 +227,14 @@ const BattlePlanningButtons = {
 
     async handleStart(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for battle id ${battle.id}`);
+        }
+
         const battleTypeName = boss.battleTypeName;
 
         // Only the host can cancel the raid
-        if (battle.hostTrainerId != trainer.id) {
+        if (battle.hostDiscordId != trainer.discordId) {
             await interaction.reply({
                 content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
@@ -227,7 +259,7 @@ const BattlePlanningButtons = {
 
         // Update the battle message
         const battleEmbed = await battle.buildEmbed();
-		const battleStartedButtons = await BattleStartedButtons.build(interaction);
+		const battleStartedButtons = BattleStartedButtons.build();
 
         await interaction.update({
             embeds: [battleEmbed],
@@ -239,9 +271,13 @@ const BattlePlanningButtons = {
         const battleMemberDiscordPings = [];
 
         for (const battleMember of battleMembers ) {
-            let battleMemberTrainer = await Trainer.getUnique({ id: battleMember.trainerId });
+            const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
+            if (!battleMemberTrainer) {
+                continue;
+            }
+            
             battleMemberTrainerNames.push(battleMemberTrainer.trainerName);
-            battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
+            battleMemberDiscordPings.push(userMention(battleMemberTrainer.discordId));
         }
         const battleMemberTrainerList = battleMemberTrainerNames.join(',');
         const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
@@ -265,10 +301,13 @@ const BattlePlanningButtons = {
 
     async handleCancel(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for boss id ${battle.bossId}`);
+        }
         const battleTypeName = boss.battleTypeName;
 
         // Only the host can cancel the raid
-        if (battle.hostTrainerId != trainer.id) {
+        if (battle.hostDiscordId != trainer.discordId) {
             await interaction.reply({
                 content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
@@ -277,7 +316,7 @@ const BattlePlanningButtons = {
         }
         
         // Delete the battle members
-        //const battleMembers = await BattleMember.get({ battleId: battle.id });
+        //const battleMembers = await BattleMember.get({ battleId: battle.id } as BattleConditions);
         //for (const battleMembe of battleMembers ) {
         //    await battleMember.delete();
         //}
@@ -313,8 +352,11 @@ const BattlePlanningButtons = {
             const battleMemberDiscordPings = [];
 
             for (const battleMember of battleMembers ) {
-                let battleMemberTrainer = await Trainer.getUnique({ id: battleMember.trainerId });
-                battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
+                const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
+                if (!battleMemberTrainer) {
+                    continue;
+                }
+                battleMemberDiscordPings.push(userMention(battleMemberTrainer.discordId));
             }
             const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
 

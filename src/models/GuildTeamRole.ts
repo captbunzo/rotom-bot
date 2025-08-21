@@ -1,23 +1,25 @@
 import {
-    type DrossTableConditions,
-    type DrossTableData,
+    type Snowflake
+} from 'discord.js';
+
+import {
     DrossDatabaseTable,
     DrossFieldType,
 } from '@drossjs/dross-database';
 
-export interface GuildTeamRoleData extends DrossTableData {
-    guildId: string;
+export interface GuildTeamRoleData {
+    guildId: Snowflake;
     team: string;
-    roleId: string;
+    roleId: Snowflake;
 }
 
-export interface GuildTeamRoleConditions extends DrossTableConditions {
-    guildId?: string;
+export interface GuildTeamRoleConditions {
+    guildId?: Snowflake;
     team?: string;
-    roleId?: string;
+    roleId?: Snowflake;
 }
 
-export default class GuildTeamRole extends DrossDatabaseTable {
+export class GuildTeamRole extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'guild_team_role',
         orderBy: ['guild_id', 'team'],
@@ -37,17 +39,17 @@ export default class GuildTeamRole extends DrossDatabaseTable {
      * Getters *
      ***********/
 
-    get guildId (): string { return this.getField('guildId'); }
-    get team    (): string { return this.getField('team'); }
-    get roleId  (): string { return this.getField('roleId'); }
+    get guildId (): Snowflake { return this.getField('guildId'); }
+    get team    (): string    { return this.getField('team'); }
+    get roleId  (): Snowflake { return this.getField('roleId'); }
 
     /***********
      * Setters *
      ***********/
 
-    set guildId (value: string) { this.setField('guildId', value); }
-    set team    (value: string) { this.setField('team', value); }
-    set roleId  (value: string) { this.setField('roleId', value); }
+    set guildId ( value: Snowflake ) { this.setField('guildId', value); }
+    set team    ( value: string    ) { this.setField('team', value); }
+    set roleId  ( value: Snowflake ) { this.setField('roleId', value); }
 
     /**************************
      * Class Method Overrides *
@@ -73,3 +75,5 @@ export default class GuildTeamRole extends DrossDatabaseTable {
         await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 }
+
+export default GuildTeamRole;

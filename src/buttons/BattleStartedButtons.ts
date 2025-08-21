@@ -1,15 +1,22 @@
-
 import {
     ActionRowBuilder,
     ButtonBuilder,
+    ButtonInteraction,
     ButtonStyle,
-    MessageFlags
+    MessageFlags,
+    userMention
 } from 'discord.js';
 
 import {
     BattleStatus,
     BattleMemberStatus
 } from '#src/Constants.js';
+
+import Client from '#src/Client.js';
+
+import type {
+    BattleMemberConditions
+} from '#src/types/ModelTypes.js';
 
 import Battle       from '#src/models/Battle.js';
 import BattleMember from '#src/models/BattleMember.js';
@@ -28,7 +35,7 @@ const BattleStartedButtons = {
         }
     },  
 
-    async build(interaction) {
+    build(): ActionRowBuilder<ButtonBuilder> {
         // Create the buttons
         const wonButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${this.data.button.Won}`)
@@ -50,17 +57,17 @@ const BattleStartedButtons = {
             .setLabel(this.data.button.Cancel)
             .setStyle(ButtonStyle.Secondary);
         
-        return new ActionRowBuilder()
+        return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(wonButton, failedButton, notReceivedButton, cancelButton);
     },
     
-    async handle(interaction) {
-        const client = interaction.client;
+    async handle(interaction: ButtonInteraction) {
+        const client = interaction.client as Client;
         const message = interaction.message;
         const action = interaction.customId.split('.')[1];
 
         const battle  = await Battle.getUnique({ messageId: message.id });
-        const trainer = await Trainer.getUnique({ id: interaction.user.id });
+        const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
         // Log some stuff for debugging
         client.logger.debug(`Handling Battle Started Button for Message ID = ${message.id}`);
@@ -69,6 +76,10 @@ const BattleStartedButtons = {
         client.logger.dump(battle);
         client.logger.debug(`Trainer Record =`);
         client.logger.dump(trainer);
+
+        if (!battle) {
+            throw new Error(`Battle not found for message id ${message.id}`);
+        }
 
         if (!trainer) {
             interaction.reply(Trainer.getSetupTrainerFirstMessage());
@@ -82,13 +93,16 @@ const BattleStartedButtons = {
             case this.data.button.Cancel: this.handleCancel(interaction, battle, trainer); break;
         }
     },
-    async handleWonOrFailed(interaction, battle, trainer, battleStatus) {
-        const client = interaction.client;
+
+    async handleWonOrFailed(interaction: ButtonInteraction, battle: Battle, trainer: Trainer, battleStatus: string) {
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for boss id ${battle.bossId}`);
+        }
         const battleTypeName = boss.battleTypeName;
         
         // Check if this is the host or a battle member reporting battle result
-        if (battle.hostTrainerId == trainer.id) {
+        if (battle.hostDiscordId == trainer.discordId) {
             // Update the battle record
             battle.status = battleStatus;
             await battle.update();
@@ -116,9 +130,9 @@ const BattleStartedButtons = {
         });
             } else {
             // Update the battle member record
-            const battleMemberSearchObj = {
+            const battleMemberSearchObj: BattleMemberConditions = {
                 battleId: battle.id,
-                trainerId: trainer.id
+                discordId: trainer.discordId
             };
 
             const battleMember = await BattleMember.getUnique(battleMemberSearchObj);
@@ -153,13 +167,15 @@ const BattleStartedButtons = {
         }
     },
 
-    async handleNotReceived(interaction, battle, trainer) {
-        const client = interaction.client;
+    async handleNotReceived(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for boss id ${battle.bossId}`);
+        }
         const battleTypeName = boss.battleTypeName;
         
         // Only battle members can click the not received button
-        if (battle.hostTrainerId == trainer.id) {
+        if (battle.hostDiscordId == trainer.discordId) {
             await interaction.reply({
                 content: `Only battle members can indicate that they did not receive an invite`,
                 flags: MessageFlags.Ephemeral
@@ -168,7 +184,11 @@ const BattleStartedButtons = {
         }
 
         // Check if this trainer has not joined the raid
-        const battleMember = await BattleMember.getUnique({ battleId: battle.id, trainerId: trainer.id });
+        const battleMemberSearchObj: BattleMemberConditions = {
+            battleId: battle.id,
+            discordId: trainer.discordId
+        };
+        const battleMember = await BattleMember.getUnique(battleMemberSearchObj);
 
         if (!battleMember) {
             await interaction.reply({
@@ -188,13 +208,15 @@ const BattleStartedButtons = {
         });
     },
 
-    async handleCancel(interaction, battle, trainer) {
-        const client = interaction.client;
+    async handleCancel(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
+        if (!boss) {
+            throw new Error(`Boss not found for boss id ${battle.bossId}`);
+        }
         const battleTypeName = boss.battleTypeName;
         
         // Only the host can cancel the raid
-        if (battle.hostTrainerId != trainer.id) {
+        if (battle.hostDiscordId != trainer.discordId) {
             await interaction.reply({
                 content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
@@ -219,8 +241,11 @@ const BattleStartedButtons = {
             const battleMemberDiscordPings = [];
 
             for (const battleMember of battleMembers ) {
-                const battleMemberTrainer = await Trainer.getUnique({ id: battleMember.trainerId });
-                battleMemberDiscordPings.push(`<@${battleMemberTrainer.id}>`);
+                const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
+                if (!battleMemberTrainer) {
+                    continue;
+                }
+                battleMemberDiscordPings.push(userMention(battleMemberTrainer.discordId));
             }
             const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
 

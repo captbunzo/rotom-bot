@@ -1,14 +1,14 @@
-
 import {
     ActionRowBuilder,
     ButtonBuilder,
+    ButtonInteraction,
     ButtonStyle,
+    ChatInputCommandInteraction,
     MessageFlags
 } from 'discord.js';
 
 import {
-    MessageType,
-    Team
+    MessageType
 } from '#src/Constants.js';
 
 import Trainer from '#src/models/Trainer.js';
@@ -21,9 +21,7 @@ const DeleteProfileButtons = {
         name: 'DeleteProfile'
     },
 
-    async show(interaction, messageType = MessageType.Reply) {
-        const client = interaction.client;
-        
+    async show(interaction: ChatInputCommandInteraction, messageType = MessageType.Reply) {        
         // Create the buttons
         const confirmButton = new ButtonBuilder()
             .setCustomId(`${this.data.name}.${Confirm}`)
@@ -35,7 +33,7 @@ const DeleteProfileButtons = {
             .setLabel(Cancel)
             .setStyle(ButtonStyle.Secondary);
         
-        const buttonRow = new ActionRowBuilder()
+        const buttonRow = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(confirmButton, cancelButton);
 
             if (messageType == MessageType.Reply) {
@@ -52,10 +50,9 @@ const DeleteProfileButtons = {
                 });
             }
     },
-    
-    async handle(interaction) {
-        const client = interaction.client;
-        const trainer = await Trainer.getUnique({ id: interaction.user.id });
+
+    async handle(interaction: ButtonInteraction) {
+        const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         const action = interaction.customId.split('.')[1];
 
         if (action == Cancel) {

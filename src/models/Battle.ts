@@ -1,15 +1,11 @@
 import {
-    bold,
-    Collection,
-    EmbedBuilder,
-    Guild,
     type Snowflake,
+    bold,
+    EmbedBuilder,
     SnowflakeUtil
 } from 'discord.js';
 
 import { 
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType,
 } from '@drossjs/dross-database';
@@ -17,7 +13,6 @@ import {
 import Client from '#src/Client.js';
 const client = Client.getInstance();
 
-// @ts-expect-error -- TODO - Fix this later
 import StringFunctions from '#src/functions/StringFunctions.js';
 import { BattleStatus } from '#src/Constants.js';
 
@@ -29,32 +24,32 @@ import Trainer       from '#src/models/Trainer.js';
 import Translation   from '#src/models/Translation.js';
 import WikiLink      from '#src/models/WikiLink.js';
 
-export interface BattleData extends DrossTableData{
-    id: string;
-    bossId: string;
-    hostTrainerId: string;
-    guildId: string;
+export interface BattleData {
+    id?: Snowflake;
+    bossId: Snowflake;
+    hostDiscordId: Snowflake;
+    guildId: Snowflake;
     status: string;
-    messageId?: string | null;
+    messageId?: Snowflake | null | undefined;
 }
 
-export interface BattleConditions extends DrossTableConditions {
-    id?: string;
-    bossId?: string;
-    hostTrainerId?: string;
-    guildId?: string;
+export interface BattleConditions {
+    id?: Snowflake;
+    bossId?: Snowflake;
+    hostDiscordId?: Snowflake;
+    guildId?: Snowflake;
     status?: string;
-    messageId?: string | null;
+    messageId?: Snowflake | null | undefined;
 }
 
-export default class Battle extends DrossDatabaseTable {
+export class Battle extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'battle',
         orderBy: ['id'],
         fields: {
             'id':              { type: DrossFieldType.Snowflake, nullable: false },
             'boss_id':         { type: DrossFieldType.String,    nullable: false, length: 100 },
-            'host_trainer_id': { type: DrossFieldType.Snowflake, nullable: false },
+            'host_discord_id': { type: DrossFieldType.Snowflake, nullable: false },
             'guild_id':        { type: DrossFieldType.Snowflake, nullable: false },
             'status':          { type: DrossFieldType.String,    nullable: false,  length: 20 },
             'message_id':      { type: DrossFieldType.Snowflake, nullable: true }
@@ -70,23 +65,23 @@ export default class Battle extends DrossDatabaseTable {
      * Getters *
      ***********/
     
-    get id            (): string        { return this.getField('id'); }
-    get bossId        (): string        { return this.getField('bossId'); }
-    get hostTrainerId (): string        { return this.getField('hostTrainerId'); }
-    get guildId       (): string        { return this.getField('guildId'); }
-    get status        (): string        { return this.getField('status'); }
-    get messageId     (): string | null { return this.getField('messageId'); }
+    get id            (): Snowflake        { return this.getField('id'); }
+    get bossId        (): Snowflake        { return this.getField('bossId'); }
+    get hostDiscordId (): Snowflake        { return this.getField('hostDiscordId'); }
+    get guildId       (): Snowflake        { return this.getField('guildId'); }
+    get status        (): string           { return this.getField('status'); }
+    get messageId     (): Snowflake | null { return this.getField('messageId'); }
 
     /***********
      * Setters *
      ***********/
     
-    set id            (value: string       ) { this.setField('id', value); }
-    set bossId        (value: string       ) { this.setField('bossId', value); }
-    set hostTrainerId (value: string       ) { this.setField('hostTrainerId', value); }
-    set guildId       (value: string       ) { this.setField('guildId', value); }
-    set status        (value: string       ) { this.setField('status', value); }
-    set messageId     (value: string | null) { this.setField('messageId', value); }
+    set id            ( value: Snowflake        ) { this.setField('id', value); }
+    set bossId        ( value: Snowflake        ) { this.setField('bossId', value); }
+    set hostDiscordId ( value: Snowflake        ) { this.setField('hostDiscordId', value); }
+    set guildId       ( value: Snowflake        ) { this.setField('guildId', value); }
+    set status        ( value: string           ) { this.setField('status', value); }
+    set messageId     ( value: Snowflake | null ) { this.setField('messageId', value); }
     
     /**************************
      * Class Method Overrides *
@@ -135,22 +130,25 @@ export default class Battle extends DrossDatabaseTable {
             throw new Error(`Master Pokémon not found for templateId: ${boss.templateId}`);
         }
 
-        const hostTrainer = await Trainer.getUnique({ id: this.hostTrainerId });
+        const hostTrainer = await Trainer.getUnique({ discordId: this.hostDiscordId });
         if (!hostTrainer) {
-            throw new Error(`Host Trainer not found: ${this.hostTrainerId}`);
+            throw new Error(`Host Trainer not found: ${this.hostDiscordId}`);
         }
 
         const battleMembers = await BattleMember.get({ battleId: this.id });
 
         // Get some discord objects
         let hostDiscordGuild = await client.getGuild(this.guildId);
+        if (!hostDiscordGuild) {
+            throw new Error(`Host Discord Guild not found: ${this.guildId}`);
+        }
 
         //DrossDatabase.logger.debug(`Host Discord Guild =`)
         //DrossDatabase.logger.dump(hostDiscordGuild);
         //DrossDatabase.logger.debug(`hostDiscordGuild.name = ${hostDiscordGuild.name}`);
         //DrossDatabase.logger.dump(hostDiscordGuild.members);
 
-        const hostDiscordMember = await hostDiscordGuild.members.fetch(hostTrainer.id);
+        const hostDiscordMember = await hostDiscordGuild.members.fetch(hostTrainer.discordId);
 
         // Log records for debugging
         //DrossDatabase.logger.debug(`Battle Record =`);
@@ -244,12 +242,12 @@ export default class Battle extends DrossDatabaseTable {
 
         for (const battleMember of battleMembers) {
             if (client.config.options.showBattleMemberTrainerNames) {
-                const battleMemberTrainer = await Trainer.getUnique({ id: battleMember.trainerId });
+                const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
                 if (battleMemberTrainer) {
                     battleMembersTextArray.push(battleMemberTrainer.trainerName);
                 }
             } else {
-                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMember.trainerId);
+                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMember.discordId);
                 battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);
             }
         }
@@ -334,3 +332,5 @@ export default class Battle extends DrossDatabaseTable {
         return embed;
     }    
 }
+
+export default Battle;

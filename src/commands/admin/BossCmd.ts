@@ -6,6 +6,10 @@ import {
 } from 'discord.js';
 
 import {
+    NonUniqueResultError
+} from '@drossjs/dross-database'
+
+import {
     BossType,
     MaxAutoCompleteChoices
 } from '#src/Constants.js';
@@ -13,10 +17,13 @@ import {
 import Client from '#src/Client.js';
 import StringFunctions from '#src/functions/StringFunctions.js';
 
-import type { BossData, BossConditions } from '#src/models/Boss.js';
+import type {
+    BossConditions,
+    BossData
+} from '#src/types/ModelTypes.js'
+
 import Boss from '#src/models/Boss.js';
 import MasterPokemon from '#src/models/MasterPokemon.js';
-
 
 // TODO - Add boss edit command
 
@@ -264,9 +271,9 @@ const BossCmd = {
         }
     },
 
-    /**********************/
-    /* Subcommand :: Load */
-    /**********************/
+    /**********************
+     * Subcommand :: Load *
+     **********************/
 
     async executeCreate(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -289,11 +296,22 @@ const BossCmd = {
         client.logger.debug(`isShinyable = ${isShinyable}`);
         client.logger.debug(`isActive    = ${isActive}`);
 
-        // Get the Pokemon Master record
+        if (!pokemonId) {
+            throw new Error('Required option pokemon does not have a value');
+        }
         if (!templateId) {
             throw new Error('Required option template does not have a value');
         }
         
+        if (!bossType) {
+            throw new Error('Required option boss-type does not have a value');
+        }
+
+        if (!tier) {
+            throw new Error('Required option tier does not have a value');
+        }
+
+        // Get the Pokemon Master record
         const masterPokemon = await MasterPokemon.getUnique({ templateId: templateId });
         if (!masterPokemon) {
             throw new Error(`Master Pokémon with template ID ${templateId} not found`);
@@ -342,7 +360,7 @@ const BossCmd = {
             boss.id          = bossObj.id;
             boss.bossType    = bossObj.bossType;
             boss.pokemonId   = bossObj.pokemonId;
-            boss.form        = bossObj.form;
+            boss.form        = bossObj.form || null;
             boss.tier        = bossObj.tier;
             boss.isMega      = bossObj.isMega;
             boss.isShadow    = bossObj.isShadow;
@@ -372,13 +390,28 @@ const BossCmd = {
                 //choices = await MasterPokemon.getPokemonChoices(focusedOption.value);
                 choices = await MasterPokemon.getPokemonIdChoices(focusedOption.value);
                 break;
+            
             case 'template':
                 pokemonId = interaction.options.getString('pokemon');
+
+                if (!pokemonId) {
+                    throw new Error('Required option pokemon does not have a value');
+                }
+
                 choices = await MasterPokemon.getTemplateIdChoices(focusedOption.value, { pokemonId: pokemonId });
                 break;
+            
             case 'form':
                 pokemonId  = interaction.options.getString('pokemon');
                 templateId = interaction.options.getString('template');
+
+                if (!pokemonId) {
+                    throw new Error('Required option pokemon does not have a value');
+                }
+                if (!templateId) {
+                    throw new Error('Required option template does not have a value');
+                }
+
                 choices = await MasterPokemon.getFormChoices(focusedOption.value, { pokemonId: pokemonId, templateId: templateId });
                 break;
         }
@@ -399,13 +432,15 @@ const BossCmd = {
         client.logger.debug(`prefix = ${prefix}`);
 
         let choicesPrefixed = [];
-        for (let choiceFull of choices) {
-            let choice = choiceFull.slice(0, prefix.length + 1);
-            
-            if (choice == prefix) {
-                choicesPrefixed.push(choice);
-            } else {
-                choicesPrefixed.push(choice + '*');
+        if (prefix) {
+            for (let choiceFull of choices) {
+                let choice = choiceFull.slice(0, prefix.length + 1);
+                
+                if (choice == prefix) {
+                    choicesPrefixed.push(choice);
+                } else {
+                    choicesPrefixed.push(choice + '*');
+                }
             }
         }
 
@@ -430,9 +465,9 @@ const BossCmd = {
         await interaction.respond([]);
     },
 
-    /**********************/
-    /* Subcommand :: List */
-    /**********************/
+    /**********************
+     * Subcommand :: List *
+     **********************/
 
     async executeList(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -508,17 +543,17 @@ const BossCmd = {
         await interaction.reply({ content: `Found ${bossEembedArray.length} bosses`, flags: MessageFlags.Ephemeral });
 
         // Show all of the bosses
-        for (let x = 0; x < bossEembedArray.length; x++) {
+        for (const bossEmbed of bossEembedArray) {
             await interaction.followUp({
-                embeds: [ bossEembedArray[x] ],
+                embeds: [ bossEmbed ],
                 flags: MessageFlags.Ephemeral
             })
         }
     },
 
-    /************************/
-    /* Subcommand :: Update */
-    /************************/
+    /************************
+     * Subcommand :: Update *
+     ************************/
 
     async executeUpdate(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -527,6 +562,10 @@ const BossCmd = {
         const id          = interaction.options.getString('id');
         const isShinyable = interaction.options.getBoolean('shinyable');
         const isActive    = interaction.options.getBoolean('active');
+
+        if (!id) {
+            throw new Error('Required option id does not have a value');
+        }
 
         client.logger.debug(`pokemonId   = ${pokemonId}`);
         client.logger.debug(`boss id     = ${id}`);
@@ -584,8 +623,14 @@ const BossCmd = {
             case 'pokemon':
                 choices = await Boss.getPokemonIdChoices(focusedOption.value);
                 break;
+
             case 'id':
                 pokemonId = interaction.options.getString('pokemon');
+
+                if (!pokemonId) {
+                    throw new Error('Required option pokemon does not have a value');
+                }
+
                 choices = await Boss.getIdChoices(focusedOption.value, { pokemonId: pokemonId });
                 break;
         }
@@ -606,13 +651,15 @@ const BossCmd = {
         client.logger.debug(`prefix = ${prefix}`);
 
         let choicesPrefixed = [];
-        for (let choiceFull of choices) {
-            let choice = choiceFull.slice(0, prefix.length + 1);
-            
-            if (choice == prefix) {
-                choicesPrefixed.push(choice);
-            } else {
-                choicesPrefixed.push(choice + '*');
+        if (prefix) {
+            for (let choiceFull of choices) {
+                let choice = choiceFull.slice(0, prefix.length + 1);
+                
+                if (choice == prefix) {
+                    choicesPrefixed.push(choice);
+                } else {
+                    choicesPrefixed.push(choice + '*');
+                }
             }
         }
 
@@ -637,9 +684,9 @@ const BossCmd = {
         await interaction.respond([]);
     },
 
-    /************************************/
-    /* Subcommand :: Enable and Disable */
-    /************************************/
+    /************************************
+     * Subcommand :: Enable and Disable *
+     ************************************/
 
     async executeToggleActive(interaction: ChatInputCommandInteraction, isActive: boolean) {
         const client = interaction.client as Client;
@@ -656,6 +703,10 @@ const BossCmd = {
         client.logger.debug(`isMega     = ${isMega}`);
         client.logger.debug(`isShadow   = ${isShadow}`);
 
+        if (!pokemonId) {
+            throw new Error('Required option pokemon does not have a value');
+        }
+
         // Create the Boss search object
         const bossSearchObj: BossConditions = {
             pokemonId: pokemonId,
@@ -668,28 +719,40 @@ const BossCmd = {
         }   
 
         // Run the query
-        let bosses = await Boss.get(bossSearchObj);
+        try {
+            const boss = await Boss.getUnique(bossSearchObj);
 
-        if (bosses.length == 0) {
-            await interaction.reply({ content: `Could not find boss with those parameters`, flags: MessageFlags.Ephemeral });
-        } else if (bosses.length > 1) {
-            await interaction.reply({ content: `More than one boss found with those parameters`, flags: MessageFlags.Ephemeral });
-        } else {
-            const boss = bosses[0];
+            if (!boss) {
+                return await interaction.reply({
+                    content: `Could not find boss with those parameters`,
+                    flags: MessageFlags.Ephemeral
+                });
+            }
+
             boss.isActive = isActive;
             await boss.update();
             
             const embed = await boss.buildEmbed();
-            await interaction.reply({
+            return await interaction.reply({
                 content: `Boss updated`,
                 embeds: [embed]
             });
+        
+        } catch (error) {
+            if (error instanceof NonUniqueResultError) {
+                return await interaction.reply({
+                    content: `More than one boss found with those parameters`,
+                    flags: MessageFlags.Ephemeral
+                });
+            } else {
+                throw error;
+            }
         }
     },
     
-    /******************************************************/
-    /* Subcommand Autocomplete  :: List, Enable, Disable  */
-    /******************************************************/
+    /******************************************************
+     * Subcommand Autocomplete  :: List, Enable, Disable  *
+     ******************************************************/
 
     async autocompleteSearch(interaction: AutocompleteInteraction) {
         const client = interaction.client as Client;
@@ -764,9 +827,9 @@ const BossCmd = {
         await interaction.respond([]);
     },
 
-    /*****************************/
-    /* Subcommand :: Disable All */
-    /*****************************/
+    /*****************************
+     * Subcommand :: Disable All *
+     *****************************/
 
     async executeDisableAll(interaction: ChatInputCommandInteraction) {
         await Boss.update({}, { isActive: false });

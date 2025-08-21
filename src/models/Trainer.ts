@@ -1,11 +1,11 @@
 import {
+    type Snowflake,
+    type InteractionReplyOptions,
     EmbedBuilder,
     MessageFlags
 } from 'discord.js';
 
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType,
 } from '@drossjs/dross-database';
@@ -15,34 +15,34 @@ import {
     TeamColor
 } from '#src/Constants.js';
 
-export interface TrainerData extends DrossTableData {
-    id: string;
+export interface TrainerData {
+    discordId: Snowflake;
     trainerName: string;
-    firstName?: string | null;
-    code?: string | null;
-    level?: number | null;
-    team?: string | null;
-    aboutMe?: string | null;
-    favoritePokemon?: string | null;
+    firstName?: string | null | undefined;
+    code?: string | null | undefined;
+    level?: number | null | undefined;
+    team?: string | null | undefined;
+    aboutMe?: string | null | undefined;
+    favoritePokemon?: string | null | undefined;
 }
 
-export interface TrainerConditions extends DrossTableConditions {
-    id?: string;
+export interface TrainerConditions {
+    discordId?: Snowflake;
     trainerName?: string;
-    firstName?: string | null;
-    code?: string | null;
-    level?: number | null;
-    team?: string | null;
-    aboutMe?: string | null;
-    favoritePokemon?: string | null;
+    firstName?: string | null | undefined;
+    code?: string | null | undefined;
+    level?: number | null | undefined;
+    team?: string | null | undefined;
+    aboutMe?: string | null | undefined;
+    favoritePokemon?: string | null | undefined;
 }
 
-export default class Trainer extends DrossDatabaseTable {
+export class Trainer extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'trainer',
         orderBy: ['trainer_name'],
         fields: {
-            'id':               { type: DrossFieldType.Snowflake, nullable: false },
+            'discord_id':       { type: DrossFieldType.Snowflake, nullable: false },
             'trainer_name':     { type: DrossFieldType.String,    nullable: false, length: 32 },
             'first_name':       { type: DrossFieldType.String,    nullable: true,  length: 32 },
             'code':             { type: DrossFieldType.String,    nullable: true,  length: 12 },
@@ -51,7 +51,7 @@ export default class Trainer extends DrossDatabaseTable {
             'about_me':         { type: DrossFieldType.String,    nullable: true,  length: 256 },
             'favorite_pokemon': { type: DrossFieldType.String,    nullable: true,  length: 24 }
         },
-        primaryKey: ['id']
+        primaryKey: ['discord_id']
     });
 
     constructor(data: TrainerData) {
@@ -62,9 +62,9 @@ export default class Trainer extends DrossDatabaseTable {
      * Getters *
      ***********/
 
-    get id              (): string        { return this.getField('id'); }
-    get trainerName     (): string        { return this.getField('trainer_name'); }
-    get firstName       (): string | null { return this.getField('first_name'); }
+    get discordId       (): Snowflake     { return this.getField('discordId'); }
+    get trainerName     (): string        { return this.getField('trainerName'); }
+    get firstName       (): string | null { return this.getField('firstName'); }
     get code            (): string | null { return this.getField('code'); }
     get level           (): number | null { return this.getField('level'); }
     get team            (): string | null { return this.getField('team'); }
@@ -84,14 +84,14 @@ export default class Trainer extends DrossDatabaseTable {
     /***********
      * Setters *
      ***********/
-    
-    set id              (value: string)        { this.setField('id', value); }
-    set trainerName     (value: string)        { this.setField('trainer_name', value); }
-    set firstName       (value: string | null) { this.setField('first_name', value); }
-    set code            (value: string | null) { this.setField('code', value); }
-    set level           (value: number | null) { this.setField('level', value); }
-    set team            (value: string | null) { this.setField('team', value); }
-    set favoritePokemon (value: string | null) { this.setField('favoritePokemon', value); }
+
+    set discordId       ( value: Snowflake     ) { this.setField('discordId', value); }
+    set trainerName     ( value: string        ) { this.setField('trainerName', value); }
+    set firstName       ( value: string | null ) { this.setField('firstName', value); }
+    set code            ( value: string | null ) { this.setField('code', value); }
+    set level           ( value: number | null ) { this.setField('level', value); }
+    set team            ( value: string | null ) { this.setField('team', value); }
+    set favoritePokemon ( value: string | null ) { this.setField('favoritePokemon', value); }
 
     /**************************
      * Class Method Overrides *
@@ -109,11 +109,11 @@ export default class Trainer extends DrossDatabaseTable {
      * Instance Method Overrides *
      *****************************/
 
-    override async update(condition: TrainerConditions = { id: this.id }) {
+    override async update(condition: TrainerConditions = { discordId: this.discordId }) {
         await DrossDatabaseTable.prototype.update.call(this, condition);
     }
 
-    override async delete(condition: TrainerConditions = { id: this.id }) {
+    override async delete(condition: TrainerConditions = { discordId: this.discordId }) {
         await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 
@@ -125,7 +125,7 @@ export default class Trainer extends DrossDatabaseTable {
         return await this.getChoices('trainerName', namePrefix, conditions);
     }
 
-    static getSetupTrainerFirstMessage() {
+    static getSetupTrainerFirstMessage(): InteractionReplyOptions {
         return {
             content: `Please setup your profile first with /setup-profile`,
             flags: MessageFlags.Ephemeral
@@ -161,3 +161,5 @@ export default class Trainer extends DrossDatabaseTable {
         return embed;
     }
 }
+
+export default Trainer;

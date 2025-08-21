@@ -10,7 +10,7 @@ import {
 import Client from '#src/Client.js';
 import { InterimLoadUpdates } from '#src/Constants.js';
 
-import MasterPokemon from '#src/models/MasterPokemon.js';
+import MasterPokemon, { type MasterPokemonConditions } from '#src/models/MasterPokemon.js';
 import PogoHubLink   from '#src/models/PogoHubLink.js';
 
 const FormDirectMappings = [
@@ -99,21 +99,31 @@ const PogoHubLinkCmd = {
             //    break;
             //}
 
-            const pogoHubLinkParts = pogoHubLinkLine.split('|');
-            let pokedexId = pogoHubLinkParts[0].trim();
-            let id        = pogoHubLinkParts[1].trim();
-            let page      = pogoHubLinkParts[2].trim();
-            let rawForm   = pogoHubLinkParts[3].trim();
-            let form      = rawForm.toUpperCase();
+            if (!pogoHubLinkLine) {
+                continue;
+            }
+            
+            const pogoHubLinkParts: string[] = pogoHubLinkLine.split('|');
+            if ( pogoHubLinkParts.length != 4
+                || !pogoHubLinkParts[0]
+                || !pogoHubLinkParts[1]
+                || !pogoHubLinkParts[2]
+            ) {
+                continue;
+            }
 
-            if (rawForm.length === 0) {
+            let pokedexId : number        = parseInt(pogoHubLinkParts[0].trim());
+            let id        : string        = pogoHubLinkParts[1].trim();
+            let page      : string        = pogoHubLinkParts[2].trim();
+            let rawForm   : string | null = pogoHubLinkParts[3]?.trim() || null;
+            let form      : string | null = rawForm?.toUpperCase() || null;
+
+            if (!rawForm || rawForm.length === 0) {
                 rawForm = null;
                 form = null;
             }
 
             let isMega = false;
-            let isShadow = false;
-            let isDynamax = false;
             let isGigantamax = false;
 
             switch (rawForm) {
@@ -132,6 +142,7 @@ const PogoHubLinkCmd = {
             }
             
             // Only match one special case
+            // @ts-expect-error
             let keepCheckingTransforms = true;
 
             // Check for direct mappings
@@ -152,11 +163,15 @@ const PogoHubLinkCmd = {
             client.logger.debug(`isGigantamax :: ${isGigantamax}`);
 
             // See if we can find the master pokemon record
-            let masterPokemon = await MasterPokemon.getUnique({ pokedexId: pokedexId, form: form });
+            const masterPokemonSearchObj: MasterPokemonConditions = {
+                pokedexId: pokedexId,
+                form: form
+            };
+            const masterPokemon = await MasterPokemon.getUnique(masterPokemonSearchObj);
+
             client.logger.debug(`Master Pokemon`);
             client.logger.dump(masterPokemon);
 
-            let templateId = null;
             if (masterPokemon === null) {
                 descNotProcessed.push(`${pokedexId} = ${id} [${rawForm}]`);
                 idNotProcessed.push(pokedexId);

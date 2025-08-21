@@ -7,7 +7,6 @@ import {
 
 import Client from '#src/Client.js';
 import { MaxAutoCompleteChoices } from '#src/Constants.js';
-
 import Trainer from '#src/models/Trainer.js';
 
 const TrainerCmd = {
@@ -113,10 +112,10 @@ const TrainerCmd = {
 		let reference;
 
 		if (user) {
-			trainer = await Trainer.getUnique({ id: user.id });
+			trainer = await Trainer.getUnique({discordId: user.id});
 			reference = user;
 		} else if (name) {
-			trainer = await Trainer.getUnique({ name: name });
+			trainer = await Trainer.getUnique({ firstName: name });
 			reference = name;
 		}
 
@@ -140,7 +139,7 @@ const TrainerCmd = {
 			});
 
 			await interaction.followUp({
-				content: trainer.formattedCode,
+				content: `${trainer.formattedCode}`,
 				flags: MessageFlags.Ephemeral
 			});
 		}

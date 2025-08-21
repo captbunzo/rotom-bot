@@ -1,23 +1,21 @@
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
 
 import type MasterPokemon from '#src/models/MasterPokemon.js';
 
-export interface MasterCPMData extends DrossTableData {
+export interface MasterCPMData {
     level: number;
     cpm: number;
 }
 
-export interface MasterCPMConditions extends DrossTableConditions {
+export interface MasterCPMConditions {
     level?: number;
     cpm?: number;
 }
 
-export default class MasterCPM extends DrossDatabaseTable {
+export class MasterCPM extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'master_cpm',
         orderBy: ['level'],
@@ -43,8 +41,8 @@ export default class MasterCPM extends DrossDatabaseTable {
      * Setters *
      ***********/
 
-    set level (value: number) { this.setField('level', value); }
-    set cpm   (value: number) { this.setField('cpm', value); }
+    set level ( value: number ) { this.setField('level', value); }
+    set cpm   ( value: number ) { this.setField('cpm', value); }
 
     /**************************
      * Class Method Overrides *
@@ -108,3 +106,5 @@ export default class MasterCPM extends DrossDatabaseTable {
         return cp;
     }
 }
+
+export default MasterCPM;

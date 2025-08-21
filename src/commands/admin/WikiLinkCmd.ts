@@ -178,6 +178,10 @@ const WikiLinkCmd = {
             processedCount++;
 
             const wikiLinkParts = wikiLinkLine.split('|');
+            if (wikiLinkParts.length != 2 || !wikiLinkParts[0] || !wikiLinkParts[1]) {
+                continue;
+            }
+            
             let code = wikiLinkParts[0].trim();
             let image = wikiLinkParts[1].trim();
             let pokemon = code.replace('-039-', '');
@@ -272,7 +276,6 @@ const WikiLinkCmd = {
             if (!masterPokemon) {
                 const pokemonAltCheck = pokemon.replace('-', '');
                 masterPokemon = await MasterPokemon.getUnique({ pokemonId: pokemonAltCheck.toUpperCase(), form: form });
-
                 if (masterPokemon) {
                     pokemon = pokemonAltCheck;
                 }
@@ -288,7 +291,6 @@ const WikiLinkCmd = {
                 }
             }
 
-            let templateId = null;
             if (masterPokemon === null) {
                 codesNotProcessed.push(code);
             } else {

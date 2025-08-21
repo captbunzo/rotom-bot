@@ -1,13 +1,12 @@
-import { EmbedBuilder } from 'discord.js';
+import {
+    EmbedBuilder
+} from 'discord.js';
 
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
 
-// @ts-expect-error - TODO - Fix this later
 import StringFunctions from '#src/functions/StringFunctions.js';
 
 import MasterCPM     from '#src/models/MasterCPM.js';
@@ -16,7 +15,7 @@ import PogoHubLink   from '#src/models/PogoHubLink.js';
 import WikiLink      from '#src/models/WikiLink.js';
 import Translation   from '#src/models/Translation.js';
 
-export interface BossData extends DrossTableData {
+export interface BossData {
     id: string;
     bossType: string;
     pokemonId: string;
@@ -29,7 +28,7 @@ export interface BossData extends DrossTableData {
     templateId: string;
 }
 
-export interface BossConditions extends DrossTableConditions {
+export interface BossConditions {
     id?: string;
     bossType?: string;
     pokemonId?: string;
@@ -42,7 +41,7 @@ export interface BossConditions extends DrossTableConditions {
     templateId?: string;
 }
 
-export default class Boss extends DrossDatabaseTable {
+export class Boss extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'boss',
         orderBy: ['id'],
@@ -92,16 +91,16 @@ export default class Boss extends DrossDatabaseTable {
      * Setters *
      ***********/
     
-    set id          (value: string       ) { this.setField('id', value) }
-    set bossType    (value: string       ) { this.setField('bossType', value) }
-    set pokemonId   (value: string       ) { this.setField('pokemonId', value) }
-    set form        (value: string | null) { this.setField('form', value) }
-    set tier        (value: number       ) { this.setField('tier', value) }
-    set isMega      (value: boolean      ) { this.setField('isMega', value) }
-    set isShadow    (value: boolean      ) { this.setField('isShadow', value) }
-    set isActive    (value: boolean      ) { this.setField('isActive', value) }
-    set isShinyable (value: boolean      ) { this.setField('isShinyable', value) }
-    set templateId  (value: string       ) { this.setField('templateId', value) }
+    set id          ( value: string        ) { this.setField('id', value) }
+    set bossType    ( value: string        ) { this.setField('bossType', value) }
+    set pokemonId   ( value: string        ) { this.setField('pokemonId', value) }
+    set form        ( value: string | null ) { this.setField('form', value) }
+    set tier        ( value: number        ) { this.setField('tier', value) }
+    set isMega      ( value: boolean       ) { this.setField('isMega', value) }
+    set isShadow    ( value: boolean       ) { this.setField('isShadow', value) }
+    set isActive    ( value: boolean       ) { this.setField('isActive', value) }
+    set isShinyable ( value: boolean       ) { this.setField('isShinyable', value) }
+    set templateId  ( value: string        ) { this.setField('templateId', value) }
     
     /**************************
      * Class Method Overrides *
@@ -256,9 +255,9 @@ export default class Boss extends DrossDatabaseTable {
                 { name: 'Pokémon Form', value: pokemonForm},
             );
         
-        console.log(`isShinyable = ${this.isShinyable}`);
-        console.log(`isActive = ${this.isActive}`);
-        console.log(`tier = ${this.tier}`);
+        console.debug(`isShinyable = ${this.isShinyable}`);
+        console.debug(`isActive = ${this.isActive}`);
+        console.debug(`tier = ${this.tier}`);
 
         embed = embed
             .addFields(
@@ -282,3 +281,5 @@ export default class Boss extends DrossDatabaseTable {
         return embed;
     }
 }
+
+export default Boss;

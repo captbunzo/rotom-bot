@@ -1,32 +1,34 @@
 import {
-    type DrossTableConditions,
-    type DrossTableData,
+    type Snowflake
+} from 'discord.js';
+
+import {
     DrossDatabaseTable,
     DrossFieldType
 } from '@drossjs/dross-database';
 
-export interface BattleMemberData extends DrossTableData {
-    battleId: string;
-    trainerId: string;
+export interface BattleMemberData {
+    battleId: Snowflake;
+    discordId: Snowflake;
     status: string;
 }
 
-export interface BattleMemberConditions extends DrossTableConditions {
-    battleId?: string;
-    trainerId?: string;
+export interface BattleMemberConditions {
+    battleId?: Snowflake;
+    discordId?: Snowflake;
     status?: string;
 }
 
-export default class BattleMember extends DrossDatabaseTable {
+export class BattleMember extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'battle_member',
         orderBy: ['battle_id', 'created_at'],
         fields: {
             'battle_id':  { type: DrossFieldType.Snowflake, nullable: false },
-            'trainer_id': { type: DrossFieldType.Snowflake, nullable: false },
+            'discord_id': { type: DrossFieldType.Snowflake, nullable: false },
             'status':     { type: DrossFieldType.String,    nullable: false,  length: 20 }
         },
-        primaryKey: ['battle_id', 'trainer_id']
+        primaryKey: ['battle_id', 'discord_id']
     });
 
     constructor(data: BattleMemberData) {
@@ -37,17 +39,17 @@ export default class BattleMember extends DrossDatabaseTable {
      * Getters *
      ***********/
 
-    get battleId  (): string { return this.getField('battleId'); }
-    get trainerId (): string { return this.getField('trainerId'); }
-    get status    (): string { return this.getField('status'); }
+    get battleId  (): Snowflake { return this.getField('battleId'); }
+    get discordId (): Snowflake { return this.getField('discordId'); }
+    get status    (): string    { return this.getField('status'); }
 
     /***********
      * Setters *
      ***********/
 
-    set battleId  (value: string) { this.setField('battleId', value); }
-    set trainerId (value: string) { this.setField('trainerId', value); }
-    set status    (value: string) { this.setField('status', value); }
+    set battleId  (value: Snowflake) { this.setField('battleId', value); }
+    set discordId (value: Snowflake) { this.setField('discordId', value); }
+    set status    (value: string)    { this.setField('status', value); }
 
     /**************************
      * Class Method Overrides *
@@ -65,11 +67,13 @@ export default class BattleMember extends DrossDatabaseTable {
      * Instance Method Overrides *
      *****************************/
 
-    override async update(condition: BattleMemberConditions = { battle_id: this.battleId, trainer_id: this.trainerId }) {
+    override async update(condition: BattleMemberConditions = { battleId: this.battleId, discordId: this.discordId }) {
         await DrossDatabaseTable.prototype.update.call(this, condition);
     }
 
-    override async delete(condition: BattleMemberConditions = { battle_id: this.battleId, trainer_id: this.trainerId }) {
+    override async delete(condition: BattleMemberConditions = { battleId: this.battleId, discordId: this.discordId }) {
         await DrossDatabaseTable.prototype.delete.call(this, condition);
     }
 }
+
+export default BattleMember;

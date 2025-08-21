@@ -17,9 +17,15 @@ import {
     MaxAutoCompleteChoices
 } from '#src/Constants.js';
 
-import type { MasterPokemonConditions } from '#src/models/MasterPokemon.js';
+import type {
+    MasterPokemonConditions,
+    MasterPokemonData
+} from '#src/models/MasterPokemon.js';
+
 import MasterPokemon from '#src/models/MasterPokemon.js';
+import PogoHubLink   from '#src/models/PogoHubLink.js';
 import Translation   from '#src/models/Translation.js';
+import WikiLink      from '#src/models/WikiLink.js';
 
 const MasterPokemonCmd = {
     global: false,
@@ -67,9 +73,9 @@ const MasterPokemonCmd = {
         }
     },
 
-    /**********************/
-    /* Subcommand :: Load */
-    /**********************/
+    /**********************
+     * Subcommand :: Load *
+     **********************/
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -80,11 +86,9 @@ const MasterPokemonCmd = {
 
         let json;
         try {
-             json = JSON.parse(
-                await readFile(
-                    new URL(file, import.meta.url)
-                )
-            );
+            const url = new URL(file, import.meta.url);
+            const data = (await readFile(url)).toString();
+            json = JSON.parse(data);
         } catch (error) {
             await interaction.followUp({ content: `Error reading file` });
         }
@@ -99,7 +103,7 @@ const MasterPokemonCmd = {
             client.logger.debug('Master Pokémon JSON');
             client.logger.dump(masterPokemonJSON);
 
-            let masterPokemonObj = {
+            let masterPokemonObj: MasterPokemonData = {
                 templateId:           masterPokemonJSON.templateId,
                 pokemonId:            masterPokemonJSON.pokemonId,
                 pokedexId:           +masterPokemonJSON.templateId.substring(1, 5),
@@ -140,16 +144,16 @@ const MasterPokemonCmd = {
                 masterPokemon.pokemonId            = masterPokemonObj.pokemonId;
                 masterPokemon.pokedexId            = masterPokemonObj.pokedexId;
                 masterPokemon.type                 = masterPokemonObj.type;
-                masterPokemon.type2                = masterPokemonObj.type2;
-                masterPokemon.form                 = masterPokemonObj.form;
-                masterPokemon.formMaster           = masterPokemonObj.formMaster;
-                masterPokemon.baseAttack           = masterPokemonObj.baseAttack;
-                masterPokemon.baseDefense          = masterPokemonObj.baseDefense;
-                masterPokemon.baseStamina          = masterPokemonObj.baseStamina;
-                masterPokemon.candyToEvolve        = masterPokemonObj.candyToEvolve;
+                masterPokemon.type2                = masterPokemonObj.type2 || null;
+                masterPokemon.form                 = masterPokemonObj.form || null;
+                masterPokemon.formMaster           = masterPokemonObj.formMaster || null;
+                masterPokemon.baseAttack           = masterPokemonObj.baseAttack || null;
+                masterPokemon.baseDefense          = masterPokemonObj.baseDefense || null;
+                masterPokemon.baseStamina          = masterPokemonObj.baseStamina || null;
+                masterPokemon.candyToEvolve        = masterPokemonObj.candyToEvolve || null;
                 masterPokemon.buddyDistanceKm      = masterPokemonObj.buddyDistanceKm;
-                masterPokemon.purifyStardust       = masterPokemonObj.purifyStardust;
-                
+                masterPokemon.purifyStardust       = masterPokemonObj.purifyStardust || null;
+
                 await masterPokemon.update();
             }                
 
@@ -183,9 +187,9 @@ const MasterPokemonCmd = {
         await interaction.respond([]);
     },
 
-    /**********************/
-    /* Subcommand :: List */
-    /**********************/
+    /**********************
+     * Subcommand :: List *
+     **********************/
 
     async executeList(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
@@ -193,18 +197,45 @@ const MasterPokemonCmd = {
         const pokemonId = interaction.options.getString('pokemon');
         client.logger.debug(`pokemonId = ${pokemonId}`);
 
+        if (!pokemonId) {
+            return await interaction.reply({
+                content: `You must specify a Pokémon to list templates for`,
+                flags: MessageFlags.Ephemeral
+            });
+        }
+
         // Create the Boss search object
         const masterPokemonSearchObj: MasterPokemonConditions = {
             pokemonId: pokemonId
         };
 
-        let masterPokemonArray = await MasterPokemon.get(masterPokemonSearchObj);
-        let masterPokemon = masterPokemonArray[0];
+        const masterPokemonArray = await MasterPokemon.get(masterPokemonSearchObj);
+        const firstMasterPokemon = masterPokemonArray[0];
 
-        let pokemonName = await Translation.getPokemonName(masterPokemon.pokedexId);
-        let description = await Translation.getPokemonDescription(masterPokemon.pokedexId);
-        let link = `https://pokemongo.gamepress.gg/c/pokemon/${masterPokemon.pokemonId.toLowerCase()}`;
-        let thumbnail = `https://static.mana.wiki/pokemongo/${masterPokemon.pokemonId.toLowerCase()}-main.png`;
+        if (!firstMasterPokemon) {
+            return await interaction.reply({
+                content: `No Master Pokémon found for ID: ${pokemonId}`,
+                flags: MessageFlags.Ephemeral
+            });
+        }
+
+        const pokemonName = await Translation.getPokemonName(firstMasterPokemon.pokedexId);
+        const description = await Translation.getPokemonDescription(firstMasterPokemon.pokedexId);
+
+        const pogoHubLink = await PogoHubLink.getUnique(firstMasterPokemon);
+        const wikiLink = await WikiLink.getUnique(firstMasterPokemon);
+
+        let link = null;
+        let thumbnail = null;
+
+        if (wikiLink) {
+            link = wikiLink.page;
+            thumbnail = wikiLink.image;
+        }
+        
+        if (pogoHubLink) {
+            link = pogoHubLink.page;
+        }
         
       //client.logger.debug(`Master Pokémon Array =`);
       //client.logger.dump(masterPokemonArray);
@@ -213,8 +244,7 @@ const MasterPokemonCmd = {
         let templateIdArray = [];
         let templateIdArrayChars = 0;
         
-        for (let x = 0; x < masterPokemonArray.length; x++) {
-            masterPokemon = masterPokemonArray[x];
+        for (const masterPokemon of masterPokemonArray) {
             let templateId = masterPokemon.templateId;
 
             if (templateIdArrayChars + templateId.length > FieldValueMaxSize) {
@@ -243,7 +273,7 @@ const MasterPokemonCmd = {
             .setThumbnail(thumbnail)
             .addFields(templateIdFieldArray);
 
-        await interaction.reply({
+        return await interaction.reply({
             embeds: [embed]
         });
     },
@@ -254,12 +284,12 @@ const MasterPokemonCmd = {
         const focusedOption = interaction.options.getFocused(true);
         client.logger.debug(`Initiating autocomplete for boss -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
 
-        let choices = [];
+        let choices: string[] = [];
         const pokemonId = interaction.options.getString('pokemon');
         client.logger.debug(`pokemonId = ${pokemonId}`);
 
         // Create the Boss search object
-        const masterPokemonSearchObj = {};
+        const masterPokemonSearchObj: MasterPokemonConditions = {};
 
         if ( (focusedOption.name != 'pokemon') && (pokemonId != null) ) {
             masterPokemonSearchObj.pokemonId = pokemonId;

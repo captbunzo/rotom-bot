@@ -6,6 +6,8 @@ import {
 	SlashCommandBuilder
 } from 'discord.js';
 
+import { NonUniqueResultError } from '@drossjs/dross-database';
+
 import Client from '#src/Client.js';
 
 import {
@@ -13,6 +15,11 @@ import {
 	BossType,
 	MaxAutoCompleteChoices
 } from '#src/Constants.js';
+
+import type {
+	BossConditions,
+	BattleData
+} from '#src/types/ModelTypes.js';
 
 import Boss    from '#src/models/Boss.js';
 import Battle  from '#src/models/Battle.js';
@@ -39,10 +46,13 @@ const DynamaxCmd = {
 		),
 	
 	async execute(interaction: ChatInputCommandInteraction) {
-        const client    = interaction.client as Client;
-		const guildId   = interaction.guild.id;
-		const trainerId = interaction.user.id;
-		const trainer   = await Trainer.getUnique({ id: trainerId });
+        const client = interaction.client as Client;
+		if (!interaction.guild) {
+			throw new Error('interaction.guild is undefined');
+		}
+
+		const guildId = interaction.guild.id;
+		const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
         if (!trainer) {
         	interaction.reply(Trainer.getSetupTrainerFirstMessage());
@@ -51,8 +61,11 @@ const DynamaxCmd = {
 
         // Create the Boss search object
         const pokemonId = interaction.options.getString('pokemon');
+		if (!pokemonId) {
+			throw new Error('Required option pokemon does not have a value');
+		}
 
-        const bossSearchObj = {
+        const bossSearchObj: BossConditions = {
 			bossType: BossType.Dynamax,
 			pokemonId: pokemonId,
 			isActive: true
@@ -61,28 +74,31 @@ const DynamaxCmd = {
         client.logger.debug('Boss Search Object =');
 		client.logger.dump(bossSearchObj);
 
-		const bosses = await Boss.get(bossSearchObj);
-		if (bosses.length == 0) {
-			await interaction.reply({
-				content: `Active dynamax boss not found with those options, please try again`,
-				flags: MessageFlags.Ephemeral
-			})
-			return;
-		} else if (bosses.length > 1) {
-			await interaction.reply({
-				content: `Multiple active dynamax bosses found with those options, please try again`,
-				flags: MessageFlags.Ephemeral
-			})
-			return;
+		let boss: Boss | null;
+		try {
+			boss = await Boss.getUnique(bossSearchObj);
+
+			if (!boss) {
+				return await interaction.reply({
+					content: `Active dynamax boss not found with those options, please try again`,
+					flags: MessageFlags.Ephemeral
+				})
+			}
+		} catch (error) {
+			if (error instanceof NonUniqueResultError) {
+				return await interaction.reply({
+					content: `Multiple active dynamax bosses found with those options, please try again`,
+					flags: MessageFlags.Ephemeral
+				})
+			} else throw error;
 		}
 
-		const boss = bosses[0];
         client.logger.debug('Boss Record =');
 		client.logger.dump(boss);
 
-		const battleObj = {
+		const battleObj: BattleData = {
 			bossId: boss.id,
-			hostTrainerId: trainerId,
+			hostDiscordId: interaction.user.id,
 			guildId: guildId,
 			status: BattleStatus.Planning
 		}
@@ -93,7 +109,7 @@ const DynamaxCmd = {
 		client.logger.dump(battle);
 
 		const battleEmbed = await battle.buildEmbed();
-		const battlePlanningButtons = await BattlePlanningButtons.build(interaction); 
+		const battlePlanningButtons = await BattlePlanningButtons.build(); 
 
 		await interaction.reply({
             embeds: [battleEmbed],
@@ -106,7 +122,7 @@ const DynamaxCmd = {
 		client.logger.debug(`replyMessage.id = ${replyMessage.id}`);
 
 		battle.messageId = replyMessage.id;
-		await battle.update();
+		return await battle.update();
 	},
 
 	async autocomplete(interaction: AutocompleteInteraction) {
@@ -118,7 +134,7 @@ const DynamaxCmd = {
         client.logger.debug(`pokemonId  = ${pokemonId}`);
 
         // Create the Boss search object
-        const bossSearchObj = {
+        const bossSearchObj: BossConditions = {
 			bossType: BossType.Dynamax,
 			isActive: true
 		};

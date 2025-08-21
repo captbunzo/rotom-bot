@@ -1,4 +1,5 @@
 import {
+    type Snowflake,
     EmbedBuilder,
     channelMention,
     SnowflakeUtil,
@@ -6,37 +7,35 @@ import {
 } from 'discord.js';
 
 import {
-    type DrossTableConditions,
-    type DrossTableData,
     DrossDatabaseTable,
     DrossFieldType,
 } from '@drossjs/dross-database';
 
 import Translation from '#src/models/Translation.js';
 
-export interface GuildBattleAlertData extends DrossTableData {
-    id: string;
-    guildId: string;
-    roleId: string;
-    channelId?: string | null;
-    bossType?: string | null;
-    tier?: number | null;
-    isMega?: boolean | null;
-    isShadow?: boolean | null;
+export interface GuildBattleAlertData {
+    id?: Snowflake;
+    guildId: Snowflake;
+    roleId: Snowflake;
+    channelId?: Snowflake | null | undefined;
+    bossType?: string | null | undefined;
+    tier?: number | null | undefined;
+    isMega?: boolean | null | undefined;
+    isShadow?: boolean | null | undefined;
 }
 
-export interface GuildBattleAlertConditions extends DrossTableConditions {
-    id?: string;
-    guildId?: string;
-    roleId?: string;
-    channelId?: string | null;
-    bossType?: string | null;
-    tier?: number | null;
-    isMega?: boolean | null;
-    isShadow?: boolean | null;
+export interface GuildBattleAlertConditions {
+    id?: Snowflake;
+    guildId?: Snowflake;
+    roleId?: Snowflake;
+    channelId?: Snowflake | null | undefined;
+    bossType?: string | null | undefined;
+    tier?: number | null | undefined;
+    isMega?: boolean | null | undefined;
+    isShadow?: boolean | null | undefined;
 }
 
-export default class GuildBattleAlert extends DrossDatabaseTable {
+export class GuildBattleAlert extends DrossDatabaseTable {
     static override schema = this.parseSchema({
         tableName: 'guild_battle_alert',
         orderBy: ['id'],
@@ -61,27 +60,27 @@ export default class GuildBattleAlert extends DrossDatabaseTable {
      * Getters *
      ***********/
 
-    get id        (): string         { return this.getField('id'); }
-    get guildId   (): string         { return this.getField('guildId'); }
-    get roleId    (): string         { return this.getField('roleId'); }
-    get channelId (): string  | null { return this.getField('channelId'); }
-    get bossType  (): string  | null { return this.getField('bossType'); }
-    get tier      (): number  | null { return this.getField('tier'); }
-    get isMega    (): boolean | null { return this.getField('isMega'); }
-    get isShadow  (): boolean | null { return this.getField('isShadow'); }
+    get id        (): Snowflake        { return this.getField('id'); }
+    get guildId   (): Snowflake        { return this.getField('guildId'); }
+    get roleId    (): Snowflake        { return this.getField('roleId'); }
+    get channelId (): Snowflake | null { return this.getField('channelId'); }
+    get bossType  (): string    | null { return this.getField('bossType'); }
+    get tier      (): number    | null { return this.getField('tier'); }
+    get isMega    (): boolean   | null { return this.getField('isMega'); }
+    get isShadow  (): boolean   | null { return this.getField('isShadow'); }
 
     /***********
      * Setters *
      ***********/
 
-    set id        (value: string        ) { this.setField('id', value); }
-    set guildId   (value: string        ) { this.setField('guildId', value); }
-    set roleId    (value: string        ) { this.setField('roleId', value); }
-    set channelId (value: string  | null) { this.setField('channelId', value); }
-    set bossType  (value: string  | null) { this.setField('bossType', value); }
-    set tier      (value: number  | null) { this.setField('tier', value); }
-    set isMega    (value: boolean | null) { this.setField('isMega', value); }
-    set isShadow  (value: boolean | null) { this.setField('isShadow', value); }
+    set id        ( value: Snowflake        ) { this.setField('id', value); }
+    set guildId   ( value: Snowflake        ) { this.setField('guildId', value); }
+    set roleId    ( value: Snowflake        ) { this.setField('roleId', value); }
+    set channelId ( value: Snowflake | null ) { this.setField('channelId', value); }
+    set bossType  ( value: string    | null ) { this.setField('bossType', value); }
+    set tier      ( value: number    | null ) { this.setField('tier', value); }
+    set isMega    ( value: boolean   | null ) { this.setField('isMega', value); }
+    set isShadow  ( value: boolean   | null ) { this.setField('isShadow', value); }
 
     /**************************
      * Class Method Overrides *
@@ -154,3 +153,5 @@ export default class GuildBattleAlert extends DrossDatabaseTable {
         return embed;
     }
 }
+
+export default GuildBattleAlert;

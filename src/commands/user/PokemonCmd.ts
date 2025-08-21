@@ -17,6 +17,10 @@ import {
     SearchStringPurifyStardustValue
 } from '#src/Constants.js';
 
+import type {
+    MasterPokemonConditions
+} from '#src/types/ModelTypes.js';
+
 import MasterCPM     from '#src/models/MasterCPM.js';
 import MasterPokemon from '#src/models/MasterPokemon.js';
 
@@ -140,23 +144,25 @@ const PokemonCmd = {
         let   defense = interaction.options.getInteger('defense');
         let   stamina = interaction.options.getInteger('stamina');
         let   level   = interaction.options.getInteger('level');
-        
-        //if (form == null) {
-        //    await interaction.reply({
-        //        content: `Searching for Pokémon: ${name}`
-        //    });
-        //} else {
-        //    await interaction.reply({
-        //        content: `Searching for Pokémon: ${name} (${form})`
-        //    });
-        //}
+
+        if (!name) {
+            throw new Error('Required option pokemon does not have a value');
+        }
 
         const nameSearchValue = name.toUpperCase();
         const formSearchValue = form ? form.toUpperCase() : null;
-        const masterPokemons = await MasterPokemon.get({ pokemonId: nameSearchValue, form: formSearchValue });
-        let masterPokemon = null;
+        const masterPokemons = await MasterPokemon.get({
+            pokemonId: nameSearchValue,
+            form: formSearchValue
+        });
 
-        if (masterPokemons.length > 1) {
+        if (masterPokemons.length === 0) {
+            return await interaction.reply({
+                content: `No Pokémon found for name = ${nameSearchValue}, form = ${formSearchValue}`,
+                flags: MessageFlags.Ephemeral
+            });
+        
+        } else if (masterPokemons.length > 1) {
             await interaction.reply({
                 content: `Multiple Pokémon found for name = ${nameSearchValue}, form = ${formSearchValue}`,
                 flags: MessageFlags.Ephemeral
@@ -169,12 +175,16 @@ const PokemonCmd = {
                 });
             }
 
-            return
+            return;
         }
 
-        masterPokemon = masterPokemons[0];
+        const masterPokemon = masterPokemons[0];
         client.logger.debug('Master Pokémon Object');
         client.logger.dump(masterPokemon);
+
+        if (!masterPokemon) {
+            throw new Error('Master Pokémon not found');
+        }
         
         if (attack != null || defense != null || stamina != null) {
             if (attack == null || defense == null || stamina == null) {
@@ -240,7 +250,7 @@ const PokemonCmd = {
                 );
         }
 
-        await interaction.reply({
+        return await interaction.reply({
             embeds: [embed]
         });
 	},
@@ -258,6 +268,11 @@ const PokemonCmd = {
                 break;
             case 'form':
                 const pokemonId = interaction.options.getString('name');
+                
+                if (!pokemonId) {
+                    throw new Error('Required option pokemon does not have a value');
+                }
+
                 choices = await MasterPokemon.getFormChoices(focusedOption.value, { pokemonId: pokemonId });
                 break;
         }
@@ -282,18 +297,22 @@ const PokemonCmd = {
         const client = interaction.client as Client;
         const value  = interaction.options.getString('value');
 
+        if (!value) {
+            throw new Error('Required option value does not have a value');
+        }
+
         client.logger.debug(`Pokémon command search for ${subCommand} with value = ${value}`);
-        let masterPokemonSearchObj = {};
+        let masterPokemonSearchObj: MasterPokemonConditions = {};
         let title;
 
         switch (subCommand) {
             case SearchStringCode.buddyKm:
                 title = `${SearchStringName.buddyKm}: ${value} km`;
-                masterPokemonSearchObj.buddyDistanceKm = value;
+                masterPokemonSearchObj.buddyDistanceKm = parseInt(value);
                 break;
             case SearchStringCode.purifyStardust:
                 title = `${SearchStringName.purifyStardust}: ${value} stardust`;
-                masterPokemonSearchObj.purifyStardust = value;
+                masterPokemonSearchObj.purifyStardust = parseInt(value);
                 break;
             default:
                 await interaction.reply({
