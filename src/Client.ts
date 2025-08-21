@@ -72,6 +72,7 @@ export default class Client extends DiscordClient {
     public commands : Collection<string, any> = new Collection();
     public buttons  : Collection<string, any> = new Collection();
     public modals   : Collection<string, any> = new Collection();
+    public selects  : Collection<string, any> = new Collection();
 
     /*****************************
      * Initialize Discord Client *
@@ -80,8 +81,7 @@ export default class Client extends DiscordClient {
     async init() {
         // Load commands and events
         await this.loadCommands();
-        await this.loadButtons();
-        await this.loadModals();
+        await this.loadComponents();
         await this.loadEventHandlers();
 
         // Connect to discord
@@ -206,58 +206,50 @@ export default class Client extends DiscordClient {
         }
     }
 
-    /********************
-     * Load all Buttons *
-     ********************/
+    /*******************
+     * Load Components *
+     *******************/
     
-    async loadButtons() {
-        this.logger.log('Loading buttons');
+    async loadComponents() {
+        this.logger.log('Loading components');
+
         this.buttons = new Collection();
+        this.modals  = new Collection();
+        this.selects = new Collection();
+
+        const componentPaths = [
+            './src/components/compound',
+            './src/components/buttons',
+            './src/components/selects',
+            './src/components/modals',
+        ];
         
-        const buttonsPath = './src/buttons';
-        const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.ts'));
-        
-        for (const file of buttonFiles) {
-            const filePath = path.join(buttonsPath, file);
-            const buttonFilePath = filePath.replace(/^(src\/)/,"./");
-            const { default: button } = await import(buttonFilePath);
-            
-            // Set a new item in the Collection with the key as the button name and the value as the exported module
-            if ('data' in button && 'handle' in button) {
-                this.logger.log(`  -> ${button.data.name}`);
-                this.buttons.set(button.data.name, button);
-            } else {
-                this.logger.error(`[WARNING] The button at ${filePath} is missing a required "data" or "show" or "handle" property.`);
+        for (const componentsPath of componentPaths) {
+            const theseComponentFiles = fs.readdirSync(componentsPath).filter(file => file.endsWith('.ts'));
+
+            for (const file of theseComponentFiles) {
+                const filePath = path.join(componentsPath, file);
+                const componentFilePath = filePath.replace(/^(src\/)/,"./");
+                const { default: component } = await import(componentFilePath);
+                
+                if (component.handleButton) {
+                    this.logger.log(`  -> button -> ${component.name}`);
+                    this.buttons.set(component.name, component);
+                }
+
+                if (component.handleModalSubmit) {
+                    this.logger.log(`  -> modal  -> ${component.name}`);
+                    this.modals.set(component.name, component);
+                }
+
+                if (component.handleStringSelectMenu) {
+                    this.logger.log(`  -> select -> ${component.name}`);
+                    this.selects.set(component.name, component);
+                }
             }
         }
     }
     
-    /***************
-     * Load Modals *
-     ***************/
-
-    async loadModals() {
-        this.logger.log('Loading modals');
-        this.modals = new Collection();
-        
-        const modalsPath = './src/modals';
-        const modalFiles = fs.readdirSync(modalsPath).filter(file => file.endsWith('.ts'));
-        
-        for (const file of modalFiles) {
-            const filePath = path.join(modalsPath, file);
-            const modalFilePath = filePath.replace(/^(src\/)/,"./");
-            const { default: modal } = await import(modalFilePath);
-            
-            // Set a new item in the Collection with the key as the modal name and the value as the exported module
-            if ('data' in modal && 'show' in modal && 'handle' in modal) {
-                this.logger.log(`  -> ${modal.data.name}`);
-                this.modals.set(modal.data.name, modal);
-            } else {
-                this.logger.error(`[WARNING] The modal at ${filePath} is missing a required "data" or "show" or "handle" property.`);
-            }
-        }
-    }
-
     /********************
      * Helper Functions *
      ********************/

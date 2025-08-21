@@ -127,6 +127,19 @@ export const TeamColor = {
     Valor:    0xF61208
 }
 
+export enum PokedexEntry {
+    Caught   = 'Pokémon Caught',
+    Shiny    = 'Shiny',
+    Hundo    = 'Hundo',
+    Lucky    = 'Lucky',
+    XXL      = 'XXL',
+    XXS      = 'XXS',
+    Shadow   = 'Shadow',
+    Purified = 'Purified'
+}
+
+export const MaxPokedexId = 1008;
+
 export const DiscordErrorUnknown = {
     Account:     10001,
     Application: 10002,

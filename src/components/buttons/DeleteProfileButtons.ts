@@ -13,24 +13,23 @@ import {
 
 import Trainer from '#src/models/Trainer.js';
 
-const Confirm = 'Confirm';
-const Cancel = 'Cancel';
-
 const DeleteProfileButtons = {
-    data: {
-        name: 'DeleteProfile'
+    name: 'DeleteProfileButtons',
+    button: {
+        confirm: 'Confirm',
+        cancel: 'Cancel'
     },
 
     async show(interaction: ChatInputCommandInteraction, messageType = MessageType.Reply) {        
         // Create the buttons
         const confirmButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${Confirm}`)
-            .setLabel(Confirm)
+            .setCustomId(`${this.name}.${this.button.confirm}`)
+            .setLabel(this.button.confirm)
             .setStyle(ButtonStyle.Danger);
         
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${Cancel}`)
-            .setLabel(Cancel)
+            .setCustomId(`${this.name}.${this.button.cancel}`)
+            .setLabel(this.button.cancel)
             .setStyle(ButtonStyle.Secondary);
         
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
@@ -51,11 +50,11 @@ const DeleteProfileButtons = {
             }
     },
 
-    async handle(interaction: ButtonInteraction) {
+    async handleButton(interaction: ButtonInteraction) {
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         const action = interaction.customId.split('.')[1];
 
-        if (action == Cancel) {
+        if (action == this.button.cancel) {
             await interaction.reply({
                 content: 'Profile deletion cancelled',
                 flags: MessageFlags.Ephemeral
@@ -63,7 +62,7 @@ const DeleteProfileButtons = {
             return;
         }
 
-        if (action == Confirm) {
+        if (action == this.button.confirm) {
             if (!trainer) {
                 await interaction.reply({
                     content: 'Trainer profile not found',

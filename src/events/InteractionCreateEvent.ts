@@ -1,4 +1,3 @@
-
 import type {
 	 Interaction
 } from 'discord.js';
@@ -10,9 +9,15 @@ import {
 	Events,
 	MessageFlags,
 	ModalSubmitInteraction,
+	StringSelectMenuInteraction
 } from 'discord.js';
 
 import Client from '#src/Client.js';
+
+interface ComponentId {
+    name: string;
+    type: string;
+}
 
 const InteractionCreateEvent = {
 	name: Events.InteractionCreate,
@@ -26,6 +31,9 @@ const InteractionCreateEvent = {
 
 		} else if (interaction.isButton()) {
 			await this.executeButtonInteraction(interaction);
+		
+		} else if (interaction.isStringSelectMenu()) {
+			await this.executeStringSelectMenuInteraction(interaction);
 
 		} else if (interaction.isModalSubmit()) {
 			await this.executeModalSubmitInteraction(interaction);
@@ -98,7 +106,7 @@ const InteractionCreateEvent = {
 		}
 
 		try {
-			await button.handle(interaction);
+			await button.handleButton(interaction);
 		} catch (error) {
 			client.logger.error(`Error handling button ${buttonName}`);
 			client.logger.dump(error);
@@ -106,6 +114,35 @@ const InteractionCreateEvent = {
 				await interaction.followUp({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
 			} else {
 				await interaction.reply({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
+			}
+		}
+	},
+
+	async executeStringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
+		const client = interaction.client as unknown as Client;
+		const customId = JSON.parse(interaction.customId);
+		const selectName = customId.name;
+
+		if (!selectName) {
+			throw new Error('Select interaction does not have a valid custom ID');
+		}
+
+		const select = client.selects.get(selectName);
+
+		if (!select) {
+			client.logger.error(`No select matching ${selectName} was found`);
+			return;
+		}
+
+		try {
+			await select.handleStringSelectMenu(interaction);
+		} catch (error) {
+			client.logger.error(`Error handling select ${selectName}`);
+			client.logger.dump(error);
+			if (interaction.replied || interaction.deferred) {
+				await interaction.followUp({ content: 'There was an error while handling this select!', flags: MessageFlags.Ephemeral });
+			} else {
+				await interaction.reply({ content: 'There was an error while handling this select!', flags: MessageFlags.Ephemeral });
 			}
 		}
 	},
@@ -120,7 +157,7 @@ const InteractionCreateEvent = {
 		}
 
 		try {
-			await modal.handle(interaction);
+			await modal.handleModalSubmit(interaction);
 		} catch (error) {
 			client.logger.error(`Error submitting model ${interaction.customId}`);
 			client.logger.dump(error);

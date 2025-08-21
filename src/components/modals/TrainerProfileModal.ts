@@ -8,23 +8,22 @@ import {
     TextInputStyle
 } from 'discord.js';
 
-import Client from '#src/Client.js';
 import {
     type TrainerData,
     Trainer
 } from '#src/models/Trainer.js';
 
+import TrainerTeamButtons from '#src/components/buttons/TrainerTeamButtons.js';
+
 const TrainerProfileModal = {
-    data: {
-        name: 'TrainerProfile',
-    },
+    name: 'TrainerProfileModal',
 
     async show(interaction: ChatInputCommandInteraction) {
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
         // Create the modal
         const modal = new ModalBuilder()
-            .setCustomId(this.data.name)
+            .setCustomId(this.name)
             .setTitle('Trainer Profile');
 
         // Create the text input components -- name, code, level, team
@@ -94,8 +93,7 @@ const TrainerProfileModal = {
         interaction.showModal(modal);
     },
     
-    async handle(interaction: ModalSubmitInteraction) {
-        const client = interaction.client as Client;
+    async handleModalSubmit(interaction: ModalSubmitInteraction) {
         let trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         
         //client.logger.log(`Interaction User ID = ${interaction.user.id}`);
@@ -143,8 +141,7 @@ const TrainerProfileModal = {
 
         // Prompt the user to set their team if not already set
         if (!trainer.team) {
-            const trainerTeamButtons = client.buttons.get('TrainerTeam');
-            await trainerTeamButtons.show(interaction);
+            await TrainerTeamButtons.show(interaction);
         }
     }
 };

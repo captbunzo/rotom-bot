@@ -3,7 +3,7 @@ import {
 	SlashCommandBuilder
 } from 'discord.js';
 
-import Client from '#src/Client.js';
+import DeleteProfileButtons from '#src/components/buttons/DeleteProfileButtons.js';
 
 const DeleteProfileCmd = {
 	global: true,
@@ -12,9 +12,7 @@ const DeleteProfileCmd = {
 		.setDescription('Delete your trainer profile'),
 
 	async execute(interaction: ChatInputCommandInteraction) {
-		const client = interaction.client as Client;
-		const deleteProfileButtons = client.buttons.get('DeleteProfile');
-		await deleteProfileButtons.show(interaction);
+		await DeleteProfileButtons.show(interaction);
 	}
 };
 

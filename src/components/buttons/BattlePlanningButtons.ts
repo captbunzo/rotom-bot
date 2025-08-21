@@ -24,47 +24,45 @@ import BattleMember from '#src/models/BattleMember.js';
 import Boss         from '#src/models/Boss.js';
 import Trainer      from '#src/models/Trainer.js';
 
-import BattleStartedButtons from '#src/buttons/BattleStartedButtons.js';
+import BattleStartedButtons from '#src/components/buttons/BattleStartedButtons.js';
 
 const BattlePlanningButtons = {
-    data: {
-        name: 'BattlePlanningButtons',
-        description: 'Battle planning buttons',
-        button: {
-            Join: 'Join',
-            Leave: 'Leave',
-            Start: 'Start',
-            Cancel: 'Cancel'
-        }       
-    },  
+    name: 'BattlePlanningButtons',
+    description: 'Battle planning buttons',
+    button: {
+        Join: 'Join',
+        Leave: 'Leave',
+        Start: 'Start',
+        Cancel: 'Cancel'
+    },
 
     build(): ActionRowBuilder<ButtonBuilder> {
         // Create the buttons
         const joinButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Join}`)
-            .setLabel(this.data.button.Join)
+            .setCustomId(`${this.name}.${this.button.Join}`)
+            .setLabel(this.button.Join)
             .setStyle(ButtonStyle.Primary);
         
         const leaveButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Leave}`)
-            .setLabel(this.data.button.Leave)
+            .setCustomId(`${this.name}.${this.button.Leave}`)
+            .setLabel(this.button.Leave)
             .setStyle(ButtonStyle.Secondary);
 
         const startButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Start}`)
-            .setLabel(this.data.button.Start)
+            .setCustomId(`${this.name}.${this.button.Start}`)
+            .setLabel(this.button.Start)
             .setStyle(ButtonStyle.Success);
         
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Cancel}`)
-            .setLabel(this.data.button.Cancel)
+            .setCustomId(`${this.name}.${this.button.Cancel}`)
+            .setLabel(this.button.Cancel)
             .setStyle(ButtonStyle.Danger);
         
         return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(joinButton, leaveButton, startButton, cancelButton);
     },
     
-    async handle(interaction: ButtonInteraction) {
+    async handleButton(interaction: ButtonInteraction) {
         const client = interaction.client as Client;
         const message = interaction.message;
         const action = interaction.customId.split('.')[1];
@@ -94,14 +92,14 @@ const BattlePlanningButtons = {
         }
         
         switch (action) {
-            case this.data.button.Join: this.handleJoin(interaction, battle, trainer); break;
-            case this.data.button.Leave: this.handleLeave(interaction, battle, trainer); break;
-            case this.data.button.Start: this.handleStart(interaction, battle, trainer); break;
-            case this.data.button.Cancel: this.handleCancel(interaction, battle, trainer); break;
-        }
+            case this.button.Join: this.handleJoinButton(interaction, battle, trainer); break;
+            case this.button.Leave: this.handleLeaveButton(interaction, battle, trainer); break;
+            case this.button.Start: this.handleStartButton(interaction, battle, trainer); break;
+            case this.button.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
+        }   
     },
 
-    async handleJoin(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleJoinButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const client = interaction.client as Client;
         
         const boss = await Boss.getUnique({ id: battle.bossId });
@@ -169,7 +167,7 @@ const BattlePlanningButtons = {
         client.logger.dump(interaction.message);
     },
 
-    async handleLeave(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleLeaveButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const client = interaction.client as Client;
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
@@ -183,7 +181,7 @@ const BattlePlanningButtons = {
             await interaction.reply({
                 content:
                     `You cannot leave a ${battleTypeName.toLowerCase()} that you are hosting, `
-                  + `please click ${this.data.button.Cancel} to cancel this ${battleTypeName.toLowerCase()}`,
+                  + `please click ${this.button.Cancel} to cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
@@ -225,7 +223,7 @@ const BattlePlanningButtons = {
         client.logger.dump(interaction.message);
     },
 
-    async handleStart(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleStartButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for battle id ${battle.id}`);
@@ -299,7 +297,7 @@ const BattlePlanningButtons = {
         });
     },
 
-    async handleCancel(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleCancelButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);

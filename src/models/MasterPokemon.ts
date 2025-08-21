@@ -227,7 +227,7 @@ export class MasterPokemon extends DrossDatabaseTable {
         return await MasterCPM.getCombatPower(this, 15, 15, 15, level);
     }
 
-    async buildEmbed(): Promise<EmbedBuilder> {
+    async buildEmbed(full: boolean = true): Promise<EmbedBuilder> {
         let title = `#${this.pokedexId} - ${await this.getName()}`;
 
         if (this.form !== null) {
@@ -283,8 +283,11 @@ export class MasterPokemon extends DrossDatabaseTable {
             .setColor(typeColor)
             .setTitle(title)
             .setURL(link)
-            .setDescription(description)
             .setThumbnail(thumbnail);
+        
+        if (full) {
+            embed = embed.setDescription(description);
+        }
         
         embed = embed
             .addFields(
@@ -305,19 +308,18 @@ export class MasterPokemon extends DrossDatabaseTable {
             );
         */
         
-        const candyToEvolve = this.candyToEvolve ? this.candyToEvolve.toString() : 'Does not evolve';
-        const buddyDistanceKm = this.buddyDistanceKm ? `${this.buddyDistanceKm.toString()} km` : 'Unknown';
-        const purifyStardust = this.purifyStardust ? this.purifyStardust.toLocaleString() : 'Unknown';
+        if (full) {
+            const candyToEvolve = this.candyToEvolve ? this.candyToEvolve.toString() : 'Does not evolve';
+            const buddyDistanceKm = this.buddyDistanceKm ? `${this.buddyDistanceKm.toString()} km` : 'Unknown';
+            const purifyStardust = this.purifyStardust ? this.purifyStardust.toLocaleString() : 'Unknown';
 
-        embed = embed
-            .addFields(
-                { name: 'Candy to Evolve', value: candyToEvolve, inline: true },
-                { name: 'Buddy Distance', value: buddyDistanceKm, inline: true },
-                { name: 'Purification Stardust', value: purifyStardust, inline: true }
-            );
-        
-        embed = embed
-            .setTimestamp();
+            embed = embed
+                .addFields(
+                    { name: 'Candy to Evolve', value: candyToEvolve, inline: true },
+                    { name: 'Buddy Distance', value: buddyDistanceKm, inline: true },
+                    { name: 'Purification Stardust', value: purifyStardust, inline: true }
+                );
+        }
 
         return embed;
     }

@@ -24,44 +24,42 @@ import Boss         from '#src/models/Boss.js';
 import Trainer      from '#src/models/Trainer.js';
 
 const BattleStartedButtons = {
-    data: {
-        name: 'BattleStartedButtons',
-        description: 'Battle started buttons',
-        button: {
-            Won: 'Battle Won',
-            Failed: 'Battle Failed',
-            NotReceived: 'Invite Not Received',
-            Cancel: 'Cancel'
-        }
-    },  
+    name: 'BattleStartedButtons',
+    description: 'Battle started buttons',
+    button: {
+        Won: 'Battle Won',
+        Failed: 'Battle Failed',
+        NotReceived: 'Invite Not Received',
+        Cancel: 'Cancel'
+    },
 
     build(): ActionRowBuilder<ButtonBuilder> {
         // Create the buttons
         const wonButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Won}`)
-            .setLabel(this.data.button.Won)
+            .setCustomId(`${this.name}.${this.button.Won}`)
+            .setLabel(this.button.Won)
             .setStyle(ButtonStyle.Success);
         
         const failedButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Failed}`)
-            .setLabel(this.data.button.Failed)
+            .setCustomId(`${this.name}.${this.button.Failed}`)
+            .setLabel(this.button.Failed)
             .setStyle(ButtonStyle.Danger);
 
         const notReceivedButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.NotReceived}`)
-            .setLabel(this.data.button.NotReceived)
+            .setCustomId(`${this.name}.${this.button.NotReceived}`)
+            .setLabel(this.button.NotReceived)
             .setStyle(ButtonStyle.Secondary);
         
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.data.name}.${this.data.button.Cancel}`)
-            .setLabel(this.data.button.Cancel)
+            .setCustomId(`${this.name}.${this.button.Cancel}`)
+            .setLabel(this.button.Cancel)
             .setStyle(ButtonStyle.Secondary);
         
         return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(wonButton, failedButton, notReceivedButton, cancelButton);
     },
     
-    async handle(interaction: ButtonInteraction) {
+    async handleButton(interaction: ButtonInteraction) {
         const client = interaction.client as Client;
         const message = interaction.message;
         const action = interaction.customId.split('.')[1];
@@ -87,14 +85,14 @@ const BattleStartedButtons = {
         }
         
         switch (action) {
-            case this.data.button.Won: this.handleWonOrFailed(interaction, battle, trainer, BattleStatus.Completed); break;
-            case this.data.button.Failed: this.handleWonOrFailed(interaction, battle, trainer, BattleStatus.Failed); break;
-            case this.data.button.NotReceived: this.handleNotReceived(interaction, battle, trainer); break;
-            case this.data.button.Cancel: this.handleCancel(interaction, battle, trainer); break;
+            case this.button.Won: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Completed); break;
+            case this.button.Failed: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Failed); break;
+            case this.button.NotReceived: this.handleNotReceivedButton(interaction, battle, trainer); break;
+            case this.button.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
         }
     },
 
-    async handleWonOrFailed(interaction: ButtonInteraction, battle: Battle, trainer: Trainer, battleStatus: string) {
+    async handleWonOrFailedButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer, battleStatus: string) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);
@@ -167,7 +165,7 @@ const BattleStartedButtons = {
         }
     },
 
-    async handleNotReceived(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleNotReceivedButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);
@@ -208,7 +206,7 @@ const BattleStartedButtons = {
         });
     },
 
-    async handleCancel(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleCancelButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);

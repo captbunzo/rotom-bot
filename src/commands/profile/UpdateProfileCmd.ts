@@ -3,7 +3,7 @@ import {
 	SlashCommandBuilder
 } from 'discord.js';
 
-import Client from '#src/Client.js';
+import TrainerProfileModal from '#src/components/modals/TrainerProfileModal.js';
 
 const UpdateProfileCmd = {
 	global: true,
@@ -12,9 +12,7 @@ const UpdateProfileCmd = {
 		.setDescription('Update your trainer profile'),
 	
 	async execute(interaction: ChatInputCommandInteraction) {
-		const client = interaction.client as Client;
-		const trainerProfileModal = client.modals.get('TrainerProfile');
-		await trainerProfileModal.show(interaction);
+		await TrainerProfileModal.show(interaction);
 	}
 };
 

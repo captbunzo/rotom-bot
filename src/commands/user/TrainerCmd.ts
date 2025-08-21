@@ -9,6 +9,9 @@ import Client from '#src/Client.js';
 import { MaxAutoCompleteChoices } from '#src/Constants.js';
 import Trainer from '#src/models/Trainer.js';
 
+import TrainerProfileModal from '#src/components/modals/TrainerProfileModal.js';
+import TrainerTeamButtons from '#src/components/buttons/TrainerTeamButtons.js';
+
 const TrainerCmd = {
 	global: true,
 	data: new SlashCommandBuilder()
@@ -84,16 +87,11 @@ const TrainerCmd = {
     },
 
 	async executeProfile(interaction: ChatInputCommandInteraction) {
-		const client = interaction.client as Client;
-		console.log(client.modals);
-		const trainerProfileModal = client.modals.get('TrainerProfile');
-		await trainerProfileModal.show(interaction);
+		await TrainerProfileModal.show(interaction);
 	},
 	
 	async executeTeam(interaction: ChatInputCommandInteraction) {
-		const client = interaction.client as Client;
-  		const trainerTeamButtons = client.buttons.get('TrainerTeam');
-  		await trainerTeamButtons.show(interaction);
+		await TrainerTeamButtons.show(interaction);
 	},
 
 	async executeDelete(interaction: ChatInputCommandInteraction) {

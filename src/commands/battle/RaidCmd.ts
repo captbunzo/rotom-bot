@@ -25,7 +25,7 @@ import Boss    from '#src/models/Boss.js';
 import Battle  from '#src/models/Battle.js';
 import Trainer from '#src/models/Trainer.js';
 
-import BattlePlanningButtons from '#src/buttons/BattlePlanningButtons.js';
+import BattlePlanningButtons from '#src/components/buttons/BattlePlanningButtons.js';
 
 // TODO - Set server timezone and time or something
 // TODO - Add guild settings
