@@ -10,6 +10,7 @@ import {
     PokemonTypeColor
 } from '#src/Constants.js';
 
+import Client from '#src/Client.js';
 import StringFunctions from '#src/functions/StringFunctions.js';
 
 import MasterCPM   from '#src/models/MasterCPM.js';
@@ -228,11 +229,16 @@ export class MasterPokemon extends DrossDatabaseTable {
     }
 
     async buildEmbed(full: boolean = true): Promise<EmbedBuilder> {
+        const client = Client.getInstance();
+        const emoji = client.config.emoji;
+
         let title = `#${this.pokedexId} - ${await this.getName()}`;
 
         if (this.form !== null) {
             title += ` (${StringFunctions.titleCase(this.form)})`;
         }
+
+        title += ` ${emoji.shiny}`;
         
         const description = await this.getDescription() ?? 'Description not available';
         const wikiLink = await WikiLink.getUnique(this);

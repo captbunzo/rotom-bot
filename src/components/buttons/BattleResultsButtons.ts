@@ -14,47 +14,63 @@ import {
 
 import Client from '#src/Client.js';
 
-import type {
-    BattleMemberConditions
-} from '#src/types/ModelTypes.js';
+import type { BattleMemberConditions } from '#src/types/ModelTypes.js';
+import ComponentIndex from '#src/types/ComponentIndex.js';
 
 import Battle       from '#src/models/Battle.js';
 import BattleMember from '#src/models/BattleMember.js';
 import Boss         from '#src/models/Boss.js';
 import Trainer      from '#src/models/Trainer.js';
 
-const BattleStartedButtons = {
-    name: 'BattleStartedButtons',
-    description: 'Battle started buttons',
-    button: {
-        Won: 'Battle Won',
-        Failed: 'Battle Failed',
-        NotReceived: 'Invite Not Received',
-        Cancel: 'Cancel'
-    },
+const BattleResultsButton = {
+    Won: 'Battle Won',
+    Failed: 'Battle Failed',
+    NotReceived: 'Invite Not Received',
+    Cancel: 'Cancel'
+}
+
+const BattleResultsButtons = {
+    name: 'BattleResultsButtons',
+    description: 'Battle results buttons',
 
     build(): ActionRowBuilder<ButtonBuilder> {
-        // Create the buttons
-        const wonButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Won}`)
-            .setLabel(this.button.Won)
-            .setStyle(ButtonStyle.Success);
-        
-        const failedButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Failed}`)
-            .setLabel(this.button.Failed)
-            .setStyle(ButtonStyle.Danger);
+        const client = Client.getInstance();
+        const emoji = client.config.emoji;
 
+        const buttonIndex = new ComponentIndex({
+            name: this.name,
+            id: 'button'
+        });
+
+        // Create the buttons
+        buttonIndex.id = BattleResultsButton.Won;
+        const wonButton = new ButtonBuilder()
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattleResultsButton.Won)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.won);
+
+        buttonIndex.id = BattleResultsButton.Failed;
+        const failedButton = new ButtonBuilder()
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattleResultsButton.Failed)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.failed);
+
+        buttonIndex.id = BattleResultsButton.NotReceived;
         const notReceivedButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.NotReceived}`)
-            .setLabel(this.button.NotReceived)
-            .setStyle(ButtonStyle.Secondary);
-        
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattleResultsButton.NotReceived)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.notReceived);
+
+        buttonIndex.id = BattleResultsButton.Cancel;
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Cancel}`)
-            .setLabel(this.button.Cancel)
-            .setStyle(ButtonStyle.Secondary);
-        
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattleResultsButton.Cancel)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.cancel);
+
         return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(wonButton, failedButton, notReceivedButton, cancelButton);
     },
@@ -62,7 +78,8 @@ const BattleStartedButtons = {
     async handleButton(interaction: ButtonInteraction) {
         const client = interaction.client as Client;
         const message = interaction.message;
-        const action = interaction.customId.split('.')[1];
+        const buttonIndex = ComponentIndex.parse(interaction.customId);
+        const action = buttonIndex.id;
 
         const battle  = await Battle.getUnique({ messageId: message.id });
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
@@ -79,16 +96,16 @@ const BattleStartedButtons = {
             throw new Error(`Battle not found for message id ${message.id}`);
         }
 
-        if (!trainer) {
-            interaction.reply(Trainer.getSetupTrainerFirstMessage());
+        if (!trainer || !trainer.trainerName || !trainer.code) {
+            interaction.reply(Trainer.getSetupTrainerFirstMessage(trainer));
             return;
         }
         
         switch (action) {
-            case this.button.Won: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Completed); break;
-            case this.button.Failed: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Failed); break;
-            case this.button.NotReceived: this.handleNotReceivedButton(interaction, battle, trainer); break;
-            case this.button.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
+            case BattleResultsButton.Won: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Completed); break;
+            case BattleResultsButton.Failed: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Failed); break;
+            case BattleResultsButton.NotReceived: this.handleNotReceivedButton(interaction, battle, trainer); break;
+            case BattleResultsButton.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
         }
     },
 
@@ -254,4 +271,4 @@ const BattleStartedButtons = {
     }
 };
 
-export default BattleStartedButtons;
+export default BattleResultsButtons;

@@ -13,30 +13,26 @@ import {
 } from 'discord.js';
 
 import Client from '#src/Client.js';
-
-interface ComponentId {
-    name: string;
-    type: string;
-}
+import ComponentIndex from '#src/types/ComponentIndex.js';
 
 const InteractionCreateEvent = {
 	name: Events.InteractionCreate,
 
 	async execute(interaction: Interaction) {
 		if (interaction.isChatInputCommand() ) {
-			await this.executeChatInputCommandInteraction(interaction);
+			return await this.executeChatInputCommandInteraction(interaction);
 
 		} else if (interaction.isAutocomplete()) {
-			await this.executeAutocompleteInteraction(interaction);
+			return await this.executeAutocompleteInteraction(interaction);
 
 		} else if (interaction.isButton()) {
-			await this.executeButtonInteraction(interaction);
-		
+			return await this.executeButtonInteraction(interaction);
+
 		} else if (interaction.isStringSelectMenu()) {
-			await this.executeStringSelectMenuInteraction(interaction);
+			return await this.executeStringSelectMenuInteraction(interaction);
 
 		} else if (interaction.isModalSubmit()) {
-			await this.executeModalSubmitInteraction(interaction);
+			return await this.executeModalSubmitInteraction(interaction);
 		}
 	},
 
@@ -92,79 +88,75 @@ const InteractionCreateEvent = {
 
 	async executeButtonInteraction(interaction: ButtonInteraction) {
 		const client = interaction.client as unknown as Client;
-		const buttonName = interaction.customId.split('.')[0];
-
-		if (!buttonName) {
-			throw new Error('Button interaction does not have a valid custom ID');
-		}
-		
-		const button = client.buttons.get(buttonName);
+		const componentIndex = ComponentIndex.parse(interaction.customId);
+		const button = client.buttons.get(componentIndex.name);
 
 		if (!button) {
-			client.logger.error(`No button matching ${buttonName} was found`);
+			client.logger.error(`Button not found: ${componentIndex.name}`);
 			return;
 		}
 
 		try {
 			await button.handleButton(interaction);
 		} catch (error) {
-			client.logger.error(`Error handling button ${buttonName}`);
+			client.logger.error('Error handling button interaction');
+			client.logger.dump(componentIndex);
 			client.logger.dump(error);
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
+
+			if (!interaction.replied && !interaction.deferred) {
+				await interaction.reply({ content: 'Error processing button click', flags: MessageFlags.Ephemeral });
 			} else {
-				await interaction.reply({ content: 'There was an error while handling this button!', flags: MessageFlags.Ephemeral });
+				await interaction.followUp({ content: 'Error processing button click', flags: MessageFlags.Ephemeral });
 			}
 		}
 	},
 
 	async executeStringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
 		const client = interaction.client as unknown as Client;
-		const customId = JSON.parse(interaction.customId);
-		const selectName = customId.name;
-
-		if (!selectName) {
-			throw new Error('Select interaction does not have a valid custom ID');
-		}
-
-		const select = client.selects.get(selectName);
+		const componentIndex = ComponentIndex.parse(interaction.customId);
+		const select = client.selects.get(componentIndex.name);
 
 		if (!select) {
-			client.logger.error(`No select matching ${selectName} was found`);
+			client.logger.error(`Select not found: ${componentIndex.name}`);
 			return;
 		}
 
 		try {
 			await select.handleStringSelectMenu(interaction);
 		} catch (error) {
-			client.logger.error(`Error handling select ${selectName}`);
+			client.logger.error('Error handling string select menu interaction');
+			client.logger.dump(componentIndex);
 			client.logger.dump(error);
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while handling this select!', flags: MessageFlags.Ephemeral });
+
+			if (!interaction.replied && !interaction.deferred) {
+				await interaction.reply({ content: 'Error processing selections', flags: MessageFlags.Ephemeral });
 			} else {
-				await interaction.reply({ content: 'There was an error while handling this select!', flags: MessageFlags.Ephemeral });
+				await interaction.followUp({ content: 'Error processing selections', flags: MessageFlags.Ephemeral });
 			}
 		}
 	},
 
 	async executeModalSubmitInteraction(interaction: ModalSubmitInteraction) {
 		const client = interaction.client as unknown as Client;
-		const modal = client.modals.get(interaction.customId);
+		const componentIndex = ComponentIndex.parse(interaction.customId);
+		const modal = client.modals.get(componentIndex.name);
 
 		if (!modal) {
-			client.logger.error(`No modal matching ${interaction.customId} was found`);
+			client.logger.error(`Modal not found: ${componentIndex.name}`);
 			return;
 		}
 
 		try {
 			await modal.handleModalSubmit(interaction);
 		} catch (error) {
-			client.logger.error(`Error submitting model ${interaction.customId}`);
+			client.logger.error('Error handling modal submit interaction');
+			client.logger.dump(componentIndex);
 			client.logger.dump(error);
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+			
+			if (!interaction.replied && !interaction.deferred) {
+				await interaction.reply({ content: 'Error processing submission', flags: MessageFlags.Ephemeral });
 			} else {
-				await interaction.reply({ content: 'There was an error while handling this modal!', flags: MessageFlags.Ephemeral });
+				await interaction.followUp({ content: 'Error processing submission', flags: MessageFlags.Ephemeral });
 			}
 		}
 	}

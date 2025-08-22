@@ -23,6 +23,7 @@ export interface PokedexPokemonData {
     xxs: boolean;
     shadow: boolean;
     purified: boolean;
+    notes?: string | null | undefined;
 }
 
 export interface PokedexPokemonDataNew {
@@ -43,6 +44,7 @@ export interface PokedexPokemonConditions {
     xxs?: boolean | null | undefined;
     shadow?: boolean | null | undefined;
     purified?: boolean | null | undefined;
+    notes?: string | null | undefined;
 }
 
 export const PokedexPokemonDefaults: Partial<PokedexPokemonData> = {
@@ -63,7 +65,7 @@ export class PokedexPokemon extends DrossDatabaseTable {
         fields: {
             'discord_id': { type: DrossFieldType.Snowflake, nullable: false },
             'pokedex_id': { type: DrossFieldType.SmallInt,  nullable: false, unsigned: true },
-            'form':       { type: DrossFieldType.String,    nullable: true,  length: 64 },
+            'form':       { type: DrossFieldType.String,    nullable: true, length: 64 },
             'caught':     { type: DrossFieldType.Boolean,   nullable: false },
             'shiny':      { type: DrossFieldType.Boolean,   nullable: false },
             'hundo':      { type: DrossFieldType.Boolean,   nullable: false },
@@ -71,7 +73,8 @@ export class PokedexPokemon extends DrossDatabaseTable {
             'xxl':        { type: DrossFieldType.Boolean,   nullable: false },
             'xxs':        { type: DrossFieldType.Boolean,   nullable: false },
             'shadow':     { type: DrossFieldType.Boolean,   nullable: false },
-            'purified':   { type: DrossFieldType.Boolean,   nullable: false }
+            'purified':   { type: DrossFieldType.Boolean,   nullable: false },
+            'notes':      { type: DrossFieldType.String,    nullable: true, length: 256 },
         },
         primaryKey: ['discord_id', 'pokedex_id']
     });
@@ -81,6 +84,10 @@ export class PokedexPokemon extends DrossDatabaseTable {
 
         if (!dataForNew.form) {
             dataForNew.form = null;
+        }
+
+        if (!dataForNew.notes) {
+            dataForNew.notes = null;
         }
 
         super(dataForNew);
@@ -101,6 +108,7 @@ export class PokedexPokemon extends DrossDatabaseTable {
     get xxs       (): boolean       { return this.getField('xxs'); }
     get shadow    (): boolean       { return this.getField('shadow'); }
     get purified  (): boolean       { return this.getField('purified'); }
+    get notes     (): string | null { return this.getField('notes'); }
 
     /***********
      * Setters *
@@ -117,6 +125,7 @@ export class PokedexPokemon extends DrossDatabaseTable {
     set xxs       ( value: boolean       ) { this.setField('xxs', value); }
     set shadow    ( value: boolean       ) { this.setField('shadow', value); }
     set purified  ( value: boolean       ) { this.setField('purified', value); }
+    set notes     ( value: string | null ) { this.setField('notes', value); }
 
     /**************************
      * Class Method Overrides *
@@ -187,6 +196,14 @@ export class PokedexPokemon extends DrossDatabaseTable {
 
         embed = embed
             .addFields({ name: 'Pokédex Entries', value: pokedexEntryString, inline: false });
+        
+        if (this.notes) {
+            embed = embed
+                .addFields({ name: 'Pokédex Notes', value: this.notes || '', inline: false });
+        }
+
+        embed = embed
+            .setTimestamp(this.updatedAt);
 
         return embed;
     }

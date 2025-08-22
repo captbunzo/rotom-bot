@@ -70,8 +70,8 @@ const RaidCmd = {
 		const guildId = interaction.guild.id;
 		const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
-        if (!trainer) {
-        	interaction.reply(Trainer.getSetupTrainerFirstMessage());
+        if (!trainer || !trainer.trainerName || !trainer.code) {
+        	interaction.reply(Trainer.getSetupTrainerFirstMessage(trainer));
             return;
         }
 

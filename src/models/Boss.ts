@@ -7,6 +7,7 @@ import {
     DrossFieldType
 } from '@drossjs/dross-database';
 
+import Client from '#src/Client.js';
 import StringFunctions from '#src/functions/StringFunctions.js';
 
 import MasterCPM     from '#src/models/MasterCPM.js';
@@ -161,6 +162,9 @@ export class Boss extends DrossDatabaseTable {
     // TODO - Add stars or something to indicate if the raid boss tier
 
     async buildEmbed() {
+        const client = Client.getInstance();
+        const emoji = client.config.emoji;
+
         const masterPokemon = await MasterPokemon.getUnique({ templateId: this.templateId });
 
         if (!masterPokemon) {
@@ -172,8 +176,8 @@ export class Boss extends DrossDatabaseTable {
         this.database.logger.debug(`Master Pokémon Record =`);
         this.database.logger.dump(masterPokemon);
 
-        let bossTypeName       = await this.getBossTypeName();
-        let pokemonName        = await masterPokemon.getName();
+        let bossTypeName = await this.getBossTypeName();
+        let pokemonName  = await masterPokemon.getName();
 
         let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
 
@@ -191,6 +195,7 @@ export class Boss extends DrossDatabaseTable {
         if (masterPokemon.form !== null) {
             title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
         }
+        title += ` ${emoji.shiny}`;
 
         let typeColor = masterPokemon.getTypeColor();
         let pokemonType = await masterPokemon.getTypeName();

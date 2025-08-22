@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/captbunzo/rotom-bot#readme",
   "dependencies": {
-    "@drossjs/dross-database": "^1.1.10",
+    "@drossjs/dross-database": "^1.1.12",
     "@drossjs/dross-logger": "^1.1.5",
     "@sentry/node": "^9.5.0",
     "@sentry/tracing": "^7.120.3",

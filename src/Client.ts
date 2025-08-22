@@ -19,6 +19,9 @@ import {
     Guild
 } from 'discord.js';
 
+import ComponentIndex from '#src/types/ComponentIndex.js';
+import { PokedexRegisteryIndex } from '#src/components/compound/PokedexRegisteryComponent.js';
+
 //export interface ClientInterface extends Discord.Client {
 //    logger: DrossLogger;
 //}
@@ -87,7 +90,7 @@ export default class Client extends DiscordClient {
         // Connect to discord
         this.logger.log('Starting bot');
         await this.login(this.config.token);
-
+        
         // Launch the background scheduler
         // this.scheduler = require(`./Scheduler`);
     }

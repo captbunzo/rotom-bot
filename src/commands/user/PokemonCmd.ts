@@ -134,7 +134,6 @@ const PokemonCmd = {
     /* Subcommand :: CP */
     /********************/
 
-    // TODO - Make the response to this non-ephemeral and put it in an embed with a proper title 
     async executeCP(interaction: ChatInputCommandInteraction) {
         const client  = interaction.client as Client;
 
@@ -277,6 +276,12 @@ const PokemonCmd = {
                 break;
         }
 
+        client.logger.debug('FindTrainerCmd.autocomplete()');
+        client.logger.debug('focusedOption');
+        client.logger.dump(focusedOption);
+        client.logger.debug('choices');
+        client.logger.dump(choices);
+        
 		//const filtered = choices.filter(choice => choice.startsWith(focusedOption.value));
 
         if (choices.length <= MaxAutoCompleteChoices) {
@@ -292,7 +297,6 @@ const PokemonCmd = {
     /* Subcommand :: Search */
     /************************/
 
-    // TODO - Make the response to this non-ephemeral and put it in an embed with a proper title 
     async executeSearch(interaction: ChatInputCommandInteraction, subCommand: string) {
         const client = interaction.client as Client;
         const value  = interaction.options.getString('value');

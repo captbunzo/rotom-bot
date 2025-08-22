@@ -24,39 +24,57 @@ import BattleMember from '#src/models/BattleMember.js';
 import Boss         from '#src/models/Boss.js';
 import Trainer      from '#src/models/Trainer.js';
 
-import BattleStartedButtons from '#src/components/buttons/BattleStartedButtons.js';
+import ComponentIndex from '#src/types/ComponentIndex.js';
+import BattleResultsButtons from '#src/components/buttons/BattleResultsButtons.js';
+
+const BattlePlanningButton = {
+    Join: 'Join',
+    Leave: 'Leave',
+    Start: 'Start',
+    Cancel: 'Cancel'
+}
 
 const BattlePlanningButtons = {
     name: 'BattlePlanningButtons',
     description: 'Battle planning buttons',
-    button: {
-        Join: 'Join',
-        Leave: 'Leave',
-        Start: 'Start',
-        Cancel: 'Cancel'
-    },
-
+    
     build(): ActionRowBuilder<ButtonBuilder> {
-        // Create the buttons
-        const joinButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Join}`)
-            .setLabel(this.button.Join)
-            .setStyle(ButtonStyle.Primary);
-        
-        const leaveButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Leave}`)
-            .setLabel(this.button.Leave)
-            .setStyle(ButtonStyle.Secondary);
+        const client = Client.getInstance();
+        const emoji = client.config.emoji;
 
+        const buttonIndex = new ComponentIndex({
+            name: this.name,
+            id: 'button'
+        });
+
+        // Create the buttons
+        buttonIndex.id = BattlePlanningButton.Join;
+        const joinButton = new ButtonBuilder()
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattlePlanningButton.Join)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.join);
+
+        buttonIndex.id = BattlePlanningButton.Leave;
+        const leaveButton = new ButtonBuilder()
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattlePlanningButton.Leave)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.leave);
+
+        buttonIndex.id = BattlePlanningButton.Start;
         const startButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Start}`)
-            .setLabel(this.button.Start)
-            .setStyle(ButtonStyle.Success);
-        
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattlePlanningButton.Start)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.start);
+
+        buttonIndex.id = BattlePlanningButton.Cancel;
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.Cancel}`)
-            .setLabel(this.button.Cancel)
-            .setStyle(ButtonStyle.Danger);
+            .setCustomId(buttonIndex.toString())
+            .setLabel(BattlePlanningButton.Cancel)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.cancel);
         
         return new ActionRowBuilder<ButtonBuilder>()
             .addComponents(joinButton, leaveButton, startButton, cancelButton);
@@ -65,7 +83,8 @@ const BattlePlanningButtons = {
     async handleButton(interaction: ButtonInteraction) {
         const client = interaction.client as Client;
         const message = interaction.message;
-        const action = interaction.customId.split('.')[1];
+        const buttonIndex = ComponentIndex.parse(interaction.customId);
+        const action = buttonIndex.id;
 
         const battle  = await Battle.getUnique({ messageId: message.id });
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
@@ -86,16 +105,16 @@ const BattlePlanningButtons = {
         client.logger.debug(`Trainer Record =`);
         client.logger.dump(trainer);
 
-        if (!trainer) {
-            interaction.reply(Trainer.getSetupTrainerFirstMessage());
+        if (!trainer || !trainer.trainerName || !trainer.code) {
+            interaction.reply(Trainer.getSetupTrainerFirstMessage(trainer));
             return;
         }
         
         switch (action) {
-            case this.button.Join: this.handleJoinButton(interaction, battle, trainer); break;
-            case this.button.Leave: this.handleLeaveButton(interaction, battle, trainer); break;
-            case this.button.Start: this.handleStartButton(interaction, battle, trainer); break;
-            case this.button.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
+            case BattlePlanningButton.Join: this.handleJoinButton(interaction, battle, trainer); break;
+            case BattlePlanningButton.Leave: this.handleLeaveButton(interaction, battle, trainer); break;
+            case BattlePlanningButton.Start: this.handleStartButton(interaction, battle, trainer); break;
+            case BattlePlanningButton.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
         }   
     },
 
@@ -181,7 +200,7 @@ const BattlePlanningButtons = {
             await interaction.reply({
                 content:
                     `You cannot leave a ${battleTypeName.toLowerCase()} that you are hosting, `
-                  + `please click ${this.button.Cancel} to cancel this ${battleTypeName.toLowerCase()}`,
+                  + `please click ${BattlePlanningButton.Cancel} to cancel this ${battleTypeName.toLowerCase()}`,
                 flags: MessageFlags.Ephemeral
             });
             return;
@@ -257,11 +276,11 @@ const BattlePlanningButtons = {
 
         // Update the battle message
         const battleEmbed = await battle.buildEmbed();
-		const battleStartedButtons = BattleStartedButtons.build();
+		const battleResultsButtons = BattleResultsButtons.build();
 
         await interaction.update({
             embeds: [battleEmbed],
-            components: [battleStartedButtons]
+            components: [battleResultsButtons]
         });
 
         // Get battle member details together

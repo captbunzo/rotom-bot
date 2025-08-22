@@ -11,27 +11,51 @@ import {
     MessageType
 } from '#src/Constants.js';
 
+import Client from '#src/Client.js';
+import ComponentIndex from '#src/types/ComponentIndex.js';
 import Trainer from '#src/models/Trainer.js';
+
+const DeleteProfileButton = {
+    Confirm: 'Confirm',
+    Cancel: 'Cancel'
+}
 
 const DeleteProfileButtons = {
     name: 'DeleteProfileButtons',
-    button: {
-        confirm: 'Confirm',
-        cancel: 'Cancel'
-    },
 
-    async show(interaction: ChatInputCommandInteraction, messageType = MessageType.Reply) {        
+    async show(interaction: ChatInputCommandInteraction, messageType = MessageType.Reply) {
+        const client = interaction.client as Client;
+        const emoji = client.config.emoji;
+
+        const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
+        if (!trainer) {
+            await interaction.reply({
+                content: 'You have not setup your trainer profile',
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        const buttonIndex = new ComponentIndex({
+            name: this.name,
+            id: 'button'
+        });
+
         // Create the buttons
+        buttonIndex.id = DeleteProfileButton.Confirm;
         const confirmButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.confirm}`)
-            .setLabel(this.button.confirm)
-            .setStyle(ButtonStyle.Danger);
-        
+            .setCustomId(buttonIndex.toString())
+            .setLabel(DeleteProfileButton.Confirm)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.delete);
+
+        buttonIndex.id = DeleteProfileButton.Cancel;
         const cancelButton = new ButtonBuilder()
-            .setCustomId(`${this.name}.${this.button.cancel}`)
-            .setLabel(this.button.cancel)
-            .setStyle(ButtonStyle.Secondary);
-        
+            .setCustomId(buttonIndex.toString())
+            .setLabel(DeleteProfileButton.Cancel)
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(emoji.cancel);
+
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(confirmButton, cancelButton);
 
@@ -49,12 +73,13 @@ const DeleteProfileButtons = {
                 });
             }
     },
-
+    
     async handleButton(interaction: ButtonInteraction) {
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
-        const action = interaction.customId.split('.')[1];
+        const buttonIndex = ComponentIndex.parse(interaction.customId);
+        const action = buttonIndex.id;
 
-        if (action == this.button.cancel) {
+        if (action == DeleteProfileButton.Cancel) {
             await interaction.reply({
                 content: 'Profile deletion cancelled',
                 flags: MessageFlags.Ephemeral
@@ -62,7 +87,7 @@ const DeleteProfileButtons = {
             return;
         }
 
-        if (action == this.button.confirm) {
+        if (action == DeleteProfileButton.Confirm) {
             if (!trainer) {
                 await interaction.reply({
                     content: 'Trainer profile not found',

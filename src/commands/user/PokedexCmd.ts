@@ -7,13 +7,9 @@ import {
 
 import Client from '#src/Client.js';
 
-import {
-    MaxAutoCompleteChoices,
-    MessageType
- } from '#src/Constants.js';
-
+import { MaxAutoCompleteChoices } from '#src/Constants.js';
 import MasterPokemon from '#src/models/MasterPokemon.js';
-import PokedexRegister from '#src/components/compound/PokedexRegisterComponent.js';
+import PokedexRegister from '#src/components/compound/PokedexRegisteryComponent.js';
 
 const PokedexCmd = {
 	global: true,
@@ -94,7 +90,6 @@ const PokedexCmd = {
     async executeRegister(interaction: ChatInputCommandInteraction) {
         const pokemonName = interaction.options.getString('pokémon-name');
         let   pokedexId   = interaction.options.getInteger('pokédex-id');
-        let   messageType = MessageType.Reply; 
 
         if (pokemonName && pokedexId) {
             return await interaction.reply({
@@ -128,7 +123,7 @@ const PokedexCmd = {
         }
 
         // Get the client and buttons and show the register interface
-		return await PokedexRegister.show(interaction, masterPokemon, messageType);
+		return await PokedexRegister.show(interaction, masterPokemon);
     },
 
     async autocompleteRegister(interaction: AutocompleteInteraction) {

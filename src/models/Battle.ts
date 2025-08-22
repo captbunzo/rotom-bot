@@ -120,6 +120,9 @@ export class Battle extends DrossDatabaseTable {
      ********************/
     
     async buildEmbed(): Promise<EmbedBuilder> {
+        const client = Client.getInstance();
+        const emoji = client.config.emoji;
+
         const boss = await Boss.getUnique({ id: this.bossId });
         if (!boss) {
             throw new Error(`Boss not found: ${this.bossId}`);
@@ -186,6 +189,7 @@ export class Battle extends DrossDatabaseTable {
         if (masterPokemon.form !== null) {
             title += ` (${StringFunctions.titleCase(masterPokemon.form)})`;
         }
+        title += ` ${emoji.shiny}`;
 
         switch (this.status) {
             case BattleStatus.Started:   title += ' -- Started'; break;
