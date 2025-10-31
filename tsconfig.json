@@ -5,6 +5,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "esnext",
+    "types": ["node"],
 
     // File Layout
     "rootDir": "src",
