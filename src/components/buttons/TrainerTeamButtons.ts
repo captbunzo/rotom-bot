@@ -5,38 +5,38 @@ import {
     ButtonStyle,
     ChatInputCommandInteraction,
     MessageFlags,
-    ModalSubmitInteraction
+    ModalSubmitInteraction,
 } from 'discord.js';
 
-import {
-    MessageType,
-    Team
-} from '#src/Constants.js';
+import { MessageType, Team } from '@root/src/constants.js';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 
-import type { TrainerConditions } from '#src/types/ModelTypes.js';
-import ComponentIndex from '#src/types/ComponentIndex.js';
-import Trainer from '#src/models/Trainer.js';
+import type { TrainerConditions } from '@/types/ModelTypes.js';
+import ComponentIndex from '@/types/ComponentIndex.js';
+import Trainer from '@/models/Trainer.js';
 
 const TrainerTeamButton = {
     Instinct: Team.Instinct,
     Mystic: Team.Mystic,
     Valor: Team.Valor,
     Delete: 'Delete Team',
-    Cancel: 'Cancel'
-}
+    Cancel: 'Cancel',
+};
 
 const TrainerTeamButtons = {
     name: 'TrainerTeamButtons',
 
-    async show(interaction: ChatInputCommandInteraction | ModalSubmitInteraction, _messageType = MessageType.Reply) {
+    async show(
+        interaction: ChatInputCommandInteraction | ModalSubmitInteraction,
+        _messageType = MessageType.Reply
+    ) {
         const client = interaction.client as Client;
         const emoji = client.config.emoji;
-        
+
         const buttonIndex = new ComponentIndex({
             name: this.name,
-            id: 'button'
+            id: 'button',
         });
 
         // Create the buttons
@@ -75,20 +75,25 @@ const TrainerTeamButtons = {
             .setStyle(ButtonStyle.Secondary)
             .setEmoji(emoji.cancel);
 
-        const teamRow = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(instinctButton, mysticButton, valorButton, deleteButton, cancelButton);
+        const teamRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            instinctButton,
+            mysticButton,
+            valorButton,
+            deleteButton,
+            cancelButton
+        );
 
         if (!interaction.replied) {
             await interaction.reply({
                 content: 'Please select your team',
                 components: [teamRow],
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
         } else {
             await interaction.followUp({
                 content: 'Please select your team',
                 components: [teamRow],
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
         }
     },
@@ -102,14 +107,14 @@ const TrainerTeamButtons = {
         if (action == TrainerTeamButton.Cancel) {
             return await interaction.update({
                 content: 'Team selection cancelled',
-                components: []
+                components: [],
             });
         }
 
         let trainer = await Trainer.getUnique(trainerSearchObj);
         if (!trainer) {
             trainer = new Trainer({
-                discordId: interaction.user.id
+                discordId: interaction.user.id,
             });
             await trainer.create();
         }
@@ -120,7 +125,7 @@ const TrainerTeamButtons = {
 
             return await interaction.update({
                 content: 'Team deleted',
-                components: []
+                components: [],
             });
         }
 
@@ -144,9 +149,9 @@ const TrainerTeamButtons = {
 
         return await interaction.update({
             content: `Team set to ${team} <:customemoji:${teamEmoji}>`,
-            components: []
+            components: [],
         });
-    }
+    },
 };
 
 export default TrainerTeamButtons;

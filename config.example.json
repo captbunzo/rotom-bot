@@ -1,56 +1,55 @@
 {
-	"about_token_config": "Bot token - available at https://discord.com/developers/applications/me",
-	"token": "<bot-token>",
+    "app": {
+        "environment": "<environment>",
+        "dataDirectory": "/home/captbunzo/data",
+        "collectorTimeoutSecs": 60,
+        "messagePurgeDelaySecs": 75,
+        "schedulerLoopSecs": 60
+    },
 
-	"about_client_id": "Discord Application ID",
-	"client_id": "<discord-application-id>",
+    "battles": {
+        "showMemberTrainerNames": true,
+        "blockHostSelfJoin": false
+    },
 
-	"about_prefix_config": "Bot prefix",
-	"prefix": "!",
+    "log": {
+        "level": "debug",
+        "sql": false
+    },
 
-	"environment": "<environment>",
-	"logLevel": "debug",
-	"logSql": false,
-	"collectorTimeoutSecs": 60,
-	"messagePurgeDelaySec": 75,
-	"schedulerLoopSecs": 60,
-	
-	"about_database_config": [
-		"Your database configuration. This can be anything supported by knex.",
-		"See http://knexjs.org/#Installation-client for examples."
-	],
-	"database": {
-		"client": "mysql",
-		"connection": {
-			"host": "127.0.0.1",
-			"database": "ninkasi",
-			"user": "ninkasi",
-			"password": "<password>"
-		}
-	},
-	"databaseCollation": "utf8mb4_unicode_ci",
+    "discord": {
+        "client_id": "<discord-application-id>",
+        "token": "<bot-token>",
+        "client_secret": "<client-secret>",
+        "botGuildId": "<bot-guild-id>"
+    },
 
-	"about_botAdminUserIds_config": "Bot Admins role ID string array",
-	"botAdminUserIds": [
-		"<user-id>",
-		"<another-user-id>"
-	],
+    "database": {
+        "client": "mysql",
+        "host": "127.0.0.1",
+        "port": 3306,
+        "name": "rotom",
+        "user": "rotom",
+        "password": "<password>",
+        "collation": "utf8mb4_unicode_ci"
+    },
 
-	"about_botGuildId_config": "Identify the Ninkasi guild for shared asset retrieval (i.e. custom emoji)",
-	"botGuildId": "<bot-guild-id>",
+    "about_botAdminUserIds_config": "Bot Admins role ID string array",
+    "botAdminUserIds": ["<user-id>", "<another-user-id>"],
 
-	"sentry": {
-		"dsn": "<sentry-dsn>",
-		"tracesSampleRate": 1.0,
-		"triggerSampleAlerts": false
-	},
+    "sentry": {
+        "dsn": "<sentry-dsn>",
+        "tracesSampleRate": 1.0,
+        "triggerSampleAlerts": false,
+        "release": "rotom-bot@1.00.00"
+    },
 
-	"about_intents_config": "Intents the bot needs - this is not yet used",
-	"intents": [
-		"GUILD_MEMBERS",
-		"GUILD_MESSAGES",
-		"GUILD_MESSAGE_REACTIONS",
-		"DIRECT_MESSAGES",
-		"DIRECT_MESSAGE_REACTIONS"
-	]
+    "about_intents_config": "Intents the bot needs - this is not yet used",
+    "intents": [
+        "GUILD_MEMBERS",
+        "GUILD_MESSAGES",
+        "GUILD_MESSAGE_REACTIONS",
+        "DIRECT_MESSAGES",
+        "DIRECT_MESSAGE_REACTIONS"
+    ]
 }

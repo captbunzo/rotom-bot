@@ -1,47 +1,45 @@
 import path from 'node:path';
 import { readFile } from 'fs/promises';
 
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder
-} from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
-import Client from '#src/Client.js';
-import { InterimLoadUpdates } from '#src/Constants.js';
+import Client from '@root/src/client.js';
+import { InterimLoadUpdates } from '@root/src/constants.js';
 
-import type {
-    TranslationConditions,
-    TranslationData
-} from '#src/types/ModelTypes.js';
+import type { TranslationConditions, TranslationData } from '@/types/ModelTypes.js';
 
-import Translation from '#src/models/Translation.js';
+import Translation from '@/models/Translation.js';
 
 const MasterTranslationCmd = {
     global: false,
     data: new SlashCommandBuilder()
         .setName('master-translation')
         .setDescription('Manage Master Translation data')
-        .addSubcommand(subCommand => subCommand
-            .setName('load')
-            .setDescription('Load Master Translation data file')
-            .addStringOption(option => option
-                .setName('language')
-                .setDescription('Language to load')
-                .setRequired(true)
-                .setChoices(Translation.LanguageChoices)
-            )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('load')
+                .setDescription('Load Master Translation data file')
+                .addStringOption((option) =>
+                    option
+                        .setName('language')
+                        .setDescription('Language to load')
+                        .setRequired(true)
+                        .setChoices(Translation.LanguageChoices)
+                )
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load' : this.executeLoad(interaction); break;
-            default :
-                await interaction.reply(
-                    { content: `Master Translation management command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }
-                ); 
+            case 'load':
+                this.executeLoad(interaction);
+                break;
+            default:
+                await interaction.reply({
+                    content: `Master Translation management command execution not yet implemented for subcommand -- ${subCommand}`,
+                    flags: MessageFlags.Ephemeral,
+                });
         }
     },
 
@@ -50,14 +48,18 @@ const MasterTranslationCmd = {
      **********************/
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
-        const client   = interaction.client as Client;
-        const table    = 'translation';
+        const client = interaction.client as Client;
+        const table = 'translation';
         const language = interaction.options.getString('language') ?? Translation.Language.English;
-        const file     = path.join(client.config.data_directory, 'master_translation', `${language}.json`);
+        const file = path.join(
+            client.config.data_directory,
+            'master_translation',
+            `${language}.json`
+        );
 
-      //const file     = interaction.options.getString('file')  ?? 'No file provided';
-      //const filename = file.replace(/^.*[\\\/]/, '');
-      //const language = filename.replace(/\..*$/, '');
+        //const file     = interaction.options.getString('file')  ?? 'No file provided';
+        //const filename = file.replace(/^.*[\\\/]/, '');
+        //const language = filename.replace(/\..*$/, '');
 
         await interaction.reply({ content: `Starting load of ${table} table` });
 
@@ -71,14 +73,14 @@ const MasterTranslationCmd = {
         }
 
         let processedCount = 0;
-        let loadedCount    = 0;
-        
+        let loadedCount = 0;
+
         let followUpMsg = await interaction.followUp({
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`,
         });
 
         for (let code in json) {
-            let name  = null;
+            let name = null;
             let value = json[code];
             processedCount++;
 
@@ -96,11 +98,11 @@ const MasterTranslationCmd = {
                     case 'poke_type':
                     case 'pokemon_category':
                     case 'team_a':
-                  //case 'weather_icon':
+                        //case 'weather_icon':
                         name = testName;
                 }
             }
-            
+
             if (name == null) {
                 const testName = codePartsArray[0];
 
@@ -120,15 +122,15 @@ const MasterTranslationCmd = {
                     case 'raid':
                     case 'shadow':
                     case 'team':
-                  //case 'weather':
+                        //case 'weather':
                         name = testName;
                 }
             }
 
-          //if (code != 'desc_19_46') {
-          //    name = null;
-          //}
-            
+            //if (code != 'desc_19_46') {
+            //    name = null;
+            //}
+
             if (name != null) {
                 loadedCount++;
 
@@ -143,8 +145,8 @@ const MasterTranslationCmd = {
                     variantId: null,
                     isPlural: code.endsWith('_plural'),
                     language: language,
-                    value: value
-                }
+                    value: value,
+                };
 
                 if (translationObj.isPlural) {
                     keyVariant = keyVariant.replace(/_plural%/, '');
@@ -161,16 +163,16 @@ const MasterTranslationCmd = {
                 client.logger.debug(`keyVariantPartsArray.length = ${keyVariantPartsArray.length}`);
                 */
 
-                if ( (keyVariant.length > 0) && (keyVariantPartsArray.length > 0) ) {
+                if (keyVariant.length > 0 && keyVariantPartsArray.length > 0) {
                     if (keyVariantPartsArray[0]) {
                         translationObj.key = parseInt(keyVariantPartsArray[0]);
                     }
 
                     if (keyVariantPartsArray.length > 1) {
                         const variant = keyVariantPartsArray[1];
-                        
+
                         if (variant) {
-                            const variantId      = parseInt(variant);
+                            const variantId = parseInt(variant);
                             const variantIdFloat = parseFloat(variant);
 
                             translationObj.variant = variant;
@@ -182,7 +184,7 @@ const MasterTranslationCmd = {
                 }
 
                 client.logger.debug(`Translation Name = ${code}`);
-                client.logger.debug(`Translation Value = ${value}`);    
+                client.logger.debug(`Translation Value = ${value}`);
                 client.logger.debug(`Translation Object <2> =`);
                 client.logger.dump(translationObj);
 
@@ -191,7 +193,7 @@ const MasterTranslationCmd = {
                     key: translationObj.key,
                     variant: translationObj.variant,
                     isPlural: translationObj.isPlural,
-                    language: translationObj.language
+                    language: translationObj.language,
                 };
 
                 /*
@@ -212,20 +214,20 @@ const MasterTranslationCmd = {
             if (processedCount % InterimLoadUpdates == 0) {
                 await interaction.editReply({
                     message: followUpMsg,
-                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`
+                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`,
                 });
             }
         }
 
         interaction.editReply({
             message: followUpMsg,
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records`,
         });
 
         interaction.followUp({
-            content: `Load of ${table} table complete`
+            content: `Load of ${table} table complete`,
         });
-    }
+    },
 };
 
 export default MasterTranslationCmd;

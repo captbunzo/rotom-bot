@@ -5,16 +5,13 @@ import {
     ModalBuilder,
     ModalSubmitInteraction,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
 } from 'discord.js';
 
-import {
-    type TrainerData,
-    Trainer
-} from '#src/models/Trainer.js';
+import { type TrainerData, Trainer } from '@/models/Trainer.js';
 
-import ComponentIndex from '#src/types/ComponentIndex.js';
-import TrainerTeamButtons from '#src/components/buttons/TrainerTeamButtons.js';
+import ComponentIndex from '@/types/ComponentIndex.js';
+import TrainerTeamButtons from '@/components/buttons/TrainerTeamButtons.js';
 
 const TrainerProfileModal = {
     name: 'TrainerProfileModal',
@@ -23,7 +20,7 @@ const TrainerProfileModal = {
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         const componentIndex = new ComponentIndex({
             name: this.name,
-            id: 'modal'
+            id: 'modal',
         });
 
         // Create the modal
@@ -37,13 +34,13 @@ const TrainerProfileModal = {
             .setLabel('Trainer Name')
             .setStyle(TextInputStyle.Short)
             .setRequired(false);
-        
+
         const firstNameInput = new TextInputBuilder()
             .setCustomId('firstName')
             .setLabel('First Name')
             .setStyle(TextInputStyle.Short)
             .setRequired(false);
-        
+
         const codeInput = new TextInputBuilder()
             .setCustomId('code')
             .setLabel('Trainer Code')
@@ -51,7 +48,7 @@ const TrainerProfileModal = {
             .setMinLength(12)
             .setMaxLength(12)
             .setRequired(false);
-        
+
         const levelInput = new TextInputBuilder()
             .setCustomId('level')
             .setLabel('Trainer Level')
@@ -59,7 +56,7 @@ const TrainerProfileModal = {
             .setMinLength(1)
             .setMaxLength(2)
             .setRequired(false);
-        
+
         const favoritePokemonInput = new TextInputBuilder()
             .setCustomId('favoritePokemon')
             .setLabel('Favorite Pokémon (optional)')
@@ -99,14 +96,14 @@ const TrainerProfileModal = {
         // Finally show the modal
         interaction.showModal(modal);
     },
-    
+
     async handleModalSubmit(interaction: ModalSubmitInteraction) {
         let trainer = await Trainer.getUnique({ discordId: interaction.user.id });
-        
-        const trainerName     = interaction.fields.getTextInputValue('trainerName');
-        const firstName       = interaction.fields.getTextInputValue('firstName');
-        const code            = interaction.fields.getTextInputValue('code');
-        const levelValue      = interaction.fields.getTextInputValue('level');
+
+        const trainerName = interaction.fields.getTextInputValue('trainerName');
+        const firstName = interaction.fields.getTextInputValue('firstName');
+        const code = interaction.fields.getTextInputValue('code');
+        const levelValue = interaction.fields.getTextInputValue('level');
         const favoritePokemon = interaction.fields.getTextInputValue('favoritePokemon');
 
         if (trainerName || firstName || code || levelValue || favoritePokemon) {
@@ -119,7 +116,7 @@ const TrainerProfileModal = {
                     firstName: firstName,
                     code: code,
                     level: level,
-                    favoritePokemon: favoritePokemon
+                    favoritePokemon: favoritePokemon,
                 };
                 trainer = new Trainer(trainerData);
                 await trainer.create();
@@ -134,7 +131,7 @@ const TrainerProfileModal = {
 
             await interaction.reply({
                 content: `Trainer profile updated`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
         }
 
@@ -142,7 +139,7 @@ const TrainerProfileModal = {
         if (!trainer || !trainer.team) {
             await TrainerTeamButtons.show(interaction);
         }
-    }
+    },
 };
 
 export default TrainerProfileModal;

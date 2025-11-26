@@ -1,5 +1,5 @@
-import { defineConfig } from 'tsdown'
+import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  entry: ['src/App.ts']
-})
+    entry: ['src/app.ts'],
+});

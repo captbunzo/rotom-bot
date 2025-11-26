@@ -2,28 +2,20 @@ import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     MessageFlags,
-    SlashCommandBuilder
+    SlashCommandBuilder,
 } from 'discord.js';
 
-import {
-    NonUniqueResultError
-} from '@drossjs/dross-database'
+import { NonUniqueResultError } from '@drossjs/dross-database';
 
-import {
-    BossType,
-    MaxAutoCompleteChoices
-} from '#src/Constants.js';
+import { BossType, MaxAutoCompleteChoices } from '@root/src/constants.js';
 
-import Client from '#src/Client.js';
-import StringFunctions from '#src/functions/StringFunctions.js';
+import Client from '@root/src/client.js';
+import StringFunctions from '@/functions/StringFunctions.js';
 
-import type {
-    BossConditions,
-    BossData
-} from '#src/types/ModelTypes.js'
+import type { BossConditions, BossData } from '@/types/ModelTypes.js';
 
-import Boss from '#src/models/Boss.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
+import Boss from '@/models/Boss.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
 
 // TODO - Add boss edit command
 
@@ -32,242 +24,261 @@ const BossCmd = {
     data: new SlashCommandBuilder()
         .setName('boss')
         .setDescription('Manage Pokémon boss data')
-        .addSubcommand(subCommand => subCommand
-            .setName('create')
-            .setDescription('Create a Boss Pokémon')
-            .addStringOption(option => option
-                .setName('pokemon')
-                .setDescription('Pokémon Name')
-                .setRequired(true)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('template')
-                .setDescription('Master Pokémon Template')
-                .setRequired(true)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('boss-type')
-                .setDescription('Boss Type')
-                .setRequired(true)
-                .addChoices(
-                    { name: 'Raid', value: BossType.Raid },
-                    { name: 'Dynamax', value: BossType.Dynamax },
-                    { name: 'Gigantamax', value: BossType.Gigantamax }
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('create')
+                .setDescription('Create a Boss Pokémon')
+                .addStringOption((option) =>
+                    option
+                        .setName('pokemon')
+                        .setDescription('Pokémon Name')
+                        .setRequired(true)
+                        .setAutocomplete(true)
                 )
-            )
-            .addIntegerOption(option => option
-                .setName('tier')
-                .setDescription('Boss Tier')
-                .setRequired(true)
-                .setMinValue(1)
-                .setMaxValue(7)
-            )
-            .addBooleanOption(option => option
-                .setName('shinyable')
-                .setDescription('Can be shiny?')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('mega')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('shadow')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('active')
-                .setDescription('Boss is Active')
-                .setRequired(false)
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName('list')
-            .setDescription('Show Boss Pokémon data')
-            .addStringOption(option => option
-                .setName('pokemon')
-                .setDescription('Pokémon Name')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('form')
-                .setDescription('Pokémon Form')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('boss-type')
-                .setDescription('Boss Type')
-                .setRequired(false)
-                .addChoices(
-                    { name: 'Raid', value: BossType.Raid },
-                    { name: 'Dynamax', value: BossType.Dynamax },
-                    { name: 'Gigantamax', value: BossType.Gigantamax }
+                .addStringOption((option) =>
+                    option
+                        .setName('template')
+                        .setDescription('Master Pokémon Template')
+                        .setRequired(true)
+                        .setAutocomplete(true)
                 )
-            )
-            .addIntegerOption(option => option
-                .setName('tier')
-                .setDescription('Boss Tier')
-                .setRequired(false)
-                .setMinValue(1)
-                .setMaxValue(7)
-            )
-            .addBooleanOption(option => option
-                .setName('shinyable')
-                .setDescription('Can be shiny?')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('mega')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('shadow')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('active')
-                .setDescription('Boss is Active')
-                .setRequired(false)
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName('update')
-            .setDescription('Update a Boss Pokémon')
-            .addStringOption(option => option
-                .setName('pokemon')
-                .setDescription('Pokémon Name')
-                .setRequired(true)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('id')
-                .setDescription('Boss ID')
-                .setRequired(true)
-                .setAutocomplete(true)
-            )
-            .addBooleanOption(option => option
-                .setName('shinyable')
-                .setDescription('Can be shiny?')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('active')
-                .setDescription('Boss is Active')
-                .setRequired(false)
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName('enable')
-            .setDescription('Enable a Boss Pokémon')
-            .addStringOption(option => option
-                .setName('pokemon')
-                .setDescription('Pokémon Name')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('form')
-                .setDescription('Pokémon Form')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('boss-type')
-                .setDescription('Boss Type')
-                .setRequired(false)
-                .addChoices(
-                    { name: 'Raid', value: BossType.Raid },
-                    { name: 'Dynamax', value: BossType.Dynamax },
-                    { name: 'Gigantamax', value: BossType.Gigantamax }
+                .addStringOption((option) =>
+                    option
+                        .setName('boss-type')
+                        .setDescription('Boss Type')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'Raid', value: BossType.Raid },
+                            { name: 'Dynamax', value: BossType.Dynamax },
+                            { name: 'Gigantamax', value: BossType.Gigantamax }
+                        )
                 )
-            )
-            .addBooleanOption(option => option
-                .setName('mega')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('shadow')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName('disable')
-            .setDescription('Disable a Boss Pokémon')
-            .addStringOption(option => option
-                .setName('pokemon')
-                .setDescription('Pokémon Name')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('form')
-                .setDescription('Pokémon Form')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('boss-type')
-                .setDescription('Boss Type')
-                .setRequired(false)
-                .addChoices(
-                    { name: 'Raid', value: BossType.Raid },
-                    { name: 'Dynamax', value: BossType.Dynamax },
-                    { name: 'Gigantamax', value: BossType.Gigantamax }
+                .addIntegerOption((option) =>
+                    option
+                        .setName('tier')
+                        .setDescription('Boss Tier')
+                        .setRequired(true)
+                        .setMinValue(1)
+                        .setMaxValue(7)
                 )
-            )
-            .addBooleanOption(option => option
-                .setName('mega')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
-            .addBooleanOption(option => option
-                .setName('shadow')
-                .setDescription('Mega Boss')
-                .setRequired(false)
-            )
+                .addBooleanOption((option) =>
+                    option.setName('shinyable').setDescription('Can be shiny?').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('mega').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shadow').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('active').setDescription('Boss is Active').setRequired(false)
+                )
         )
-        .addSubcommand(subCommand => subCommand
-            .setName('disable-all')
-            .setDescription('Disable all Boss Pokémon')
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('list')
+                .setDescription('Show Boss Pokémon data')
+                .addStringOption((option) =>
+                    option
+                        .setName('pokemon')
+                        .setDescription('Pokémon Name')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('form')
+                        .setDescription('Pokémon Form')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('boss-type')
+                        .setDescription('Boss Type')
+                        .setRequired(false)
+                        .addChoices(
+                            { name: 'Raid', value: BossType.Raid },
+                            { name: 'Dynamax', value: BossType.Dynamax },
+                            { name: 'Gigantamax', value: BossType.Gigantamax }
+                        )
+                )
+                .addIntegerOption((option) =>
+                    option
+                        .setName('tier')
+                        .setDescription('Boss Tier')
+                        .setRequired(false)
+                        .setMinValue(1)
+                        .setMaxValue(7)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shinyable').setDescription('Can be shiny?').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('mega').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shadow').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('active').setDescription('Boss is Active').setRequired(false)
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('update')
+                .setDescription('Update a Boss Pokémon')
+                .addStringOption((option) =>
+                    option
+                        .setName('pokemon')
+                        .setDescription('Pokémon Name')
+                        .setRequired(true)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('id')
+                        .setDescription('Boss ID')
+                        .setRequired(true)
+                        .setAutocomplete(true)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shinyable').setDescription('Can be shiny?').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('active').setDescription('Boss is Active').setRequired(false)
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('enable')
+                .setDescription('Enable a Boss Pokémon')
+                .addStringOption((option) =>
+                    option
+                        .setName('pokemon')
+                        .setDescription('Pokémon Name')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('form')
+                        .setDescription('Pokémon Form')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('boss-type')
+                        .setDescription('Boss Type')
+                        .setRequired(false)
+                        .addChoices(
+                            { name: 'Raid', value: BossType.Raid },
+                            { name: 'Dynamax', value: BossType.Dynamax },
+                            { name: 'Gigantamax', value: BossType.Gigantamax }
+                        )
+                )
+                .addBooleanOption((option) =>
+                    option.setName('mega').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shadow').setDescription('Mega Boss').setRequired(false)
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('disable')
+                .setDescription('Disable a Boss Pokémon')
+                .addStringOption((option) =>
+                    option
+                        .setName('pokemon')
+                        .setDescription('Pokémon Name')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('form')
+                        .setDescription('Pokémon Form')
+                        .setRequired(false)
+                        .setAutocomplete(true)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('boss-type')
+                        .setDescription('Boss Type')
+                        .setRequired(false)
+                        .addChoices(
+                            { name: 'Raid', value: BossType.Raid },
+                            { name: 'Dynamax', value: BossType.Dynamax },
+                            { name: 'Gigantamax', value: BossType.Gigantamax }
+                        )
+                )
+                .addBooleanOption((option) =>
+                    option.setName('mega').setDescription('Mega Boss').setRequired(false)
+                )
+                .addBooleanOption((option) =>
+                    option.setName('shadow').setDescription('Mega Boss').setRequired(false)
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand.setName('disable-all').setDescription('Disable all Boss Pokémon')
         ),
-    
+
     async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'create'      : this.executeCreate(interaction); break;
-            case 'list'        : this.executeList(interaction); break;
-            case 'update'      : this.executeUpdate(interaction); break;
-            case 'enable'      : this.executeToggleActive(interaction, true); break;
-            case 'disable'     : this.executeToggleActive(interaction, false); break;
-            case 'disable-all' : this.executeDisableAll(interaction); break;
-            default :
-                await interaction.reply({ content: `Boss management command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }); 
+            case 'create':
+                this.executeCreate(interaction);
+                break;
+            case 'list':
+                this.executeList(interaction);
+                break;
+            case 'update':
+                this.executeUpdate(interaction);
+                break;
+            case 'enable':
+                this.executeToggleActive(interaction, true);
+                break;
+            case 'disable':
+                this.executeToggleActive(interaction, false);
+                break;
+            case 'disable-all':
+                this.executeDisableAll(interaction);
+                break;
+            default:
+                await interaction.reply({
+                    content: `Boss management command execution not yet implemented for subcommand -- ${subCommand}`,
+                    flags: MessageFlags.Ephemeral,
+                });
         }
     },
 
     async autocomplete(interaction: AutocompleteInteraction) {
-        const client  = interaction.client as Client;
+        const client = interaction.client as Client;
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'create'  : this.autocompleteCreate(interaction); break;
-            case 'list'    : this.autocompleteSearch(interaction); break;
-            case 'update'  : this.autocompleteUpdate(interaction); break;
-            case 'enable'  : this.autocompleteSearch(interaction); break;
-            case 'disable' : this.autocompleteSearch(interaction); break;
-            default :
-                client.logger.error(`Boss management command autocomplete not yet implemented for subcommand -- ${subCommand}`);
+            case 'create':
+                this.autocompleteCreate(interaction);
+                break;
+            case 'list':
+                this.autocompleteSearch(interaction);
+                break;
+            case 'update':
+                this.autocompleteUpdate(interaction);
+                break;
+            case 'enable':
+                this.autocompleteSearch(interaction);
+                break;
+            case 'disable':
+                this.autocompleteSearch(interaction);
+                break;
+            default:
+                client.logger.error(
+                    `Boss management command autocomplete not yet implemented for subcommand -- ${subCommand}`
+                );
         }
     },
 
@@ -278,14 +289,14 @@ const BossCmd = {
     async executeCreate(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
 
-        const pokemonId   = interaction.options.getString('pokemon');
-        const templateId  = interaction.options.getString('template');
-        const bossType    = interaction.options.getString('boss-type');
-        const tier        = interaction.options.getInteger('tier'); // Todo -- Add in validation of tiers (1, 3, 5, ?)
-        const isMega      = interaction.options.getBoolean('mega') ?? false;
-        const isShadow    = interaction.options.getBoolean('shadow') ?? false;
+        const pokemonId = interaction.options.getString('pokemon');
+        const templateId = interaction.options.getString('template');
+        const bossType = interaction.options.getString('boss-type');
+        const tier = interaction.options.getInteger('tier'); // Todo -- Add in validation of tiers (1, 3, 5, ?)
+        const isMega = interaction.options.getBoolean('mega') ?? false;
+        const isShadow = interaction.options.getBoolean('shadow') ?? false;
         const isShinyable = interaction.options.getBoolean('shinyable') ?? false;
-        const isActive    = interaction.options.getBoolean('active') ?? true;
+        const isActive = interaction.options.getBoolean('active') ?? true;
 
         client.logger.debug(`pokemonId   = ${pokemonId}`);
         client.logger.debug(`templateId  = ${templateId}`);
@@ -302,7 +313,7 @@ const BossCmd = {
         if (!templateId) {
             throw new Error('Required option template does not have a value');
         }
-        
+
         if (!bossType) {
             throw new Error('Required option boss-type does not have a value');
         }
@@ -321,7 +332,7 @@ const BossCmd = {
 
         // Derive the Boss ID
         let id = `${bossType!.toUpperCase()}_${pokemonId!.toUpperCase()}`;
-        
+
         if (masterPokemon.form != null) {
             id += `_${masterPokemon.form.toUpperCase()}`;
         }
@@ -345,8 +356,8 @@ const BossCmd = {
             isShadow: isShadow,
             isShinyable: isShinyable,
             isActive: isActive,
-            templateId: templateId.toUpperCase()
-        }
+            templateId: templateId.toUpperCase(),
+        };
 
         client.logger.debug('Boss Object');
         client.logger.dump(bossObj);
@@ -357,29 +368,31 @@ const BossCmd = {
             boss = new Boss(bossObj);
             await boss.create();
         } else {
-            boss.id          = bossObj.id;
-            boss.bossType    = bossObj.bossType;
-            boss.pokemonId   = bossObj.pokemonId;
-            boss.form        = bossObj.form || null;
-            boss.tier        = bossObj.tier;
-            boss.isMega      = bossObj.isMega;
-            boss.isShadow    = bossObj.isShadow;
+            boss.id = bossObj.id;
+            boss.bossType = bossObj.bossType;
+            boss.pokemonId = bossObj.pokemonId;
+            boss.form = bossObj.form || null;
+            boss.tier = bossObj.tier;
+            boss.isMega = bossObj.isMega;
+            boss.isShadow = bossObj.isShadow;
             boss.isShinyable = bossObj.isShinyable;
-            boss.isActive    = bossObj.isActive;
-            boss.templateId  = bossObj.templateId;
+            boss.isActive = bossObj.isActive;
+            boss.templateId = bossObj.templateId;
             await boss.update();
         }
 
         const bossEmbed = await boss.buildEmbed();
         await interaction.reply({
-            embeds: [bossEmbed]
+            embeds: [bossEmbed],
         });
     },
 
     async autocompleteCreate(interaction: AutocompleteInteraction) {
         const client = interaction.client as Client;
         const focusedOption = interaction.options.getFocused(true);
-        client.logger.debug(`Initiating autocomplete for boss load -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+        client.logger.debug(
+            `Initiating autocomplete for boss load -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`
+        );
 
         let choices: string[] = [];
         let pokemonId: string | null;
@@ -390,7 +403,7 @@ const BossCmd = {
                 //choices = await MasterPokemon.getPokemonChoices(focusedOption.value);
                 choices = await MasterPokemon.getPokemonIdChoices(focusedOption.value);
                 break;
-            
+
             case 'template':
                 pokemonId = interaction.options.getString('pokemon');
 
@@ -398,11 +411,13 @@ const BossCmd = {
                     throw new Error('Required option pokemon does not have a value');
                 }
 
-                choices = await MasterPokemon.getTemplateIdChoices(focusedOption.value, { pokemonId: pokemonId });
+                choices = await MasterPokemon.getTemplateIdChoices(focusedOption.value, {
+                    pokemonId: pokemonId,
+                });
                 break;
-            
+
             case 'form':
-                pokemonId  = interaction.options.getString('pokemon');
+                pokemonId = interaction.options.getString('pokemon');
                 templateId = interaction.options.getString('template');
 
                 if (!pokemonId) {
@@ -412,7 +427,10 @@ const BossCmd = {
                     throw new Error('Required option template does not have a value');
                 }
 
-                choices = await MasterPokemon.getFormChoices(focusedOption.value, { pokemonId: pokemonId, templateId: templateId });
+                choices = await MasterPokemon.getFormChoices(focusedOption.value, {
+                    pokemonId: pokemonId,
+                    templateId: templateId,
+                });
                 break;
         }
 
@@ -422,9 +440,7 @@ const BossCmd = {
         client.logger.dump(choices);
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
             return;
         }
 
@@ -435,7 +451,7 @@ const BossCmd = {
         if (prefix) {
             for (let choiceFull of choices) {
                 let choice = choiceFull.slice(0, prefix.length + 1);
-                
+
                 if (choice == prefix) {
                     choicesPrefixed.push(choice);
                 } else {
@@ -456,9 +472,7 @@ const BossCmd = {
         client.logger.dump(choices);
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
             return;
         }
 
@@ -472,15 +486,15 @@ const BossCmd = {
     async executeList(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
 
-        const pokemonId   = interaction.options.getString('pokemon');
-        const form        = interaction.options.getString('form');
-        const bossType    = interaction.options.getString('boss-type');
-        const tier        = interaction.options.getInteger('tier');
-        const isMega      = interaction.options.getBoolean('mega');
-        const isShadow    = interaction.options.getBoolean('shadow');
+        const pokemonId = interaction.options.getString('pokemon');
+        const form = interaction.options.getString('form');
+        const bossType = interaction.options.getString('boss-type');
+        const tier = interaction.options.getInteger('tier');
+        const isMega = interaction.options.getBoolean('mega');
+        const isShadow = interaction.options.getBoolean('shadow');
         const isShinyable = interaction.options.getBoolean('shinyable');
-        const isActive    = interaction.options.getBoolean('active');
- 
+        const isActive = interaction.options.getBoolean('active');
+
         client.logger.debug(`pokemonId   = ${pokemonId}`);
         client.logger.debug(`form        = ${form}`);
         client.logger.debug(`bossType    = ${bossType}`);
@@ -527,9 +541,9 @@ const BossCmd = {
 
         client.logger.debug('Boss Search Object');
         client.logger.dump(bossSearchObj);
-        
+
         // Run the search query
-        const bosses = await Boss.get(bossSearchObj, [ 'tier', 'pokemonId' ] );
+        const bosses = await Boss.get(bossSearchObj, ['tier', 'pokemonId']);
 
         // Iterate through the results
         let bossEembedArray = [];
@@ -540,14 +554,17 @@ const BossCmd = {
         }
 
         // Display a dummy message for now
-        await interaction.reply({ content: `Found ${bossEembedArray.length} bosses`, flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+            content: `Found ${bossEembedArray.length} bosses`,
+            flags: MessageFlags.Ephemeral,
+        });
 
         // Show all of the bosses
         for (const bossEmbed of bossEembedArray) {
             await interaction.followUp({
-                embeds: [ bossEmbed ],
-                flags: MessageFlags.Ephemeral
-            })
+                embeds: [bossEmbed],
+                flags: MessageFlags.Ephemeral,
+            });
         }
     },
 
@@ -558,10 +575,10 @@ const BossCmd = {
     async executeUpdate(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
 
-        const pokemonId   = interaction.options.getString('pokemon');
-        const id          = interaction.options.getString('id');
+        const pokemonId = interaction.options.getString('pokemon');
+        const id = interaction.options.getString('id');
         const isShinyable = interaction.options.getBoolean('shinyable');
-        const isActive    = interaction.options.getBoolean('active');
+        const isActive = interaction.options.getBoolean('active');
 
         if (!id) {
             throw new Error('Required option id does not have a value');
@@ -580,7 +597,7 @@ const BossCmd = {
         if (!boss) {
             await interaction.reply({
                 content: `Could not find boss with that ID`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -588,7 +605,7 @@ const BossCmd = {
         if (isShinyable === null && isActive === null) {
             await interaction.reply({
                 content: `No changes requested`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -607,14 +624,16 @@ const BossCmd = {
 
         await interaction.reply({
             content: `Boss updated`,
-            embeds: [ bossEmbed ]
+            embeds: [bossEmbed],
         });
     },
 
     async autocompleteUpdate(interaction: AutocompleteInteraction) {
         const client = interaction.client as Client;
         const focusedOption = interaction.options.getFocused(true);
-        client.logger.debug(`Initiating autocomplete for boss update -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+        client.logger.debug(
+            `Initiating autocomplete for boss update -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`
+        );
 
         let choices: string[] = [];
         let pokemonId: string | null;
@@ -641,9 +660,7 @@ const BossCmd = {
         client.logger.dump(choices);
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
             return;
         }
 
@@ -654,7 +671,7 @@ const BossCmd = {
         if (prefix) {
             for (let choiceFull of choices) {
                 let choice = choiceFull.slice(0, prefix.length + 1);
-                
+
                 if (choice == prefix) {
                     choicesPrefixed.push(choice);
                 } else {
@@ -675,9 +692,7 @@ const BossCmd = {
         client.logger.dump(choices);
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
             return;
         }
 
@@ -691,11 +706,11 @@ const BossCmd = {
     async executeToggleActive(interaction: ChatInputCommandInteraction, isActive: boolean) {
         const client = interaction.client as Client;
 
-        const pokemonId  = interaction.options.getString('pokemon');
-        const form       = interaction.options.getString('form');
-        const bossType   = interaction.options.getString('boss-type') ?? BossType.Raid;
-        const isMega     = interaction.options.getBoolean('mega')     ?? false;
-        const isShadow   = interaction.options.getBoolean('shadow')   ?? false;
+        const pokemonId = interaction.options.getString('pokemon');
+        const form = interaction.options.getString('form');
+        const bossType = interaction.options.getString('boss-type') ?? BossType.Raid;
+        const isMega = interaction.options.getBoolean('mega') ?? false;
+        const isShadow = interaction.options.getBoolean('shadow') ?? false;
 
         client.logger.debug(`pokemonId  = ${pokemonId}`);
         client.logger.debug(`form       = ${form}`);
@@ -711,12 +726,12 @@ const BossCmd = {
         const bossSearchObj: BossConditions = {
             pokemonId: pokemonId,
             bossType: bossType,
-            isMega: isMega
+            isMega: isMega,
         };
 
         if (form != null) {
             bossSearchObj.form = form;
-        }   
+        }
 
         // Run the query
         try {
@@ -725,31 +740,30 @@ const BossCmd = {
             if (!boss) {
                 return await interaction.reply({
                     content: `Could not find boss with those parameters`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             }
 
             boss.isActive = isActive;
             await boss.update();
-            
+
             const embed = await boss.buildEmbed();
             return await interaction.reply({
                 content: `Boss updated`,
-                embeds: [embed]
+                embeds: [embed],
             });
-        
         } catch (error) {
             if (error instanceof NonUniqueResultError) {
                 return await interaction.reply({
                     content: `More than one boss found with those parameters`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             } else {
                 throw error;
             }
         }
     },
-    
+
     /******************************************************
      * Subcommand Autocomplete  :: List, Enable, Disable  *
      ******************************************************/
@@ -759,19 +773,25 @@ const BossCmd = {
 
         const subCommand = interaction.options.getSubcommand();
         const focusedOption = interaction.options.getFocused(true);
-        client.logger.debug(`Initiating autocomplete for boss -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+        client.logger.debug(
+            `Initiating autocomplete for boss -- ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`
+        );
 
         let choices: string[] = [];
-        const pokemonId  = interaction.options.getString('pokemon');
-        const form       = interaction.options.getString('form');
-        const bossType   = interaction.options.getString('boss-type');
-        const isMega     = interaction.options.getBoolean('mega');
-        const isShadow   = interaction.options.getBoolean('shadow');
-        let   isActive   = interaction.options.getBoolean('active');
+        const pokemonId = interaction.options.getString('pokemon');
+        const form = interaction.options.getString('form');
+        const bossType = interaction.options.getString('boss-type');
+        const isMega = interaction.options.getBoolean('mega');
+        const isShadow = interaction.options.getBoolean('shadow');
+        let isActive = interaction.options.getBoolean('active');
 
         switch (subCommand) {
-            case 'enable':  isActive = false; break;
-            case 'disable': isActive = true; break;
+            case 'enable':
+                isActive = false;
+                break;
+            case 'disable':
+                isActive = true;
+                break;
         }
 
         client.logger.debug(`pokemonId  = ${pokemonId}`);
@@ -784,11 +804,11 @@ const BossCmd = {
         // Create the Boss search object
         const bossSearchObj: BossConditions = {};
 
-        if ( (focusedOption.name != 'pokemon') && (pokemonId != null) ) {
+        if (focusedOption.name != 'pokemon' && pokemonId != null) {
             bossSearchObj.pokemonId = pokemonId;
         }
 
-        if ( (focusedOption.name != 'form') && (form != null) ) {
+        if (focusedOption.name != 'form' && form != null) {
             bossSearchObj.form = form;
         }
 
@@ -818,9 +838,7 @@ const BossCmd = {
         }
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
             return;
         }
 
@@ -833,8 +851,11 @@ const BossCmd = {
 
     async executeDisableAll(interaction: ChatInputCommandInteraction) {
         await Boss.update({}, { isActive: false });
-        await interaction.reply({ content: `All bosses have been disabled`, flags: MessageFlags.Ephemeral });
-    }
+        await interaction.reply({
+            content: `All bosses have been disabled`,
+            flags: MessageFlags.Ephemeral,
+        });
+    },
 };
 
 export default BossCmd;

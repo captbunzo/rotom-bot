@@ -1,11 +1,8 @@
-import {
-    DrossDatabaseTable,
-    DrossFieldType
-} from '@drossjs/dross-database';
+import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { BossType } from '#src/Constants.js';
-import Boss from '#src/models/Boss.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
+import { BossType } from '@root/src/constants.js';
+import Boss from '@/models/Boss.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
 
 export interface WikiLinkData {
     id: string;
@@ -40,63 +37,107 @@ export class WikiLink extends DrossDatabaseTable {
         tableName: 'wiki_link',
         orderBy: ['id'],
         fields: {
-            'id':            { type: DrossFieldType.String,   nullable: false, length: 64 },
-            'pokemon_id':    { type: DrossFieldType.String,   nullable: false, length: 20 },
-            'pokedex_id':    { type: DrossFieldType.SmallInt, nullable: false, unsigned: true },
-            'is_mega':       { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'is_shadow':     { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'is_dynamax':    { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'is_gigantamax': { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'page':          { type: DrossFieldType.String,   nullable: false, length: 128 },
-            'image':         { type: DrossFieldType.String,   nullable: false, length: 128 },
-            'template_id':   { type: DrossFieldType.String,   nullable: false, length: 64 },
-            'form':          { type: DrossFieldType.String,   nullable: true,  length: 64 }
+            id: { type: DrossFieldType.String, nullable: false, length: 64 },
+            pokemon_id: { type: DrossFieldType.String, nullable: false, length: 20 },
+            pokedex_id: { type: DrossFieldType.SmallInt, nullable: false, unsigned: true },
+            is_mega: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_shadow: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_dynamax: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_gigantamax: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            page: { type: DrossFieldType.String, nullable: false, length: 128 },
+            image: { type: DrossFieldType.String, nullable: false, length: 128 },
+            template_id: { type: DrossFieldType.String, nullable: false, length: 64 },
+            form: { type: DrossFieldType.String, nullable: true, length: 64 },
         },
-        primaryKey: ['id']
+        primaryKey: ['id'],
     });
 
     constructor(data: WikiLinkData) {
         super(data);
     }
-    
+
     /***********
      * Getters *
      ***********/
-    
-    get id           (): string        { return this.getField('id'); }
-    get pokemonId    (): string        { return this.getField('pokemonId'); }
-    get pokedexId    (): number        { return this.getField('pokedexId'); }
-    get isMega       (): boolean       { return this.getField('isMega'); }
-    get isShadow     (): boolean       { return this.getField('isShadow'); }
-    get isDynamax    (): boolean       { return this.getField('isDynamax'); }
-    get isGigantamax (): boolean       { return this.getField('isGigantamax'); }
-    get page         (): string        { return this.getField('page'); }
-    get image        (): string        { return this.getField('image'); }
-    get templateId   (): string        { return this.getField('templateId'); }
-    get form         (): string | null { return this.getField('form'); }
- 
+
+    get id(): string {
+        return this.getField('id');
+    }
+    get pokemonId(): string {
+        return this.getField('pokemonId');
+    }
+    get pokedexId(): number {
+        return this.getField('pokedexId');
+    }
+    get isMega(): boolean {
+        return this.getField('isMega');
+    }
+    get isShadow(): boolean {
+        return this.getField('isShadow');
+    }
+    get isDynamax(): boolean {
+        return this.getField('isDynamax');
+    }
+    get isGigantamax(): boolean {
+        return this.getField('isGigantamax');
+    }
+    get page(): string {
+        return this.getField('page');
+    }
+    get image(): string {
+        return this.getField('image');
+    }
+    get templateId(): string {
+        return this.getField('templateId');
+    }
+    get form(): string | null {
+        return this.getField('form');
+    }
+
     /***********
      * Setters *
      ***********/
-    
-    set id           ( value: string        ) { this.setField('id', value); }
-    set pokemonId    ( value: string        ) { this.setField('pokemonId', value); }
-    set pokedexId    ( value: number        ) { this.setField('pokedexId', value); }
-    set isMega       ( value: boolean       ) { this.setField('isMega', value); }
-    set isShadow     ( value: boolean       ) { this.setField('isShadow', value); }
-    set isDynamax    ( value: boolean       ) { this.setField('isDynamax', value); }
-    set isGigantamax ( value: boolean       ) { this.setField('isGigantamax', value); }
-    set page         ( value: string        ) { this.setField('page', value); }
-    set image        ( value: string        ) { this.setField('image', value); }
-    set templateId   ( value: string        ) { this.setField('templateId', value); }
-    set form         ( value: string | null ) { this.setField('form', value); }
+
+    set id(value: string) {
+        this.setField('id', value);
+    }
+    set pokemonId(value: string) {
+        this.setField('pokemonId', value);
+    }
+    set pokedexId(value: number) {
+        this.setField('pokedexId', value);
+    }
+    set isMega(value: boolean) {
+        this.setField('isMega', value);
+    }
+    set isShadow(value: boolean) {
+        this.setField('isShadow', value);
+    }
+    set isDynamax(value: boolean) {
+        this.setField('isDynamax', value);
+    }
+    set isGigantamax(value: boolean) {
+        this.setField('isGigantamax', value);
+    }
+    set page(value: string) {
+        this.setField('page', value);
+    }
+    set image(value: string) {
+        this.setField('image', value);
+    }
+    set templateId(value: string) {
+        this.setField('templateId', value);
+    }
+    set form(value: string | null) {
+        this.setField('form', value);
+    }
 
     /**************************
      * Class Method Overrides *
      **************************/
 
     static override async get(conditions: WikiLinkConditions = {}, orderBy = this.schema.orderBy) {
-        return await super.get(conditions, orderBy) as WikiLink[];
+        return (await super.get(conditions, orderBy)) as WikiLink[];
     }
 
     static override async getUnique(
@@ -124,8 +165,8 @@ export class WikiLink extends DrossDatabaseTable {
                 templateId: masterPokemon.templateId,
                 isMega: boss.isMega,
                 isShadow: boss.isShadow,
-                isDynamax: ( boss.bossType == BossType.Dynamax),
-                isGigantamax: ( boss.bossType == BossType.Gigantamax)
+                isDynamax: boss.bossType == BossType.Dynamax,
+                isGigantamax: boss.bossType == BossType.Gigantamax,
             };
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLinks.length == 1) {
@@ -138,8 +179,8 @@ export class WikiLink extends DrossDatabaseTable {
                 form: null,
                 isMega: boss.isMega,
                 isShadow: boss.isShadow,
-                isDynamax: ( boss.bossType == BossType.Dynamax),
-                isGigantamax: ( boss.bossType == BossType.Gigantamax)
+                isDynamax: boss.bossType == BossType.Dynamax,
+                isGigantamax: boss.bossType == BossType.Gigantamax,
             };
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLinks.length == 1) {
@@ -152,7 +193,7 @@ export class WikiLink extends DrossDatabaseTable {
                 isMega: false,
                 isShadow: false,
                 isDynamax: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLinks.length == 1) {
@@ -166,7 +207,7 @@ export class WikiLink extends DrossDatabaseTable {
                 isMega: false,
                 isShadow: false,
                 isDynamax: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLinks.length == 1) {
@@ -189,13 +230,13 @@ export class WikiLink extends DrossDatabaseTable {
                 isMega: false,
                 isShadow: false,
                 isDynamax: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
             if (wikiLinks.length == 1) {
                 return wikiLinks[0];
             }
-            
+
             // Otherwise check for the base record without the form
             wikiLinkSearchObj = {
                 pokemonId: masterPokemon.pokemonId,
@@ -203,7 +244,7 @@ export class WikiLink extends DrossDatabaseTable {
                 isMega: false,
                 isShadow: false,
                 isDynamax: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
@@ -218,7 +259,7 @@ export class WikiLink extends DrossDatabaseTable {
                 isMega: false,
                 isShadow: false,
                 isDynamax: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             wikiLinks = await WikiLink.get(wikiLinkSearchObj);
@@ -228,8 +269,8 @@ export class WikiLink extends DrossDatabaseTable {
 
             return;
         }
-        
-        return await super.getUnique(conditions, orderBy) as WikiLink;
+
+        return (await super.getUnique(conditions, orderBy)) as WikiLink;
     }
 
     /*****************************
@@ -247,7 +288,7 @@ export class WikiLink extends DrossDatabaseTable {
     /*****************
      * Class Methods *
      *****************/
-    
+
     static async getPokemonIdChoices(pokemonIdPrefix: string, conditions: WikiLinkConditions = {}) {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }

@@ -1,7 +1,6 @@
+import BotConfig from '@root/config.json' with { type: 'json' };
 
-import BotConfig from '#root/config.json' with { type: 'json' };
-
-import fs from 'fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import DrossLogger from '@drossjs/dross-logger';
@@ -10,17 +9,13 @@ import {
     Client as DiscordClient,
     REST as DiscordREST,
     GatewayIntentBits,
-    Routes
+    Routes,
 } from 'discord.js';
 
-import {
-    type Snowflake,
-    Collection,
-    Guild
-} from 'discord.js';
+import { type Snowflake, Collection, Guild } from 'discord.js';
 
-import ComponentIndex from '#src/types/ComponentIndex.js';
-import { PokedexRegisteryIndex } from '#src/components/compound/PokedexRegisteryComponent.js';
+// import ComponentIndex from '@/types/ComponentIndex.js';
+// import { PokedexRegisteryIndex } from '@/components/compound/PokedexRegisteryComponent.js';
 
 //export interface ClientInterface extends Discord.Client {
 //    logger: DrossLogger;
@@ -28,7 +23,7 @@ import { PokedexRegisteryIndex } from '#src/components/compound/PokedexRegistery
 
 // TODO - If this singleton works, turn DrossLogger into a singleton
 
-export default class Client extends DiscordClient {
+export class Client extends DiscordClient {
     /*********************
      * Singleton Members *
      *********************/
@@ -42,9 +37,7 @@ export default class Client extends DiscordClient {
             //  - GatewayIntentBits.GuildMessages
             //  - GatewayIntentBits.MessageContent
             //  - GatewayIntentBits.GuildMembers
-            intents: [
-                GatewayIntentBits.Guilds
-            ]
+            intents: [GatewayIntentBits.Guilds],
         });
 
         this.logger.log('Client singleton instance created');
@@ -69,13 +62,13 @@ export default class Client extends DiscordClient {
 
     public chalk = chalk;
     public colorizeCommand = this.chalk.green;
-    public colorizeAlias   = this.chalk.cyan;
-    public colorizeAction  = this.chalk.yellow;
+    public colorizeAlias = this.chalk.cyan;
+    public colorizeAction = this.chalk.yellow;
 
-    public commands : Collection<string, any> = new Collection();
-    public buttons  : Collection<string, any> = new Collection();
-    public modals   : Collection<string, any> = new Collection();
-    public selects  : Collection<string, any> = new Collection();
+    public commands: Collection<string, any> = new Collection();
+    public buttons: Collection<string, any> = new Collection();
+    public modals: Collection<string, any> = new Collection();
+    public selects: Collection<string, any> = new Collection();
 
     /*****************************
      * Initialize Discord Client *
@@ -90,7 +83,7 @@ export default class Client extends DiscordClient {
         // Connect to discord
         this.logger.log('Starting bot');
         await this.login(this.config.token);
-        
+
         // Launch the background scheduler
         // this.scheduler = require(`./Scheduler`);
     }
@@ -107,7 +100,7 @@ export default class Client extends DiscordClient {
         await this.loadCommands();
 
         const globalCommandsJSON = [];
-        const guildCommandsJSON  = [];
+        const guildCommandsJSON = [];
 
         for (const [commandName, command] of this.commands) {
             this.logger.log(`Loading Command: ${commandName}`);
@@ -126,26 +119,37 @@ export default class Client extends DiscordClient {
 
         // Deploy global commands
         (async () => {
-	        try {
+            try {
                 // Use the put method to fully refresh all global commands with the current set
-                this.logger.log(`Loading ${globalCommandsJSON.length} global application (/) commands`);
+                this.logger.log(
+                    `Loading ${globalCommandsJSON.length} global application (/) commands`
+                );
 
                 const globalCommandDeploymentResults: any = await discordREST.put(
                     Routes.applicationCommands(this.config.client_id),
-                    { body: globalCommandsJSON },
+                    { body: globalCommandsJSON }
                 );
 
-                this.logger.log(`Successfully loaded ${globalCommandDeploymentResults.length} global application (/) commands`);
+                this.logger.log(
+                    `Successfully loaded ${globalCommandDeploymentResults.length} global application (/) commands`
+                );
 
                 // Use the put method to fully refresh all guild commands with the current set
-                this.logger.log(`Loading ${guildCommandsJSON.length} guild application (/) commands`);
-
-                const guildCommandDeploymentResults: any = await discordREST.put(
-                    Routes.applicationGuildCommands(this.config.client_id, this.config.bot_guild_id),
-                    { body: guildCommandsJSON },
+                this.logger.log(
+                    `Loading ${guildCommandsJSON.length} guild application (/) commands`
                 );
 
-                this.logger.log(`Successfully loaded ${guildCommandDeploymentResults.length} guild application (/) commands`);
+                const guildCommandDeploymentResults: any = await discordREST.put(
+                    Routes.applicationGuildCommands(
+                        this.config.client_id,
+                        this.config.bot_guild_id
+                    ),
+                    { body: guildCommandsJSON }
+                );
+
+                this.logger.log(
+                    `Successfully loaded ${guildCommandDeploymentResults.length} guild application (/) commands`
+                );
             } catch (error) {
                 // And of course, make sure you catch and log any errors!
                 this.logger.error(error);
@@ -160,25 +164,29 @@ export default class Client extends DiscordClient {
     async loadCommands() {
         this.logger.log('Loading commands');
         this.commands = new Collection();
-        
+
         const foldersPath = './src/commands';
         const commandFolders = fs.readdirSync(foldersPath);
-        
+
         for (const folder of commandFolders) {
             const commandsPath = path.join(foldersPath, folder);
-            const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.ts'));
-            
+            const commandFiles = fs
+                .readdirSync(commandsPath)
+                .filter((file) => file.endsWith('.ts'));
+
             for (const file of commandFiles) {
                 const filePath = path.join(commandsPath, file);
-                const cmdFilePath = filePath.replace(/^(src\/)/,"./");
+                const cmdFilePath = filePath.replace(/^(src\/)/, './');
                 const { default: command } = await import(cmdFilePath);
-                
+
                 // Set a new item in the Collection with the key as the command name and the value as the exported module
                 if ('data' in command && 'execute' in command) {
                     this.logger.log(`  -> ${command.data.name}`);
                     this.commands.set(command.data.name, command);
                 } else {
-                    this.logger.error(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+                    this.logger.error(
+                        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+                    );
                 }
             }
         }
@@ -192,11 +200,11 @@ export default class Client extends DiscordClient {
         this.logger.log('Loading event handlers');
 
         const eventsPath = './src/events';
-        const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.ts'));
-        
+        const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
+
         for (const file of eventFiles) {
             const filePath = path.join(eventsPath, file);
-            const eventFilePath = filePath.replace(/^(src\/)/,"./");
+            const eventFilePath = filePath.replace(/^(src\/)/, './');
             const { default: event } = await import(eventFilePath);
 
             if (event.once) {
@@ -212,12 +220,12 @@ export default class Client extends DiscordClient {
     /*******************
      * Load Components *
      *******************/
-    
+
     async loadComponents() {
         this.logger.log('Loading components');
 
         this.buttons = new Collection();
-        this.modals  = new Collection();
+        this.modals = new Collection();
         this.selects = new Collection();
 
         const componentPaths = [
@@ -226,15 +234,17 @@ export default class Client extends DiscordClient {
             './src/components/selects',
             './src/components/modals',
         ];
-        
+
         for (const componentsPath of componentPaths) {
-            const theseComponentFiles = fs.readdirSync(componentsPath).filter(file => file.endsWith('.ts'));
+            const theseComponentFiles = fs
+                .readdirSync(componentsPath)
+                .filter((file) => file.endsWith('.ts'));
 
             for (const file of theseComponentFiles) {
                 const filePath = path.join(componentsPath, file);
-                const componentFilePath = filePath.replace(/^(src\/)/,"./");
+                const componentFilePath = filePath.replace(/^(src\/)/, './');
                 const { default: component } = await import(componentFilePath);
-                
+
                 if (component.handleButton) {
                     this.logger.log(`  -> button -> ${component.name}`);
                     this.buttons.set(component.name, component);
@@ -252,7 +262,7 @@ export default class Client extends DiscordClient {
             }
         }
     }
-    
+
     /********************
      * Helper Functions *
      ********************/

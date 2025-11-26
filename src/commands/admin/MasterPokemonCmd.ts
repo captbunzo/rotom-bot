@@ -9,16 +9,20 @@ import {
     SlashCommandBuilder,
 } from 'discord.js';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 
-import { FieldValueMaxSize, InterimLoadUpdates, MaxAutoCompleteChoices } from '#src/Constants.js';
+import {
+    FieldValueMaxSize,
+    InterimLoadUpdates,
+    MaxAutoCompleteChoices,
+} from '@root/src/constants.js';
 
-import type { MasterPokemonConditions, MasterPokemonData } from '#src/models/MasterPokemon.js';
+import type { MasterPokemonConditions, MasterPokemonData } from '@/models/MasterPokemon.js';
 
-import MasterPokemon from '#src/models/MasterPokemon.js';
-import PogoHubLink from '#src/models/PogoHubLink.js';
-import Translation from '#src/models/Translation.js';
-import WikiLink from '#src/models/WikiLink.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
+import PogoHubLink from '@/models/PogoHubLink.js';
+import Translation from '@/models/Translation.js';
+import WikiLink from '@/models/WikiLink.js';
 
 const MasterPokemonCmd = {
     global: false,

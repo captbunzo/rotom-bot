@@ -1,10 +1,6 @@
-// @ts-check
-//import { type Config } from "prettier";
+import { type Config } from 'prettier';
 
-// const config: Config = {
-
-/** @type {import("prettier").Config} */
-const config = {
+const config: Config = {
     semi: true,
     singleQuote: true,
     tabWidth: 4,

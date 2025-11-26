@@ -4,21 +4,19 @@ import {
     ButtonInteraction,
     ButtonStyle,
     ChatInputCommandInteraction,
-    MessageFlags
+    MessageFlags,
 } from 'discord.js';
 
-import {
-    MessageType
-} from '#src/Constants.js';
+import { MessageType } from '@root/src/constants.js';
 
-import Client from '#src/Client.js';
-import ComponentIndex from '#src/types/ComponentIndex.js';
-import Trainer from '#src/models/Trainer.js';
+import Client from '@root/src/client.js';
+import ComponentIndex from '@/types/ComponentIndex.js';
+import Trainer from '@/models/Trainer.js';
 
 const DeleteProfileButton = {
     Confirm: 'Confirm',
-    Cancel: 'Cancel'
-}
+    Cancel: 'Cancel',
+};
 
 const DeleteProfileButtons = {
     name: 'DeleteProfileButtons',
@@ -31,14 +29,14 @@ const DeleteProfileButtons = {
         if (!trainer) {
             await interaction.reply({
                 content: 'You have not setup your trainer profile',
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
 
         const buttonIndex = new ComponentIndex({
             name: this.name,
-            id: 'button'
+            id: 'button',
         });
 
         // Create the buttons
@@ -56,24 +54,26 @@ const DeleteProfileButtons = {
             .setStyle(ButtonStyle.Secondary)
             .setEmoji(emoji.cancel);
 
-        const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(confirmButton, cancelButton);
+        const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            confirmButton,
+            cancelButton
+        );
 
-            if (messageType == MessageType.Reply) {
-                await interaction.reply({
-                    content: 'Are you sure you want to delete your profile?',
-                    components: [buttonRow],
-                    flags: MessageFlags.Ephemeral
-                });
-            } else if (messageType == MessageType.FollowUp) {
-                await interaction.followUp({
-                    content: 'Are you sure you want to delete your profile?',
-                    components: [buttonRow],
-                    flags: MessageFlags.Ephemeral
-                });
-            }
+        if (messageType == MessageType.Reply) {
+            await interaction.reply({
+                content: 'Are you sure you want to delete your profile?',
+                components: [buttonRow],
+                flags: MessageFlags.Ephemeral,
+            });
+        } else if (messageType == MessageType.FollowUp) {
+            await interaction.followUp({
+                content: 'Are you sure you want to delete your profile?',
+                components: [buttonRow],
+                flags: MessageFlags.Ephemeral,
+            });
+        }
     },
-    
+
     async handleButton(interaction: ButtonInteraction) {
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
         const buttonIndex = ComponentIndex.parse(interaction.customId);
@@ -82,7 +82,7 @@ const DeleteProfileButtons = {
         if (action == DeleteProfileButton.Cancel) {
             await interaction.reply({
                 content: 'Profile deletion cancelled',
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -91,7 +91,7 @@ const DeleteProfileButtons = {
             if (!trainer) {
                 await interaction.reply({
                     content: 'Trainer profile not found',
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
@@ -99,11 +99,11 @@ const DeleteProfileButtons = {
             await trainer.delete();
             await interaction.reply({
                 content: 'Your trainer profile has been deleted',
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
-    }
+    },
 };
 
 export default DeleteProfileButtons;

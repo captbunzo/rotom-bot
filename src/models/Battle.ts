@@ -1,28 +1,20 @@
-import {
-    type Snowflake,
-    bold,
-    EmbedBuilder,
-    SnowflakeUtil
-} from 'discord.js';
+import { type Snowflake, bold, EmbedBuilder, SnowflakeUtil } from 'discord.js';
 
-import { 
-    DrossDatabaseTable,
-    DrossFieldType,
-} from '@drossjs/dross-database';
+import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 const client = Client.getInstance();
 
-import StringFunctions from '#src/functions/StringFunctions.js';
-import { BattleStatus } from '#src/Constants.js';
+import StringFunctions from '@/functions/StringFunctions.js';
+import { BattleStatus } from '@root/src/constants.js';
 
-import BattleMember  from '#src/models/BattleMember.js';
-import Boss          from '#src/models/Boss.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
-import PogoHubLink   from '#src/models/PogoHubLink.js';
-import Trainer       from '#src/models/Trainer.js';
-import Translation   from '#src/models/Translation.js';
-import WikiLink      from '#src/models/WikiLink.js';
+import BattleMember from '@/models/BattleMember.js';
+import Boss from '@/models/Boss.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
+import PogoHubLink from '@/models/PogoHubLink.js';
+import Trainer from '@/models/Trainer.js';
+import Translation from '@/models/Translation.js';
+import WikiLink from '@/models/WikiLink.js';
 
 export interface BattleData {
     id?: Snowflake;
@@ -47,66 +39,90 @@ export class Battle extends DrossDatabaseTable {
         tableName: 'battle',
         orderBy: ['id'],
         fields: {
-            'id':              { type: DrossFieldType.Snowflake, nullable: false },
-            'boss_id':         { type: DrossFieldType.String,    nullable: false, length: 100 },
-            'host_discord_id': { type: DrossFieldType.Snowflake, nullable: false },
-            'guild_id':        { type: DrossFieldType.Snowflake, nullable: false },
-            'status':          { type: DrossFieldType.String,    nullable: false,  length: 20 },
-            'message_id':      { type: DrossFieldType.Snowflake, nullable: true }
+            id: { type: DrossFieldType.Snowflake, nullable: false },
+            boss_id: { type: DrossFieldType.String, nullable: false, length: 100 },
+            host_discord_id: { type: DrossFieldType.Snowflake, nullable: false },
+            guild_id: { type: DrossFieldType.Snowflake, nullable: false },
+            status: { type: DrossFieldType.String, nullable: false, length: 20 },
+            message_id: { type: DrossFieldType.Snowflake, nullable: true },
         },
-        primaryKey: ['id']
+        primaryKey: ['id'],
     });
-    
+
     constructor(data: BattleData) {
         super(data);
     }
-    
+
     /***********
      * Getters *
      ***********/
-    
-    get id            (): Snowflake        { return this.getField('id'); }
-    get bossId        (): Snowflake        { return this.getField('bossId'); }
-    get hostDiscordId (): Snowflake        { return this.getField('hostDiscordId'); }
-    get guildId       (): Snowflake        { return this.getField('guildId'); }
-    get status        (): string           { return this.getField('status'); }
-    get messageId     (): Snowflake | null { return this.getField('messageId'); }
+
+    get id(): Snowflake {
+        return this.getField('id');
+    }
+    get bossId(): Snowflake {
+        return this.getField('bossId');
+    }
+    get hostDiscordId(): Snowflake {
+        return this.getField('hostDiscordId');
+    }
+    get guildId(): Snowflake {
+        return this.getField('guildId');
+    }
+    get status(): string {
+        return this.getField('status');
+    }
+    get messageId(): Snowflake | null {
+        return this.getField('messageId');
+    }
 
     /***********
      * Setters *
      ***********/
-    
-    set id            ( value: Snowflake        ) { this.setField('id', value); }
-    set bossId        ( value: Snowflake        ) { this.setField('bossId', value); }
-    set hostDiscordId ( value: Snowflake        ) { this.setField('hostDiscordId', value); }
-    set guildId       ( value: Snowflake        ) { this.setField('guildId', value); }
-    set status        ( value: string           ) { this.setField('status', value); }
-    set messageId     ( value: Snowflake | null ) { this.setField('messageId', value); }
-    
+
+    set id(value: Snowflake) {
+        this.setField('id', value);
+    }
+    set bossId(value: Snowflake) {
+        this.setField('bossId', value);
+    }
+    set hostDiscordId(value: Snowflake) {
+        this.setField('hostDiscordId', value);
+    }
+    set guildId(value: Snowflake) {
+        this.setField('guildId', value);
+    }
+    set status(value: string) {
+        this.setField('status', value);
+    }
+    set messageId(value: Snowflake | null) {
+        this.setField('messageId', value);
+    }
+
     /**************************
      * Class Method Overrides *
      **************************/
 
     static override async get(conditions: BattleConditions = {}, orderBy = this.schema.orderBy) {
-        return await super.get(conditions, orderBy) as Battle[];
+        return (await super.get(conditions, orderBy)) as Battle[];
     }
 
     static override async getUnique(conditions: BattleConditions = {}) {
-        return await super.getUnique(conditions) as Battle | null;
+        return (await super.getUnique(conditions)) as Battle | null;
     }
 
     /*****************************
      * Instance Method Overrides *
      *****************************/
 
-    override async create() {  
+    override async create() {
         if (!this.id) {
             this.id = SnowflakeUtil.generate().toString();
         }
-        
+
         await DrossDatabaseTable.prototype.create.call(this);
     }
-    
+
     override async update(condition: BattleConditions = { id: this.id }) {
         await DrossDatabaseTable.prototype.update.call(this, condition);
     }
@@ -118,7 +134,7 @@ export class Battle extends DrossDatabaseTable {
     /********************
      * Instance Methods *
      ********************/
-    
+
     async buildEmbed(): Promise<EmbedBuilder> {
         const client = Client.getInstance();
         const emoji = client.config.emoji;
@@ -168,10 +184,11 @@ export class Battle extends DrossDatabaseTable {
         //DrossDatabase.logger.dump(hostDiscordMember);
         //DrossDatabase.logger.debug(`hostDiscordMember.nickname = ${hostDiscordMember.nickname}`);
 
-        let bossTypeName       = await boss.getBossTypeName();
-        let battleTypeName     = await boss.getBattleTypeName();
-        let pokemonName        = await masterPokemon.getName();
-        let pokemonDescription = await masterPokemon.getDescription() ?? 'Description not available';
+        let bossTypeName = await boss.getBossTypeName();
+        let battleTypeName = await boss.getBattleTypeName();
+        let pokemonName = await masterPokemon.getName();
+        let pokemonDescription =
+            (await masterPokemon.getDescription()) ?? 'Description not available';
 
         let title = `${bossTypeName}: `;
 
@@ -192,10 +209,18 @@ export class Battle extends DrossDatabaseTable {
         title += ` ${emoji.shiny}`;
 
         switch (this.status) {
-            case BattleStatus.Started:   title += ' -- Started'; break;
-            case BattleStatus.Completed: title += ' -- Completed'; break;
-            case BattleStatus.Failed:    title += ' -- Failed'; break;
-            case BattleStatus.Cancelled: title += ' -- Cancelled'; break;
+            case BattleStatus.Started:
+                title += ' -- Started';
+                break;
+            case BattleStatus.Completed:
+                title += ' -- Completed';
+                break;
+            case BattleStatus.Failed:
+                title += ' -- Failed';
+                break;
+            case BattleStatus.Cancelled:
+                title += ' -- Cancelled';
+                break;
         }
 
         let typeColor = masterPokemon.getTypeColor();
@@ -216,15 +241,15 @@ export class Battle extends DrossDatabaseTable {
             link = wikiLink.page;
             thumbnail = wikiLink.image;
         }
-        
+
         if (pogoHubLink) {
             link = pogoHubLink.page;
         }
 
         let hostTrainerCode = hostTrainer.formattedCode || 'N/A';
         let description =
-            `To join this ${battleTypeName.toLowerCase()}, please click join below. `
-          + `If the ${battleTypeName.toLowerCase()} host is not yet on your friends list, please send a friend request to them with the code. ${bold(hostTrainerCode)}.`;
+            `To join this ${battleTypeName.toLowerCase()}, please click join below. ` +
+            `If the ${battleTypeName.toLowerCase()} host is not yet on your friends list, please send a friend request to them with the code. ${bold(hostTrainerCode)}.`;
 
         let pokemonType = await masterPokemon.getTypeName();
         if (masterPokemon.type2 != null) {
@@ -239,23 +264,29 @@ export class Battle extends DrossDatabaseTable {
         let cpL25Max = await masterPokemon.getCombatPower(15, 15, 15, 25);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
-        let cpWb  = `${cpL25Min} - ${cpL25Max}`;
+        let cpWb = `${cpL25Min} - ${cpL25Max}`;
 
         let battleMembersText = 'No Battle Members Yet';
         let battleMembersTextArray = [];
 
         for (const battleMember of battleMembers) {
             if (client.config.options.showBattleMemberTrainerNames) {
-                const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
+                const battleMemberTrainer = await Trainer.getUnique({
+                    discordId: battleMember.discordId,
+                });
                 if (battleMemberTrainer) {
                     battleMembersTextArray.push(battleMemberTrainer.trainerName);
                 }
             } else {
-                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(battleMember.discordId);
-                battleMembersTextArray.push(battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName);
+                const battleMemberDiscordUser = await hostDiscordGuild.members.fetch(
+                    battleMember.discordId
+                );
+                battleMembersTextArray.push(
+                    battleMemberDiscordUser.nickname ?? battleMemberDiscordUser.user.displayName
+                );
             }
         }
-            
+
         if (battleMembersTextArray.length > 0) {
             battleMembersText = battleMembersTextArray.join('\n');
         }
@@ -267,41 +298,37 @@ export class Battle extends DrossDatabaseTable {
             .setColor(typeColor)
             .setTitle(title)
             .setURL(link)
-          //.setAuthor({ name: title, iconURL: thumbnail, url: link })
+            //.setAuthor({ name: title, iconURL: thumbnail, url: link })
             .setDescription(description)
             .setThumbnail(thumbnail);
 
         //DrossDatabase.logger.debug(`Mark 2`);
         const pokedexId = masterPokemon.pokedexId || '?';
-        embed = embed
-            .addFields(
-                { name: 'Pokémon Type', value: pokemonType || 'Unknown', inline: true },
-                { name: 'Pokédex ID', value: pokedexId.toString(), inline: true },
-                { name: 'Shiny', value: boss.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny', inline: true }
-            );
-        
+        embed = embed.addFields(
+            { name: 'Pokémon Type', value: pokemonType || 'Unknown', inline: true },
+            { name: 'Pokédex ID', value: pokedexId.toString(), inline: true },
+            {
+                name: 'Shiny',
+                value: boss.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny',
+                inline: true,
+            }
+        );
+
         //DrossDatabase.logger.debug(`Mark 2`);
-        embed = embed
-            .addFields(
-                { name: 'Description', value: pokemonDescription }
-            );
-        
-        // client 
+        embed = embed.addFields({ name: 'Description', value: pokemonDescription });
+
+        // client
         //DrossDatabase.logger.debug(`Mark 4`);
-        embed = embed
-            .addFields(
-              //{ name: '\u200B', value: '\u200B' },
-              //{ name: 'CP Range', value: '10/10/10 - 15/15/15' },
-                { name: 'CP L20', value: cpReg, inline: true },
-                { name: 'CP L25 (WB)', value: cpWb, inline: true },
-            );
-        
+        embed = embed.addFields(
+            //{ name: '\u200B', value: '\u200B' },
+            //{ name: 'CP Range', value: '10/10/10 - 15/15/15' },
+            { name: 'CP L20', value: cpReg, inline: true },
+            { name: 'CP L25 (WB)', value: cpWb, inline: true }
+        );
+
         //DrossDatabase.logger.debug(`Mark 5`);
-        embed = embed
-            .addFields(
-                { name: 'Battle Members', value: battleMembersText }
-            );
-        
+        embed = embed.addFields({ name: 'Battle Members', value: battleMembersText });
+
         //DrossDatabase.logger.debug(`Mark 5.5`);
 
         let battleStatusText;
@@ -321,20 +348,15 @@ export class Battle extends DrossDatabaseTable {
         }
 
         if (battleStatusText) {
-                embed = embed
-                .addFields(
-                    { name: 'Raid Status', value: battleStatusText }
-                );
+            embed = embed.addFields({ name: 'Raid Status', value: battleStatusText });
         }
 
         //DrossDatabase.logger.debug(`Mark 6`);
-        embed = embed
-            .setTimestamp()
-            .setFooter({ text: `Raid hosted by ${raidHost}` });
-        
+        embed = embed.setTimestamp().setFooter({ text: `Raid hosted by ${raidHost}` });
+
         //DrossDatabase.logger.debug(`Mark 7`);
         return embed;
-    }    
+    }
 }
 
 export default Battle;

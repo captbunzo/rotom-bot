@@ -12,19 +12,16 @@ import {
     StringSelectMenuInteraction,
     StringSelectMenuOptionBuilder,
     TextInputBuilder,
-    TextInputStyle
+    TextInputStyle,
 } from 'discord.js';
 
-import {
-    PokedexEntry,
-    MaxPokedexId
-} from '#src/Constants.js';
+import { PokedexEntry, MaxPokedexId } from '@root/src/constants.js';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 
-import { ComponentIndex, type ComponentIndexData } from '#src/types/ComponentIndex.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
-import PokedexPokemon from '#src/models/PokedexPokemon.js';
+import { ComponentIndex, type ComponentIndexData } from '@/types/ComponentIndex.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
+import PokedexPokemon from '@/models/PokedexPokemon.js';
 
 interface PokedexRegisteryIndexData extends ComponentIndexData {
     pokedexId: number;
@@ -49,21 +46,24 @@ const PokedexRegistryButton = {
     AllAndPrev: 'All & Prev',
     NextPokemon: 'Next',
     Notes: 'Notes',
-    Exit: 'Exit'
-}
+    Exit: 'Exit',
+};
 
 const PokedexRegisteryComponent = {
     name: 'PokedexRegisteryComponent',
 
     // ChatInputCommandInteraction
     async show(interaction: BaseInteraction, masterPokemon: MasterPokemon) {
-        let pokedexPokemon = await PokedexPokemon.getUnique({ discordId: interaction.user.id, pokedexId: masterPokemon.pokedexId });
-        
+        let pokedexPokemon = await PokedexPokemon.getUnique({
+            discordId: interaction.user.id,
+            pokedexId: masterPokemon.pokedexId,
+        });
+
         if (!pokedexPokemon) {
             pokedexPokemon = new PokedexPokemon({
                 discordId: interaction.user.id,
-                pokedexId: masterPokemon.pokedexId
-            })
+                pokedexId: masterPokemon.pokedexId,
+            });
         }
 
         const embed = await pokedexPokemon.buildEmbed(masterPokemon);
@@ -75,50 +75,46 @@ const PokedexRegisteryComponent = {
                 return await interaction.reply({
                     embeds: [embed],
                     components: [...dexEntriesRow, ...actionsRow],
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             } else {
                 return await interaction.followUp({
                     embeds: [embed],
                     components: [...dexEntriesRow, ...actionsRow],
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             }
-            
         } else if (interaction instanceof StringSelectMenuInteraction) {
             const stringSelectMenuInteraction = interaction satisfies StringSelectMenuInteraction;
             return stringSelectMenuInteraction.update({
                 embeds: [embed],
-                components: [...dexEntriesRow, ...actionsRow]
+                components: [...dexEntriesRow, ...actionsRow],
             });
-
         } else if (interaction instanceof ButtonInteraction) {
             const buttonInteraction = interaction satisfies ButtonInteraction;
             return buttonInteraction.update({
                 embeds: [embed],
-                components: [...dexEntriesRow, ...actionsRow]
+                components: [...dexEntriesRow, ...actionsRow],
             });
-
         } else if (interaction instanceof ModalSubmitInteraction) {
             if (interaction.isFromMessage() && interaction.message) {
                 const messageComponentInteraction = interaction satisfies ModalSubmitInteraction;
                 return messageComponentInteraction.update({
                     embeds: [embed],
-                    components: [...dexEntriesRow, ...actionsRow]
+                    components: [...dexEntriesRow, ...actionsRow],
                 });
-
-            } else { 
+            } else {
                 const modalInteraction = interaction satisfies ModalSubmitInteraction;
 
                 if (!modalInteraction.replied) {
                     return modalInteraction.reply({
                         embeds: [embed],
-                        components: [...dexEntriesRow, ...actionsRow]
+                        components: [...dexEntriesRow, ...actionsRow],
                     });
                 } else {
                     return modalInteraction.followUp({
                         embeds: [embed],
-                        components: [...dexEntriesRow, ...actionsRow]
+                        components: [...dexEntriesRow, ...actionsRow],
                     });
                 }
             }
@@ -134,7 +130,7 @@ const PokedexRegisteryComponent = {
         const componentIndex: PokedexRegisteryIndex = new PokedexRegisteryIndex({
             name: this.name,
             id: 'select',
-            pokedexId: pokedexPokemon.pokedexId
+            pokedexId: pokedexPokemon.pokedexId,
         });
 
         const options = [
@@ -184,7 +180,7 @@ const PokedexRegisteryComponent = {
                 .setLabel(PokedexEntry.Purified)
                 .setValue(PokedexEntry.Purified)
                 .setEmoji(emoji.purified)
-                .setDefault(pokedexPokemon.purified ? true : false)
+                .setDefault(pokedexPokemon.purified ? true : false),
         ];
 
         const selectDexEntries = new StringSelectMenuBuilder()
@@ -194,9 +190,10 @@ const PokedexRegisteryComponent = {
             .setMaxValues(options.length)
             .addOptions(options);
 
-        const dexEntriesRow = new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(selectDexEntries);
-        
+        const dexEntriesRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            selectDexEntries
+        );
+
         return [dexEntriesRow];
     },
 
@@ -212,7 +209,7 @@ const PokedexRegisteryComponent = {
         client.logger.dump({
             discordId: discordId,
             pokedexId: pokedexId,
-            values: selectedEntries
+            values: selectedEntries,
         });
 
         const masterPokemon = await MasterPokemon.getUnique({ pokedexId: pokedexId, form: null });
@@ -220,12 +217,15 @@ const PokedexRegisteryComponent = {
             throw new Error(`Master Pokemon not found for pokedex id ${pokedexId}`);
         }
 
-        let pokedexPokemon = await PokedexPokemon.getUnique({ discordId: discordId, pokedexId: pokedexId });
+        let pokedexPokemon = await PokedexPokemon.getUnique({
+            discordId: discordId,
+            pokedexId: pokedexId,
+        });
 
         if (!pokedexPokemon) {
             pokedexPokemon = new PokedexPokemon({
                 discordId: discordId,
-                pokedexId: pokedexId
+                pokedexId: pokedexId,
             });
             await pokedexPokemon.create();
         }
@@ -250,7 +250,7 @@ const PokedexRegisteryComponent = {
         let buttonIndex = new PokedexRegisteryIndex({
             name: this.name,
             id: '',
-            pokedexId: masterPokemon.pokedexId
+            pokedexId: masterPokemon.pokedexId,
         });
 
         // Create the buttons
@@ -274,7 +274,7 @@ const PokedexRegisteryComponent = {
             .setLabel(PokedexRegistryButton.AllAndNext)
             .setStyle(ButtonStyle.Secondary)
             .setEmoji(emoji.all);
-        
+
         buttonIndex.id = PokedexRegistryButton.AllAndPrev;
         const allAndPrevButton = new ButtonBuilder()
             .setCustomId(buttonIndex.toString())
@@ -297,17 +297,36 @@ const PokedexRegisteryComponent = {
             .setEmoji(emoji.exit);
 
         if (masterPokemon.pokedexId === 1) {
-            return [ new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(notesButton, allAndNextButton, nextButton, exitButton) ];
+            return [
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    notesButton,
+                    allAndNextButton,
+                    nextButton,
+                    exitButton
+                ),
+            ];
         }
 
         if (masterPokemon.pokedexId === MaxPokedexId) {
-            return [ new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(prevButton, allAndPrevButton, notesButton, exitButton) ];
+            return [
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    prevButton,
+                    allAndPrevButton,
+                    notesButton,
+                    exitButton
+                ),
+            ];
         }
 
-        return [ new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(prevButton, notesButton, allAndNextButton, nextButton, exitButton) ];
+        return [
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+                prevButton,
+                notesButton,
+                allAndNextButton,
+                nextButton,
+                exitButton
+            ),
+        ];
     },
 
     async handleButton(interaction: ButtonInteraction) {
@@ -317,13 +336,19 @@ const PokedexRegisteryComponent = {
         if (!buttonIndex.pokedexId) {
             return await interaction.reply({
                 content: 'Could not get the current Pokédex ID',
-                ephemeral: true
+                ephemeral: true,
             });
         }
 
-        let pokedexPokemon =await PokedexPokemon.getUnique({ discordId: interaction.user.id, pokedexId: pokedexId });
+        let pokedexPokemon = await PokedexPokemon.getUnique({
+            discordId: interaction.user.id,
+            pokedexId: pokedexId,
+        });
         if (!pokedexPokemon) {
-            pokedexPokemon = new PokedexPokemon({ discordId: interaction.user.id, pokedexId: pokedexId });
+            pokedexPokemon = new PokedexPokemon({
+                discordId: interaction.user.id,
+                pokedexId: pokedexId,
+            });
             await pokedexPokemon.create();
         }
 
@@ -332,43 +357,58 @@ const PokedexRegisteryComponent = {
             return await interaction.showModal(modal);
         }
 
-        if (buttonIndex.id === PokedexRegistryButton.AllAndNext || buttonIndex.id === PokedexRegistryButton.AllAndPrev) {
+        if (
+            buttonIndex.id === PokedexRegistryButton.AllAndNext ||
+            buttonIndex.id === PokedexRegistryButton.AllAndPrev
+        ) {
             pokedexPokemon.setAllEntries();
             await pokedexPokemon.update();
         }
 
-        if (buttonIndex.id === PokedexRegistryButton.NextPokemon || buttonIndex.id === PokedexRegistryButton.AllAndNext) {
+        if (
+            buttonIndex.id === PokedexRegistryButton.NextPokemon ||
+            buttonIndex.id === PokedexRegistryButton.AllAndNext
+        ) {
             if (pokedexId === MaxPokedexId) {
                 return await interaction.reply({
                     content: 'You are at the last Pokémon',
-                    ephemeral: true
+                    ephemeral: true,
                 });
             }
 
-            const masterPokemon = await MasterPokemon.getUnique({ pokedexId: pokedexId + 1, form: null });
+            const masterPokemon = await MasterPokemon.getUnique({
+                pokedexId: pokedexId + 1,
+                form: null,
+            });
             if (!masterPokemon) {
                 return await interaction.reply({
                     content: `Could not get Pokémon for Pokédex ID ${pokedexId + 1}`,
-                    ephemeral: true
+                    ephemeral: true,
                 });
             }
 
             return this.show(interaction, masterPokemon);
         }
 
-        if (buttonIndex.id === PokedexRegistryButton.PrevPokemon || buttonIndex.id === PokedexRegistryButton.AllAndPrev) {
+        if (
+            buttonIndex.id === PokedexRegistryButton.PrevPokemon ||
+            buttonIndex.id === PokedexRegistryButton.AllAndPrev
+        ) {
             if (pokedexId === 1) {
                 return await interaction.reply({
                     content: 'You are at the first Pokémon',
-                    ephemeral: true
+                    ephemeral: true,
                 });
             }
 
-            const masterPokemon = await MasterPokemon.getUnique({ pokedexId: pokedexId - 1, form: null });
+            const masterPokemon = await MasterPokemon.getUnique({
+                pokedexId: pokedexId - 1,
+                form: null,
+            });
             if (!masterPokemon) {
                 return await interaction.reply({
                     content: `Could not get Pokémon for Pokédex ID ${pokedexId - 1}`,
-                    ephemeral: true
+                    ephemeral: true,
                 });
             }
 
@@ -378,7 +418,7 @@ const PokedexRegisteryComponent = {
         if (buttonIndex.id === PokedexRegistryButton.Exit) {
             return await interaction.update({
                 embeds: [await pokedexPokemon.buildEmbed()],
-                components: []
+                components: [],
             });
         }
 
@@ -389,7 +429,7 @@ const PokedexRegisteryComponent = {
         const modalIndex = new PokedexRegisteryIndex({
             name: this.name,
             id: 'modal',
-            pokedexId: pokedexPokemon.pokedexId
+            pokedexId: pokedexPokemon.pokedexId,
         });
 
         const modal = new ModalBuilder()
@@ -401,14 +441,12 @@ const PokedexRegisteryComponent = {
             .setLabel('Notes')
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(false);
-        
+
         if (pokedexPokemon.notes) {
             notesInput.setValue(pokedexPokemon.notes);
         }
 
-        modal.addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(notesInput)
-        );
+        modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(notesInput));
 
         return modal;
     },
@@ -420,13 +458,13 @@ const PokedexRegisteryComponent = {
 
         const pokedexPokemon = await PokedexPokemon.getUnique({
             discordId: interaction.user.id,
-            pokedexId: pokedexId
+            pokedexId: pokedexId,
         });
 
         if (!pokedexPokemon) {
             return await interaction.reply({
                 content: `Could not find Pokédex entry for Pokédex ID ${pokedexId}`,
-                ephemeral: true
+                ephemeral: true,
             });
         }
 
@@ -437,12 +475,12 @@ const PokedexRegisteryComponent = {
         if (!masterPokemon) {
             return await interaction.reply({
                 content: `Could not find Master Pokémon for Pokédex ID ${pokedexId}`,
-                ephemeral: true
+                ephemeral: true,
             });
         }
 
         return this.show(interaction, masterPokemon);
-    }
-}
+    },
+};
 
 export default PokedexRegisteryComponent;

@@ -1,20 +1,15 @@
-import {
-    EmbedBuilder
-} from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
-import {
-    DrossDatabaseTable,
-    DrossFieldType
-} from '@drossjs/dross-database';
+import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import Client from '#src/Client.js';
-import StringFunctions from '#src/functions/StringFunctions.js';
+import Client from '@root/src/client.js';
+import StringFunctions from '@/functions/StringFunctions.js';
 
-import MasterCPM     from '#src/models/MasterCPM.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
-import PogoHubLink   from '#src/models/PogoHubLink.js';
-import WikiLink      from '#src/models/WikiLink.js';
-import Translation   from '#src/models/Translation.js';
+import MasterCPM from '@/models/MasterCPM.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
+import PogoHubLink from '@/models/PogoHubLink.js';
+import WikiLink from '@/models/WikiLink.js';
+import Translation from '@/models/Translation.js';
 
 export interface BossData {
     id: string;
@@ -47,72 +42,112 @@ export class Boss extends DrossDatabaseTable {
         tableName: 'boss',
         orderBy: ['id'],
         fields: {
-            'id':           { type: DrossFieldType.String,  nullable: false, length: 64 },
-            'boss_type':    { type: DrossFieldType.String,  nullable: false, length: 10 },
-            'pokemon_id':   { type: DrossFieldType.String,  nullable: false, length: 20 },
-            'form':         { type: DrossFieldType.String,  nullable: true,  length: 64 },
-            'tier':         { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
-            'is_mega':      { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
-            'is_shadow':    { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
-            'is_active':    { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
-            'is_shinyable': { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
-            'template_id':  { type: DrossFieldType.String,  nullable: false, length: 64 }
+            id: { type: DrossFieldType.String, nullable: false, length: 64 },
+            boss_type: { type: DrossFieldType.String, nullable: false, length: 10 },
+            pokemon_id: { type: DrossFieldType.String, nullable: false, length: 20 },
+            form: { type: DrossFieldType.String, nullable: true, length: 64 },
+            tier: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_mega: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_shadow: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_active: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_shinyable: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            template_id: { type: DrossFieldType.String, nullable: false, length: 64 },
         },
-        primaryKey: ['id']
+        primaryKey: ['id'],
     });
-    
+
     constructor(data: BossData) {
         super(data);
     }
-    
+
     /***********
      * Getters *
      ***********/
 
-    get id          (): string        { return this.getField('id'); }
-    get bossType    (): string        { return this.getField('bossType'); }
-    get pokemonId   (): string        { return this.getField('pokemonId'); }
-    get form        (): string | null { return this.getField('form'); }
-    get tier        (): number        { return this.getField('tier'); }
-    get isMega      (): boolean       { return this.getField('isMega'); }
-    get isShadow    (): boolean       { return this.getField('isShadow'); }
-    get isActive    (): boolean       { return this.getField('isActive'); }
-    get isShinyable (): boolean       { return this.getField('isShinyable'); }
-    get templateId  (): string        { return this.getField('templateId'); }
+    get id(): string {
+        return this.getField('id');
+    }
+    get bossType(): string {
+        return this.getField('bossType');
+    }
+    get pokemonId(): string {
+        return this.getField('pokemonId');
+    }
+    get form(): string | null {
+        return this.getField('form');
+    }
+    get tier(): number {
+        return this.getField('tier');
+    }
+    get isMega(): boolean {
+        return this.getField('isMega');
+    }
+    get isShadow(): boolean {
+        return this.getField('isShadow');
+    }
+    get isActive(): boolean {
+        return this.getField('isActive');
+    }
+    get isShinyable(): boolean {
+        return this.getField('isShinyable');
+    }
+    get templateId(): string {
+        return this.getField('templateId');
+    }
 
-    get bossTypeName (): string {
+    get bossTypeName(): string {
         return Translation.getBossTypeName(this.bossType);
     }
 
-    get battleTypeName (): string {
+    get battleTypeName(): string {
         return Translation.getBattleTypeName(this.bossType);
     }
 
     /***********
      * Setters *
      ***********/
-    
-    set id          ( value: string        ) { this.setField('id', value) }
-    set bossType    ( value: string        ) { this.setField('bossType', value) }
-    set pokemonId   ( value: string        ) { this.setField('pokemonId', value) }
-    set form        ( value: string | null ) { this.setField('form', value) }
-    set tier        ( value: number        ) { this.setField('tier', value) }
-    set isMega      ( value: boolean       ) { this.setField('isMega', value) }
-    set isShadow    ( value: boolean       ) { this.setField('isShadow', value) }
-    set isActive    ( value: boolean       ) { this.setField('isActive', value) }
-    set isShinyable ( value: boolean       ) { this.setField('isShinyable', value) }
-    set templateId  ( value: string        ) { this.setField('templateId', value) }
-    
+
+    set id(value: string) {
+        this.setField('id', value);
+    }
+    set bossType(value: string) {
+        this.setField('bossType', value);
+    }
+    set pokemonId(value: string) {
+        this.setField('pokemonId', value);
+    }
+    set form(value: string | null) {
+        this.setField('form', value);
+    }
+    set tier(value: number) {
+        this.setField('tier', value);
+    }
+    set isMega(value: boolean) {
+        this.setField('isMega', value);
+    }
+    set isShadow(value: boolean) {
+        this.setField('isShadow', value);
+    }
+    set isActive(value: boolean) {
+        this.setField('isActive', value);
+    }
+    set isShinyable(value: boolean) {
+        this.setField('isShinyable', value);
+    }
+    set templateId(value: string) {
+        this.setField('templateId', value);
+    }
+
     /**************************
      * Class Method Overrides *
      **************************/
 
     static override async get(conditions: BossConditions = {}, orderBy = this.schema.orderBy) {
-        return await super.get(conditions, orderBy) as Boss[];
+        return (await super.get(conditions, orderBy)) as Boss[];
     }
 
     static override async getUnique(conditions: BossConditions = {}) {
-        return await super.getUnique(conditions) as Boss | null;
+        return (await super.getUnique(conditions)) as Boss | null;
     }
 
     /*****************************
@@ -130,7 +165,7 @@ export class Boss extends DrossDatabaseTable {
     /*****************
      * Class Methods *
      *****************/
-        
+
     static async getPokemonIdChoices(pokemonIdPrefix: string, conditions: BossConditions = {}) {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }
@@ -146,11 +181,11 @@ export class Boss extends DrossDatabaseTable {
     /********************
      * Instance Methods *
      ********************/
-        
+
     async getBossTypeName() {
         return await Translation.getBossTypeName(this.bossType);
     }
-    
+
     async getBattleTypeName() {
         return await Translation.getBattleTypeName(this.bossType);
     }
@@ -177,7 +212,7 @@ export class Boss extends DrossDatabaseTable {
         this.database.logger.dump(masterPokemon);
 
         let bossTypeName = await this.getBossTypeName();
-        let pokemonName  = await masterPokemon.getName();
+        let pokemonName = await masterPokemon.getName();
 
         let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
 
@@ -216,7 +251,7 @@ export class Boss extends DrossDatabaseTable {
             link = wikiLink.page;
             thumbnail = wikiLink.image;
         }
-        
+
         if (pogoHubLink) {
             link = pogoHubLink.page;
         }
@@ -225,7 +260,8 @@ export class Boss extends DrossDatabaseTable {
             pokemonType += ` / ${await masterPokemon.getType2Name()}`;
         }
 
-        let pokemonForm = masterPokemon.form != null ? StringFunctions.titleCase(masterPokemon.form) : 'No Form';
+        let pokemonForm =
+            masterPokemon.form != null ? StringFunctions.titleCase(masterPokemon.form) : 'No Form';
 
         if (!pokemonType) {
             throw new Error(`No Pokémon type found for Pokémon ID ${this.pokemonId}`);
@@ -237,7 +273,7 @@ export class Boss extends DrossDatabaseTable {
         let cpL25Max = await MasterCPM.getCombatPower(masterPokemon, 15, 15, 15, 25);
 
         let cpReg = `${cpL20Min} - ${cpL20Max}`;
-        let cpWb  = `${cpL25Min} - ${cpL25Max}`;
+        let cpWb = `${cpL25Min} - ${cpL25Max}`;
 
         this.database.logger.debug(`link = ${link}`);
         this.database.logger.debug(`thumbnail = ${thumbnail}`);
@@ -245,43 +281,43 @@ export class Boss extends DrossDatabaseTable {
         this.database.logger.debug(`pokemonForm = ${pokemonForm}`);
         this.database.logger.debug(`typeColor = ${typeColor}`);
 
-        let embed =  new EmbedBuilder()
+        let embed = new EmbedBuilder()
             .setColor(typeColor)
             .setTitle(title)
             .setURL(link)
-          //.setAuthor({ name: 'Some name', iconURL: thumbnail, url: link })
-          //.setDescription(`To join this raid, please click join below. If the raid host is not yet on your friends list, please send a friend request to them with the code ${hostTrainerCode}.`)
+            //.setAuthor({ name: 'Some name', iconURL: thumbnail, url: link })
+            //.setDescription(`To join this raid, please click join below. If the raid host is not yet on your friends list, please send a friend request to them with the code ${hostTrainerCode}.`)
             .setThumbnail(thumbnail);
-        
-        embed = embed
-            .addFields(
-                { name: 'Boss ID', value: this.id },
-                { name: 'Pokémon Type', value: pokemonType },
-                { name: 'Pokémon Form', value: pokemonForm},
-            );
-        
+
+        embed = embed.addFields(
+            { name: 'Boss ID', value: this.id },
+            { name: 'Pokémon Type', value: pokemonType },
+            { name: 'Pokémon Form', value: pokemonForm }
+        );
+
         console.debug(`isShinyable = ${this.isShinyable}`);
         console.debug(`isActive = ${this.isActive}`);
         console.debug(`tier = ${this.tier}`);
 
-        embed = embed
-            .addFields(
-                { name: 'Tier', value: `${this.tier}`, inline: true },
-                { name: 'Shiny', value: `${this.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny'}`, inline: true },
-                { name: 'Status', value: `${this.isActive ? 'Active' : 'Inactive'}`, inline: true },
-                { name: 'Mega', value: `${this.isMega ? 'Yes' : 'No'}`, inline: true },
-                { name: 'Shadow', value: `${this.isShadow ? 'Yes' : 'No'}`, inline: true }
-            );
-        
-        embed = embed
-            .addFields(
-                { name: 'CP Range', value: '10/10/10 - 15/15/15' },
-                { name: 'CP L20', value: cpReg, inline: true },
-                { name: 'CP L25 (WB)', value: cpWb, inline: true }
-            );
-        
-        embed = embed
-            .setTimestamp()
+        embed = embed.addFields(
+            { name: 'Tier', value: `${this.tier}`, inline: true },
+            {
+                name: 'Shiny',
+                value: `${this.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny'}`,
+                inline: true,
+            },
+            { name: 'Status', value: `${this.isActive ? 'Active' : 'Inactive'}`, inline: true },
+            { name: 'Mega', value: `${this.isMega ? 'Yes' : 'No'}`, inline: true },
+            { name: 'Shadow', value: `${this.isShadow ? 'Yes' : 'No'}`, inline: true }
+        );
+
+        embed = embed.addFields(
+            { name: 'CP Range', value: '10/10/10 - 15/15/15' },
+            { name: 'CP L20', value: cpReg, inline: true },
+            { name: 'CP L25 (WB)', value: cpWb, inline: true }
+        );
+
+        embed = embed.setTimestamp();
 
         return embed;
     }

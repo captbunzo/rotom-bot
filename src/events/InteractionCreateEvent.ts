@@ -1,165 +1,187 @@
-import type {
-	 Interaction
-} from 'discord.js';
+import type { Interaction } from 'discord.js';
 
 import {
-	AutocompleteInteraction,
-	ButtonInteraction,
-	ChatInputCommandInteraction,
-	Events,
-	MessageFlags,
-	ModalSubmitInteraction,
-	StringSelectMenuInteraction
+    AutocompleteInteraction,
+    ButtonInteraction,
+    ChatInputCommandInteraction,
+    Events,
+    MessageFlags,
+    ModalSubmitInteraction,
+    StringSelectMenuInteraction,
 } from 'discord.js';
 
-import Client from '#src/Client.js';
-import ComponentIndex from '#src/types/ComponentIndex.js';
+import Client from '@root/src/client.js';
+import ComponentIndex from '@/types/ComponentIndex.js';
 
 const InteractionCreateEvent = {
-	name: Events.InteractionCreate,
+    name: Events.InteractionCreate,
 
-	async execute(interaction: Interaction) {
-		if (interaction.isChatInputCommand() ) {
-			return await this.executeChatInputCommandInteraction(interaction);
+    async execute(interaction: Interaction) {
+        if (interaction.isChatInputCommand()) {
+            return await this.executeChatInputCommandInteraction(interaction);
+        } else if (interaction.isAutocomplete()) {
+            return await this.executeAutocompleteInteraction(interaction);
+        } else if (interaction.isButton()) {
+            return await this.executeButtonInteraction(interaction);
+        } else if (interaction.isStringSelectMenu()) {
+            return await this.executeStringSelectMenuInteraction(interaction);
+        } else if (interaction.isModalSubmit()) {
+            return await this.executeModalSubmitInteraction(interaction);
+        }
+    },
 
-		} else if (interaction.isAutocomplete()) {
-			return await this.executeAutocompleteInteraction(interaction);
+    async executeChatInputCommandInteraction(interaction: ChatInputCommandInteraction) {
+        const client = interaction.client as Client;
+        const command = client.commands.get(interaction.commandName);
 
-		} else if (interaction.isButton()) {
-			return await this.executeButtonInteraction(interaction);
+        if (!command) {
+            client.logger.error(`No command matching ${interaction.commandName} was found`);
+            return;
+        }
 
-		} else if (interaction.isStringSelectMenu()) {
-			return await this.executeStringSelectMenuInteraction(interaction);
+        if (!command.execute) {
+            client.logger.error(
+                `Command ${interaction.commandName} does not have an execute function`
+            );
+            return;
+        }
 
-		} else if (interaction.isModalSubmit()) {
-			return await this.executeModalSubmitInteraction(interaction);
-		}
-	},
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            client.logger.error(`Error executing command ${interaction.commandName}`);
+            client.logger.dump(error);
 
-	async executeChatInputCommandInteraction(interaction: ChatInputCommandInteraction) {
-		const client = interaction.client as Client;
-		const command = client.commands.get(interaction.commandName);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    content: 'There was an error while executing this command!',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } else {
+                await interaction.reply({
+                    content: 'There was an error while executing this command!',
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
+        }
+    },
 
-		if (!command) {
-			client.logger.error(`No command matching ${interaction.commandName} was found`);
-			return;
-		}
-		
-		if (!command.execute) {
-			client.logger.error(`Command ${interaction.commandName} does not have an execute function`);
-			return;
-		}
-		
-		try {
-			await command.execute(interaction);
-		} catch (error) {
-			client.logger.error(`Error executing command ${interaction.commandName}`);
-			client.logger.dump(error);
+    async executeAutocompleteInteraction(interaction: AutocompleteInteraction) {
+        const client = interaction.client as unknown as Client;
+        const command = client.commands.get(interaction.commandName);
 
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-			} else {
-				await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-			}
-		}
-	},
+        if (!command) {
+            client.logger.error(`No command matching ${interaction.commandName} was found`);
+            return;
+        }
 
-	async executeAutocompleteInteraction(interaction: AutocompleteInteraction) {
-		const client = interaction.client as unknown as Client;
-		const command = client.commands.get(interaction.commandName);
+        if (!command.autocomplete) {
+            client.logger.error(
+                `Command ${interaction.commandName} does not have an autocomplete function`
+            );
+            return;
+        }
 
-		if (!command) {
-			client.logger.error(`No command matching ${interaction.commandName} was found`);
-			return;
-		}
+        try {
+            await command.autocomplete(interaction);
+        } catch (error) {
+            client.logger.error(`Error autocompleting command ${interaction.commandName}`);
+            client.logger.dump(error);
+        }
+    },
 
-		if (!command.autocomplete) {
-			client.logger.error(`Command ${interaction.commandName} does not have an autocomplete function`);
-			return;
-		}
+    async executeButtonInteraction(interaction: ButtonInteraction) {
+        const client = interaction.client as unknown as Client;
+        const componentIndex = ComponentIndex.parse(interaction.customId);
+        const button = client.buttons.get(componentIndex.name);
 
-		try {
-			await command.autocomplete(interaction);
-		} catch (error) {
-			client.logger.error(`Error autocompleting command ${interaction.commandName}`);
-			client.logger.dump(error);
-		}
-	},
+        if (!button) {
+            client.logger.error(`Button not found: ${componentIndex.name}`);
+            return;
+        }
 
-	async executeButtonInteraction(interaction: ButtonInteraction) {
-		const client = interaction.client as unknown as Client;
-		const componentIndex = ComponentIndex.parse(interaction.customId);
-		const button = client.buttons.get(componentIndex.name);
+        try {
+            await button.handleButton(interaction);
+        } catch (error) {
+            client.logger.error('Error handling button interaction');
+            client.logger.dump(componentIndex);
+            client.logger.dump(error);
 
-		if (!button) {
-			client.logger.error(`Button not found: ${componentIndex.name}`);
-			return;
-		}
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: 'Error processing button click',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } else {
+                await interaction.followUp({
+                    content: 'Error processing button click',
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
+        }
+    },
 
-		try {
-			await button.handleButton(interaction);
-		} catch (error) {
-			client.logger.error('Error handling button interaction');
-			client.logger.dump(componentIndex);
-			client.logger.dump(error);
+    async executeStringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
+        const client = interaction.client as unknown as Client;
+        const componentIndex = ComponentIndex.parse(interaction.customId);
+        const select = client.selects.get(componentIndex.name);
 
-			if (!interaction.replied && !interaction.deferred) {
-				await interaction.reply({ content: 'Error processing button click', flags: MessageFlags.Ephemeral });
-			} else {
-				await interaction.followUp({ content: 'Error processing button click', flags: MessageFlags.Ephemeral });
-			}
-		}
-	},
+        if (!select) {
+            client.logger.error(`Select not found: ${componentIndex.name}`);
+            return;
+        }
 
-	async executeStringSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
-		const client = interaction.client as unknown as Client;
-		const componentIndex = ComponentIndex.parse(interaction.customId);
-		const select = client.selects.get(componentIndex.name);
+        try {
+            await select.handleStringSelectMenu(interaction);
+        } catch (error) {
+            client.logger.error('Error handling string select menu interaction');
+            client.logger.dump(componentIndex);
+            client.logger.dump(error);
 
-		if (!select) {
-			client.logger.error(`Select not found: ${componentIndex.name}`);
-			return;
-		}
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: 'Error processing selections',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } else {
+                await interaction.followUp({
+                    content: 'Error processing selections',
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
+        }
+    },
 
-		try {
-			await select.handleStringSelectMenu(interaction);
-		} catch (error) {
-			client.logger.error('Error handling string select menu interaction');
-			client.logger.dump(componentIndex);
-			client.logger.dump(error);
+    async executeModalSubmitInteraction(interaction: ModalSubmitInteraction) {
+        const client = interaction.client as unknown as Client;
+        const componentIndex = ComponentIndex.parse(interaction.customId);
+        const modal = client.modals.get(componentIndex.name);
 
-			if (!interaction.replied && !interaction.deferred) {
-				await interaction.reply({ content: 'Error processing selections', flags: MessageFlags.Ephemeral });
-			} else {
-				await interaction.followUp({ content: 'Error processing selections', flags: MessageFlags.Ephemeral });
-			}
-		}
-	},
+        if (!modal) {
+            client.logger.error(`Modal not found: ${componentIndex.name}`);
+            return;
+        }
 
-	async executeModalSubmitInteraction(interaction: ModalSubmitInteraction) {
-		const client = interaction.client as unknown as Client;
-		const componentIndex = ComponentIndex.parse(interaction.customId);
-		const modal = client.modals.get(componentIndex.name);
+        try {
+            await modal.handleModalSubmit(interaction);
+        } catch (error) {
+            client.logger.error('Error handling modal submit interaction');
+            client.logger.dump(componentIndex);
+            client.logger.dump(error);
 
-		if (!modal) {
-			client.logger.error(`Modal not found: ${componentIndex.name}`);
-			return;
-		}
-
-		try {
-			await modal.handleModalSubmit(interaction);
-		} catch (error) {
-			client.logger.error('Error handling modal submit interaction');
-			client.logger.dump(componentIndex);
-			client.logger.dump(error);
-			
-			if (!interaction.replied && !interaction.deferred) {
-				await interaction.reply({ content: 'Error processing submission', flags: MessageFlags.Ephemeral });
-			} else {
-				await interaction.followUp({ content: 'Error processing submission', flags: MessageFlags.Ephemeral });
-			}
-		}
-	}
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({
+                    content: 'Error processing submission',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } else {
+                await interaction.followUp({
+                    content: 'Error processing submission',
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
+        }
+    },
 };
 
 export default InteractionCreateEvent;

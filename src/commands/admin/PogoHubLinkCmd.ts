@@ -1,17 +1,13 @@
 import path from 'node:path';
 import { readFileSync } from 'fs';
 
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder
-} from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
-import Client from '#src/Client.js';
-import { InterimLoadUpdates } from '#src/Constants.js';
+import Client from '@root/src/client.js';
+import { InterimLoadUpdates } from '@root/src/constants.js';
 
-import MasterPokemon, { type MasterPokemonConditions } from '#src/models/MasterPokemon.js';
-import PogoHubLink   from '#src/models/PogoHubLink.js';
+import MasterPokemon, { type MasterPokemonConditions } from '@/models/MasterPokemon.js';
+import PogoHubLink from '@/models/PogoHubLink.js';
 
 const FormDirectMappings = [
     { rawForm: 'Paldean_Aqua_Breed', pokemonId: 128, form: 'PALDEA_AQUA' }, // Paldean Tauros (Aqua Breed)
@@ -20,7 +16,7 @@ const FormDirectMappings = [
     { rawForm: 'Armored', pokemonId: 150, form: 'A' }, // Armored Mewtwo
     { rawForm: 'Shield_Form', pokemonId: 681, form: 'SHIELD' }, // Aegislash Shield Forme
     { rawForm: 'Sword_Form', pokemonId: 681, form: 'BLADE' }, // Aegislash Sword Forme
-    { rawForm: 'Pa\'u', pokemonId: 741, form: 'PAU' }, // Oricorio (Pa'u)
+    { rawForm: "Pa'u", pokemonId: 741, form: 'PAU' }, // Oricorio (Pa'u)
     { rawForm: 'Pom-Pom', pokemonId: 741, form: 'POMPOM' }, // Oricorio (Pom-Pom)
     { rawForm: 'Meteor', pokemonId: 774, form: null }, // Minior (Meteor Form)
     { rawForm: 'Male', pokemonId: 916, form: 'NORMAL' }, // Oinkologne (Male)
@@ -34,33 +30,34 @@ const FormDirectMappings = [
     { rawForm: 'Three-Segment_Form', pokemonId: 982, form: 'THREE' }, // Dudunsparce (Three-Segment Form)
     { rawForm: 'Two-Segment_Form', pokemonId: 982, form: 'TWO' }, // Dudunsparce (Two-Segment Form)
     { rawForm: 'Chest', pokemonId: 999, form: null }, // Chest Form Gimmighoul
-    { rawForm: 'Roaming', pokemonId: 999, form: null } // Roaming Form Gimmighoul
+    { rawForm: 'Roaming', pokemonId: 999, form: null }, // Roaming Form Gimmighoul
 ];
 
 // TODO - Figure out how to scrape the image URLs
 
 const PogoHubLinkCmd = {
     global: false,
-	data: new SlashCommandBuilder()
-		.setName('pogo-hub-link')
-		.setDescription('Manage Pogo Hub Link data')
-        .addSubcommand(subCommand => subCommand
-            .setName('load')
-            .setDescription('Load Pogo Hub Link data file')
+    data: new SlashCommandBuilder()
+        .setName('pogo-hub-link')
+        .setDescription('Manage Pogo Hub Link data')
+        .addSubcommand((subCommand) =>
+            subCommand.setName('load').setDescription('Load Pogo Hub Link data file')
         ),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load' : this.executeLoad(interaction); break;
-            default :
+            case 'load':
+                this.executeLoad(interaction);
+                break;
+            default:
                 await interaction.reply({
                     content: `Pogo Hub Link management command execution not yet implemented for subcommand -- ${subCommand}`,
-                    flags: MessageFlags.Ephemeral
-                }); 
+                    flags: MessageFlags.Ephemeral,
+                });
         }
-	},
+    },
 
     /**********************/
     /* Subcommand :: Load */
@@ -68,11 +65,11 @@ const PogoHubLinkCmd = {
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
-        const table  = 'pogo_hub_link';
-        const file   = path.join(client.config.data_directory, 'pogo_hub_links.txt');
+        const table = 'pogo_hub_link';
+        const file = path.join(client.config.data_directory, 'pogo_hub_links.txt');
 
         await interaction.reply({ content: `Starting load of ${table} table` });
-        let pogoHubLinkFile = readFileSync(file).toString()
+        let pogoHubLinkFile = readFileSync(file).toString();
 
         //client.logger.debug(`wikiLinkFile`);
         //client.logger.dump(pogoHubLinkFile);
@@ -83,10 +80,10 @@ const PogoHubLinkCmd = {
         const idNotProcessed = [];
 
         let processedCount = 0;
-        let loadedCount    = 0;
+        let loadedCount = 0;
 
         let followUpMsg = await interaction.followUp({
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
         });
 
         for (const pogoHubLinkLine of pogoHubLinkLines) {
@@ -102,21 +99,22 @@ const PogoHubLinkCmd = {
             if (!pogoHubLinkLine) {
                 continue;
             }
-            
+
             const pogoHubLinkParts: string[] = pogoHubLinkLine.split('|');
-            if ( pogoHubLinkParts.length != 4
-                || !pogoHubLinkParts[0]
-                || !pogoHubLinkParts[1]
-                || !pogoHubLinkParts[2]
+            if (
+                pogoHubLinkParts.length != 4 ||
+                !pogoHubLinkParts[0] ||
+                !pogoHubLinkParts[1] ||
+                !pogoHubLinkParts[2]
             ) {
                 continue;
             }
 
-            let pokedexId : number        = parseInt(pogoHubLinkParts[0].trim());
-            let id        : string        = pogoHubLinkParts[1].trim();
-            let page      : string        = pogoHubLinkParts[2].trim();
-            let rawForm   : string | null = pogoHubLinkParts[3]?.trim() || null;
-            let form      : string | null = rawForm?.toUpperCase() || null;
+            let pokedexId: number = parseInt(pogoHubLinkParts[0].trim());
+            let id: string = pogoHubLinkParts[1].trim();
+            let page: string = pogoHubLinkParts[2].trim();
+            let rawForm: string | null = pogoHubLinkParts[3]?.trim() || null;
+            let form: string | null = rawForm?.toUpperCase() || null;
 
             if (!rawForm || rawForm.length === 0) {
                 rawForm = null;
@@ -134,13 +132,13 @@ const PogoHubLinkCmd = {
                     isMega = true;
                     form = null;
                     break;
-                
+
                 case 'Gigantamax':
                     isGigantamax = true;
                     form = null;
                     break;
             }
-            
+
             // Only match one special case
             // @ts-expect-error
             let keepCheckingTransforms = true;
@@ -165,7 +163,7 @@ const PogoHubLinkCmd = {
             // See if we can find the master pokemon record
             const masterPokemonSearchObj: MasterPokemonConditions = {
                 pokedexId: pokedexId,
-                form: form
+                form: form,
             };
             const masterPokemon = await MasterPokemon.getUnique(masterPokemonSearchObj);
 
@@ -177,37 +175,37 @@ const PogoHubLinkCmd = {
                 idNotProcessed.push(pokedexId);
             } else {
                 loadedCount++;
-            
+
                 const pogoHubLinkObj = {
-                    id:           id,
-                    pokemonId:    masterPokemon.pokemonId,
-                    pokedexId:    masterPokemon.pokedexId,
-                    isMega:       isMega,
+                    id: id,
+                    pokemonId: masterPokemon.pokemonId,
+                    pokedexId: masterPokemon.pokedexId,
+                    isMega: isMega,
                     isGigantamax: isGigantamax,
-                    page:         page,
-                    image:        null,
-                    templateId:   masterPokemon.templateId,
-                    form:         masterPokemon.form
+                    page: page,
+                    image: null,
+                    templateId: masterPokemon.templateId,
+                    form: masterPokemon.form,
                 };
-            
+
                 client.logger.debug(`Wiki Link Object`);
                 client.logger.dump(pogoHubLinkObj);
-            
+
                 let wikiLink = await PogoHubLink.getUnique({ id: pogoHubLinkObj.id });
-            
+
                 if (!wikiLink) {
                     wikiLink = new PogoHubLink(pogoHubLinkObj);
                     await wikiLink.create();
                 } else {
-                    wikiLink.pokemonId    = pogoHubLinkObj.pokemonId;
-                    wikiLink.pokedexId    = pogoHubLinkObj.pokedexId;
-                    wikiLink.isMega       = pogoHubLinkObj.isMega;
+                    wikiLink.pokemonId = pogoHubLinkObj.pokemonId;
+                    wikiLink.pokedexId = pogoHubLinkObj.pokedexId;
+                    wikiLink.isMega = pogoHubLinkObj.isMega;
                     wikiLink.isGigantamax = pogoHubLinkObj.isGigantamax;
-                    wikiLink.page         = pogoHubLinkObj.page;
-                    wikiLink.image        = pogoHubLinkObj.image;
-                    wikiLink.templateId   = pogoHubLinkObj.templateId;
-                    wikiLink.form         = pogoHubLinkObj.form;
-            
+                    wikiLink.page = pogoHubLinkObj.page;
+                    wikiLink.image = pogoHubLinkObj.image;
+                    wikiLink.templateId = pogoHubLinkObj.templateId;
+                    wikiLink.form = pogoHubLinkObj.form;
+
                     await wikiLink.update();
                 }
             }
@@ -215,24 +213,24 @@ const PogoHubLinkCmd = {
             if (processedCount % InterimLoadUpdates == 0) {
                 await interaction.editReply({
                     message: followUpMsg,
-                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
                 });
             }
         }
-        
+
         interaction.editReply({
             message: followUpMsg,
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
         });
 
         if (descNotProcessed.length > 0) {
             const uniqueIdNotProcessed = [...new Set(idNotProcessed)];
 
             interaction.followUp({
-                content: `Records skipped:\n\`\`\`${descNotProcessed.join('\n')}\`\`\``
+                content: `Records skipped:\n\`\`\`${descNotProcessed.join('\n')}\`\`\``,
             });
             interaction.followUp({
-                content: `IDs: ${uniqueIdNotProcessed.join(', ')}`
+                content: `IDs: ${uniqueIdNotProcessed.join(', ')}`,
             });
 
             client.logger.debug(`IDs not found: ${descNotProcessed.length}`);
@@ -245,11 +243,11 @@ const PogoHubLinkCmd = {
             client.logger.debug(`ID List: ${uniqueIdNotProcessed.join(', ')}`);
             client.logger.dump('');
         }
-        
+
         interaction.followUp({
-            content: `Load of ${table} table complete`
+            content: `Load of ${table} table complete`,
         });
-    }
+    },
 };
 
 export default PogoHubLinkCmd;

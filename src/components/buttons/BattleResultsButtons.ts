@@ -4,30 +4,27 @@ import {
     ButtonInteraction,
     ButtonStyle,
     MessageFlags,
-    userMention
+    userMention,
 } from 'discord.js';
 
-import {
-    BattleStatus,
-    BattleMemberStatus
-} from '#src/Constants.js';
+import { BattleStatus, BattleMemberStatus } from '@root/src/constants.js';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 
-import type { BattleMemberConditions } from '#src/types/ModelTypes.js';
-import ComponentIndex from '#src/types/ComponentIndex.js';
+import type { BattleMemberConditions } from '@/types/ModelTypes.js';
+import ComponentIndex from '@/types/ComponentIndex.js';
 
-import Battle       from '#src/models/Battle.js';
-import BattleMember from '#src/models/BattleMember.js';
-import Boss         from '#src/models/Boss.js';
-import Trainer      from '#src/models/Trainer.js';
+import Battle from '@/models/Battle.js';
+import BattleMember from '@/models/BattleMember.js';
+import Boss from '@/models/Boss.js';
+import Trainer from '@/models/Trainer.js';
 
 const BattleResultsButton = {
     Won: 'Battle Won',
     Failed: 'Battle Failed',
     NotReceived: 'Invite Not Received',
-    Cancel: 'Cancel'
-}
+    Cancel: 'Cancel',
+};
 
 const BattleResultsButtons = {
     name: 'BattleResultsButtons',
@@ -39,7 +36,7 @@ const BattleResultsButtons = {
 
         const buttonIndex = new ComponentIndex({
             name: this.name,
-            id: 'button'
+            id: 'button',
         });
 
         // Create the buttons
@@ -71,17 +68,21 @@ const BattleResultsButtons = {
             .setStyle(ButtonStyle.Secondary)
             .setEmoji(emoji.cancel);
 
-        return new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(wonButton, failedButton, notReceivedButton, cancelButton);
+        return new ActionRowBuilder<ButtonBuilder>().addComponents(
+            wonButton,
+            failedButton,
+            notReceivedButton,
+            cancelButton
+        );
     },
-    
+
     async handleButton(interaction: ButtonInteraction) {
         const client = interaction.client as Client;
         const message = interaction.message;
         const buttonIndex = ComponentIndex.parse(interaction.customId);
         const action = buttonIndex.id;
 
-        const battle  = await Battle.getUnique({ messageId: message.id });
+        const battle = await Battle.getUnique({ messageId: message.id });
         const trainer = await Trainer.getUnique({ discordId: interaction.user.id });
 
         // Log some stuff for debugging
@@ -100,22 +101,35 @@ const BattleResultsButtons = {
             interaction.reply(Trainer.getSetupTrainerFirstMessage(trainer));
             return;
         }
-        
+
         switch (action) {
-            case BattleResultsButton.Won: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Completed); break;
-            case BattleResultsButton.Failed: this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Failed); break;
-            case BattleResultsButton.NotReceived: this.handleNotReceivedButton(interaction, battle, trainer); break;
-            case BattleResultsButton.Cancel: this.handleCancelButton(interaction, battle, trainer); break;
+            case BattleResultsButton.Won:
+                this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Completed);
+                break;
+            case BattleResultsButton.Failed:
+                this.handleWonOrFailedButton(interaction, battle, trainer, BattleStatus.Failed);
+                break;
+            case BattleResultsButton.NotReceived:
+                this.handleNotReceivedButton(interaction, battle, trainer);
+                break;
+            case BattleResultsButton.Cancel:
+                this.handleCancelButton(interaction, battle, trainer);
+                break;
         }
     },
 
-    async handleWonOrFailedButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer, battleStatus: string) {
+    async handleWonOrFailedButton(
+        interaction: ButtonInteraction,
+        battle: Battle,
+        trainer: Trainer,
+        battleStatus: string
+    ) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);
         }
         const battleTypeName = boss.battleTypeName;
-        
+
         // Check if this is the host or a battle member reporting battle result
         if (battle.hostDiscordId == trainer.discordId) {
             // Update the battle record
@@ -136,18 +150,18 @@ const BattleResultsButtons = {
 
             const battleEmbed = await battle.buildEmbed();
             await interaction.update({
-                embeds: [battleEmbed]
+                embeds: [battleEmbed],
             });
 
             await interaction.followUp({
                 content: `${battleTypeName} marked as ${battleStatusText}`,
-                flags: MessageFlags.Ephemeral
-        });
-            } else {
+                flags: MessageFlags.Ephemeral,
+            });
+        } else {
             // Update the battle member record
             const battleMemberSearchObj: BattleMemberConditions = {
                 battleId: battle.id,
-                discordId: trainer.discordId
+                discordId: trainer.discordId,
             };
 
             const battleMember = await BattleMember.getUnique(battleMemberSearchObj);
@@ -155,11 +169,11 @@ const BattleResultsButtons = {
             if (!battleMember) {
                 await interaction.reply({
                     content: `You have not joined this ${battleTypeName.toLowerCase()}`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
-            
+
             let battleStatusText;
             switch (battleStatus) {
                 case BattleStatus.Completed:
@@ -177,23 +191,27 @@ const BattleResultsButtons = {
 
             await interaction.reply({
                 content: `${battleTypeName} marked as ${battleStatusText}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
         }
     },
 
-    async handleNotReceivedButton(interaction: ButtonInteraction, battle: Battle, trainer: Trainer) {
+    async handleNotReceivedButton(
+        interaction: ButtonInteraction,
+        battle: Battle,
+        trainer: Trainer
+    ) {
         const boss = await Boss.getUnique({ id: battle.bossId });
         if (!boss) {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);
         }
         const battleTypeName = boss.battleTypeName;
-        
+
         // Only battle members can click the not received button
         if (battle.hostDiscordId == trainer.discordId) {
             await interaction.reply({
                 content: `Only battle members can indicate that they did not receive an invite`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -201,14 +219,14 @@ const BattleResultsButtons = {
         // Check if this trainer has not joined the raid
         const battleMemberSearchObj: BattleMemberConditions = {
             battleId: battle.id,
-            discordId: trainer.discordId
+            discordId: trainer.discordId,
         };
         const battleMember = await BattleMember.getUnique(battleMemberSearchObj);
 
         if (!battleMember) {
             await interaction.reply({
                 content: `You have not joined this ${battleTypeName.toLowerCase()}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -218,8 +236,8 @@ const BattleResultsButtons = {
         await battleMember.update();
 
         await interaction.reply({
-            content: `${battleTypeName} marked as invite not received`, 
-            flags: MessageFlags.Ephemeral
+            content: `${battleTypeName} marked as invite not received`,
+            flags: MessageFlags.Ephemeral,
         });
     },
 
@@ -229,12 +247,12 @@ const BattleResultsButtons = {
             throw new Error(`Boss not found for boss id ${battle.bossId}`);
         }
         const battleTypeName = boss.battleTypeName;
-        
+
         // Only the host can cancel the raid
         if (battle.hostDiscordId != trainer.discordId) {
             await interaction.reply({
                 content: `Only the host can cancel this ${battleTypeName.toLowerCase()}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -246,7 +264,7 @@ const BattleResultsButtons = {
         const battleEmbed = await battle.buildEmbed();
         await interaction.update({
             embeds: [battleEmbed],
-            components: []
+            components: [],
         });
 
         // Ping the battle members
@@ -255,8 +273,10 @@ const BattleResultsButtons = {
         if (battleMembers.length > 0) {
             const battleMemberDiscordPings = [];
 
-            for (const battleMember of battleMembers ) {
-                const battleMemberTrainer = await Trainer.getUnique({ discordId: battleMember.discordId });
+            for (const battleMember of battleMembers) {
+                const battleMemberTrainer = await Trainer.getUnique({
+                    discordId: battleMember.discordId,
+                });
                 if (!battleMemberTrainer) {
                     continue;
                 }
@@ -265,10 +285,10 @@ const BattleResultsButtons = {
             const battleMemberDiscordPingList = battleMemberDiscordPings.join(', ');
 
             await interaction.followUp({
-                content: `${battleMemberDiscordPingList} -- ${battleTypeName} cancelled`
+                content: `${battleMemberDiscordPingList} -- ${battleTypeName} cancelled`,
             });
         }
-    }
+    },
 };
 
 export default BattleResultsButtons;

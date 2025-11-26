@@ -1,41 +1,69 @@
 {
     "name": "rotom-bot",
-    "version": "1.0.0",
     "description": "Rotom Discord Bot",
-    "main": "src/App.js",
-    "type": "module",
-    "scripts": {
-        "build": "tsdown",
-        "dev": "export NODE_ENV=development && tsx watch ./src/App.ts",
-        "test": "exit 0"
-    },
+    "author": "Paul Thompson <captbunzo@gmail.com>",
+    "license": "GPL-3.0-or-later",
+    "version": "1.0.0",
+    "homepage": "https://github.com/captbunzo/rotom-bot#readme",
+    "bugs": "https://github.com/captbunzo/rotom-bot/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/captbunzo/rotom-bot.git"
     },
-    "author": "Paul Thompson <captbunzo@gmail.com>",
-    "license": "GPL-3.0-or-later",
-    "bugs": {
-        "url": "https://github.com/captbunzo/rotom-bot/issues"
+    "type": "module",
+    "module": "src/app.js",
+    "engines": {
+        "node": "24.x"
     },
-    "homepage": "https://github.com/captbunzo/rotom-bot#readme",
+    "scripts": {
+        "build": "tsdown",
+        "cloc": "cloc --config ./.cloc/config.txt",
+        "dev": "export NODE_ENV=development && tsx watch ./src/app.ts",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "lint": "eslint --max-warnings 0 --fix",
+        "lint:check": "eslint --max-warnings 0",
+        "preinstall": "npx only-allow pnpm",
+        "prepare": "husky",
+        "test": "exit 0",
+        "type:check": "tsc --noEmit",
+        "typeorm": "typeorm-ts-node-esm"
+    },
     "dependencies": {
         "@drossjs/dross-database": "^1.1.12",
         "@drossjs/dross-logger": "^1.1.5",
         "@sentry/node": "^9.5.0",
         "@sentry/tracing": "^7.120.3",
+        "chalk": "^5.6.2",
+        "debug": "^4.4.3",
         "discord.js": "^14.18.0",
-        "mysql": "^2.18.1"
-    },
-    "imports": {
-        "#src/*": "./src/*",
-        "#root/*": "./*"
+        "mysql": "^2.18.1",
+        "pg": "^8.16.3",
+        "reflect-metadata": "^0.2.2",
+        "typeorm": "^0.3.27"
     },
     "devDependencies": {
+        "@eslint-community/eslint-plugin-eslint-comments": "^4.5.0",
+        "@eslint/js": "^9.39.1",
+        "@types/debug": "^4.1.12",
         "@types/mysql": "^2.15.27",
+        "@types/node": "^24.10.1",
+        "cloc": "2.6.0-cloc",
+        "eslint": "^9.39.1",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-import": "^2.32.0",
+        "eslint-plugin-unicorn": "^62.0.0",
+        "globals": "^16.5.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
         "prettier": "^3.6.2",
         "tsdown": "^0.14.1",
         "tsx": "^4.20.4",
-        "typescript": "^5.9.2"
+        "typescript": "^5.9.2",
+        "typescript-eslint": "^8.48.0"
+    },
+    "lint-staged": {
+        "*.{ts,js}": "eslint --cache --fix",
+        "*.{ts,js,json,md,yaml}": "prettier --write"
     }
 }

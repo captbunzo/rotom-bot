@@ -1,11 +1,8 @@
-import {
-    DrossDatabaseTable,
-    DrossFieldType
-} from '@drossjs/dross-database';
+import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { BossType } from '#src/Constants.js';
-import Boss from '#src/models/Boss.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
+import { BossType } from '@root/src/constants.js';
+import Boss from '@/models/Boss.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
 
 export interface PogoHubLinkData {
     id: string;
@@ -37,57 +34,96 @@ export class PogoHubLink extends DrossDatabaseTable {
         tableName: 'pogo_hub_link',
         orderBy: ['id'],
         fields: {
-            'id':            { type: DrossFieldType.String,   nullable: false, length: 64 },
-            'pokemon_id':    { type: DrossFieldType.String,   nullable: false, length: 20 },
-            'pokedex_id':    { type: DrossFieldType.SmallInt, nullable: false, unsigned: true },
-            'is_mega':       { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'is_gigantamax': { type: DrossFieldType.TinyInt,  nullable: false, unsigned: true },
-            'page':          { type: DrossFieldType.String,   nullable: false, length: 128 },
-            'image':         { type: DrossFieldType.String,   nullable: true,  length: 128 },
-            'template_id':   { type: DrossFieldType.String,   nullable: false, length: 64 },
-            'form':          { type: DrossFieldType.String,   nullable: true,  length: 64 }
+            id: { type: DrossFieldType.String, nullable: false, length: 64 },
+            pokemon_id: { type: DrossFieldType.String, nullable: false, length: 20 },
+            pokedex_id: { type: DrossFieldType.SmallInt, nullable: false, unsigned: true },
+            is_mega: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            is_gigantamax: { type: DrossFieldType.TinyInt, nullable: false, unsigned: true },
+            page: { type: DrossFieldType.String, nullable: false, length: 128 },
+            image: { type: DrossFieldType.String, nullable: true, length: 128 },
+            template_id: { type: DrossFieldType.String, nullable: false, length: 64 },
+            form: { type: DrossFieldType.String, nullable: true, length: 64 },
         },
-        primaryKey: ['id']
+        primaryKey: ['id'],
     });
-    
+
     constructor(data: PogoHubLinkData) {
         super(data);
     }
-    
+
     /***********
      * Getters *
      ***********/
-    
-    get id           (): string        { return this.getField('id'); }
-    get pokemonId    (): string        { return this.getField('pokemonId'); }
-    get pokedexId    (): number        { return this.getField('pokedexId'); }
-    get isMega       (): boolean       { return this.getField('isMega'); }
-    get isGigantamax (): boolean       { return this.getField('isGigantamax'); }
-    get page         (): string        { return this.getField('page'); }
-    get image        (): string | null { return this.getField('image'); }
-    get templateId   (): string        { return this.getField('templateId'); }
-    get form         (): string | null { return this.getField('form'); }
- 
+
+    get id(): string {
+        return this.getField('id');
+    }
+    get pokemonId(): string {
+        return this.getField('pokemonId');
+    }
+    get pokedexId(): number {
+        return this.getField('pokedexId');
+    }
+    get isMega(): boolean {
+        return this.getField('isMega');
+    }
+    get isGigantamax(): boolean {
+        return this.getField('isGigantamax');
+    }
+    get page(): string {
+        return this.getField('page');
+    }
+    get image(): string | null {
+        return this.getField('image');
+    }
+    get templateId(): string {
+        return this.getField('templateId');
+    }
+    get form(): string | null {
+        return this.getField('form');
+    }
+
     /***********
      * Setters *
      ***********/
-    
-    set id           ( value: string        ) { this.setField('id', value); }
-    set pokemonId    ( value: string        ) { this.setField('pokemonId', value); }
-    set pokedexId    ( value: number        ) { this.setField('pokedexId', value); }
-    set isMega       ( value: boolean       ) { this.setField('isMega', value); }
-    set isGigantamax ( value: boolean       ) { this.setField('isGigantamax', value); }
-    set page         ( value: string        ) { this.setField('page', value); }
-    set image        ( value: string | null ) { this.setField('image', value); }
-    set templateId   ( value: string        ) { this.setField('templateId', value); }
-    set form         ( value: string | null ) { this.setField('form', value); }
+
+    set id(value: string) {
+        this.setField('id', value);
+    }
+    set pokemonId(value: string) {
+        this.setField('pokemonId', value);
+    }
+    set pokedexId(value: number) {
+        this.setField('pokedexId', value);
+    }
+    set isMega(value: boolean) {
+        this.setField('isMega', value);
+    }
+    set isGigantamax(value: boolean) {
+        this.setField('isGigantamax', value);
+    }
+    set page(value: string) {
+        this.setField('page', value);
+    }
+    set image(value: string | null) {
+        this.setField('image', value);
+    }
+    set templateId(value: string) {
+        this.setField('templateId', value);
+    }
+    set form(value: string | null) {
+        this.setField('form', value);
+    }
 
     /**************************
      * Class Method Overrides *
      **************************/
 
-    static override async get(conditions: PogoHubLinkConditions = {}, orderBy = this.schema.orderBy) {
-        return await super.get(conditions, orderBy) as PogoHubLink[];
+    static override async get(
+        conditions: PogoHubLinkConditions = {},
+        orderBy = this.schema.orderBy
+    ) {
+        return (await super.get(conditions, orderBy)) as PogoHubLink[];
     }
 
     static override async getUnique(
@@ -105,7 +141,7 @@ export class PogoHubLink extends DrossDatabaseTable {
 
             if (!masterPokemon) {
                 throw new Error(`MasterPokemon not found for templateId: ${boss.templateId}`);
-            }   
+            }
 
             let pogoHubLinkSearchObj: PogoHubLinkConditions | null = null;
             let pogoHubLinks: PogoHubLink[];
@@ -114,9 +150,9 @@ export class PogoHubLink extends DrossDatabaseTable {
             pogoHubLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 isMega: boss.isMega,
-                isGigantamax: ( boss.bossType == BossType.Gigantamax)
+                isGigantamax: boss.bossType == BossType.Gigantamax,
             };
-            
+
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
@@ -127,7 +163,7 @@ export class PogoHubLink extends DrossDatabaseTable {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: boss.isMega,
-                isGigantamax: ( boss.bossType == BossType.Gigantamax)
+                isGigantamax: boss.bossType == BossType.Gigantamax,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
@@ -139,7 +175,7 @@ export class PogoHubLink extends DrossDatabaseTable {
             pogoHubLinkSearchObj = {
                 templateId: masterPokemon.templateId,
                 isMega: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
@@ -152,7 +188,7 @@ export class PogoHubLink extends DrossDatabaseTable {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
@@ -173,20 +209,20 @@ export class PogoHubLink extends DrossDatabaseTable {
                 templateId: masterPokemon.templateId,
                 form: masterPokemon.form,
                 isMega: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
             if (pogoHubLinks.length == 1) {
                 return pogoHubLinks[0];
             }
-            
+
             // Otherwise check for the base record without the form
             pogoHubLinkSearchObj = {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
@@ -199,7 +235,7 @@ export class PogoHubLink extends DrossDatabaseTable {
                 pokemonId: masterPokemon.pokemonId,
                 form: null,
                 isMega: false,
-                isGigantamax: false
+                isGigantamax: false,
             };
 
             pogoHubLinks = await PogoHubLink.get(pogoHubLinkSearchObj);
@@ -209,8 +245,8 @@ export class PogoHubLink extends DrossDatabaseTable {
 
             return;
         }
-        
-        return await super.getUnique(conditions, orderBy) as PogoHubLink;
+
+        return (await super.getUnique(conditions, orderBy)) as PogoHubLink;
     }
     /*****************************
      * Instance Method Overrides *
@@ -227,10 +263,13 @@ export class PogoHubLink extends DrossDatabaseTable {
     // ***************** //
     // * Class Methods * //
     // ***************** //
-    
-    static async getPokemonIdChoices(pokemonIdPrefix: string, conditions: PogoHubLinkConditions = {}) {
+
+    static async getPokemonIdChoices(
+        pokemonIdPrefix: string,
+        conditions: PogoHubLinkConditions = {}
+    ) {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
-    }       
+    }
 }
 
 export default PogoHubLink;

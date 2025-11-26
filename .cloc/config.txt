@@ -1,0 +1,2 @@
+--list-file .cloc/list.txt
+--not-match-f='(.*\.md)'

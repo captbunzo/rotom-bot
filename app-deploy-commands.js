@@ -1,3 +1,2 @@
-
-import Rotom from '#src/Rotom.js';
+import Rotom from '@/Rotom.js';
 Rotom.deployCommands();

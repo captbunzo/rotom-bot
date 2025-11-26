@@ -1,17 +1,13 @@
 import path from 'node:path';
 import { readFileSync } from 'fs';
 
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder
-} from 'discord.js';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
 
-import Client from '#src/Client.js';
-import { InterimLoadUpdates } from '#src/Constants.js';
+import Client from '@root/src/client.js';
+import { InterimLoadUpdates } from '@root/src/constants.js';
 
-import MasterPokemon from '#src/models/MasterPokemon.js';
-import WikiLink      from '#src/models/WikiLink.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
+import WikiLink from '@/models/WikiLink.js';
 
 const CodePrefixForms = [
     { prefix: 'alolan-', form: 'ALOLA' },
@@ -24,7 +20,7 @@ const CodePrefixForms = [
     { prefix: 'dawn-wings-', form: 'DAWN_WINGS' },
     { prefix: 'dusk-mane-', form: 'DUSK_MANE' },
     { prefix: 'ultra-', form: 'ULTRA' },
-    { prefix: 'eternamax-', form: 'ETERNAMAX' }
+    { prefix: 'eternamax-', form: 'ETERNAMAX' },
 ];
 
 const CodeSuffixForms = [
@@ -98,14 +94,14 @@ const CodeSuffixForms = [
     { suffix: '-chest-form', form: null },
     { suffix: '-roaming-form', form: null },
     { suffix: '-blade', form: null },
-    { suffix: '-shield', form: null }
+    { suffix: '-shield', form: null },
 ];
 
 const CodePrefixSuffixForms = [
     { prefix: 'paldean-', suffix: '-aqua-breed', form: 'PALDEA_AQUA' },
     { prefix: 'paldean-', suffix: '-blaze-breed', form: 'PALDEA_BLAZE' },
     { prefix: 'paldean-', suffix: '-combat-breed', form: 'PALDEA_COMBAT' },
-    { prefix: 'galarian-', suffix: '-zen-mode', form: 'GALARIAN_ZEN' }
+    { prefix: 'galarian-', suffix: '-zen-mode', form: 'GALARIAN_ZEN' },
 ];
 
 const CodeDirectMappings = [
@@ -119,31 +115,32 @@ const CodeDirectMappings = [
     { code: 'flying-pikachu', pokemon: 'pikachu', form: null },
     { code: 'rock-star-pikachu', pokemon: 'pikachu', form: null },
     { code: '5th-anniversary-pikachu', pokemon: 'pikachu', form: null },
-    { code: 'shaymin-scarf-pikachu', pokemon: 'pikachu', form: null }
+    { code: 'shaymin-scarf-pikachu', pokemon: 'pikachu', form: null },
 ];
 
 const WikiLinkCmd = {
     global: false,
-	data: new SlashCommandBuilder()
-		.setName('wiki-link')
-		.setDescription('Manage Wiki Link data')
-        .addSubcommand(subCommand => subCommand
-            .setName('load')
-            .setDescription('Load Wiki Link data file')
+    data: new SlashCommandBuilder()
+        .setName('wiki-link')
+        .setDescription('Manage Wiki Link data')
+        .addSubcommand((subCommand) =>
+            subCommand.setName('load').setDescription('Load Wiki Link data file')
         ),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'load' : this.executeLoad(interaction); break;
-            default :
+            case 'load':
+                this.executeLoad(interaction);
+                break;
+            default:
                 await interaction.reply({
                     content: `Wiki Link management command execution not yet implemented for subcommand -- ${subCommand}`,
-                    flags: MessageFlags.Ephemeral
-                }); 
+                    flags: MessageFlags.Ephemeral,
+                });
         }
-	},
+    },
 
     /**********************/
     /* Subcommand :: Load */
@@ -151,11 +148,11 @@ const WikiLinkCmd = {
 
     async executeLoad(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
-        const table  = 'wiki_link';
-        const file   = path.join(client.config.data_directory, 'wiki_links.txt');
+        const table = 'wiki_link';
+        const file = path.join(client.config.data_directory, 'wiki_links.txt');
 
         await interaction.reply({ content: `Starting load of ${table} table` });
-        let wikiLinkFile = readFileSync(file).toString()
+        let wikiLinkFile = readFileSync(file).toString();
 
         //client.logger.debug(`wikiLinkFile`);
         //client.logger.dump(wikiLinkFile);
@@ -164,10 +161,10 @@ const WikiLinkCmd = {
         const codesNotProcessed = [];
 
         let processedCount = 0;
-        let loadedCount    = 0;
+        let loadedCount = 0;
 
         let followUpMsg = await interaction.followUp({
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
         });
 
         for (const wikiLinkLine of wikiLinkLines) {
@@ -181,7 +178,7 @@ const WikiLinkCmd = {
             if (wikiLinkParts.length != 2 || !wikiLinkParts[0] || !wikiLinkParts[1]) {
                 continue;
             }
-            
+
             let code = wikiLinkParts[0].trim();
             let image = wikiLinkParts[1].trim();
             let pokemon = code.replace('-039-', '');
@@ -208,7 +205,7 @@ const WikiLinkCmd = {
                 pokemon = pokemon.slice(11);
                 isGigantamax = true;
             }
-            
+
             // Only match one special case
             let keepCheckingTransforms = true;
 
@@ -225,9 +222,15 @@ const WikiLinkCmd = {
             // Check the prefix and suffix forms
             if (keepCheckingTransforms) {
                 for (const formTransform of CodePrefixSuffixForms) {
-                    if (pokemon.startsWith(formTransform.prefix) && pokemon.endsWith(formTransform.suffix)) {
+                    if (
+                        pokemon.startsWith(formTransform.prefix) &&
+                        pokemon.endsWith(formTransform.suffix)
+                    ) {
                         form = formTransform.form;
-                        pokemon = pokemon.slice(formTransform.prefix.length, -formTransform.suffix.length);
+                        pokemon = pokemon.slice(
+                            formTransform.prefix.length,
+                            -formTransform.suffix.length
+                        );
                         break;
                     }
                 }
@@ -254,7 +257,7 @@ const WikiLinkCmd = {
                     }
                 }
             }
-            
+
             if (pokemon.endsWith('female')) {
                 pokemon = pokemon.slice(0, -6) + '_female';
             } else if (pokemon.endsWith('male')) {
@@ -270,12 +273,18 @@ const WikiLinkCmd = {
             client.logger.debug(`isGigantamax :: ${isGigantamax}`);
 
             // See if we can find the master pokemon record
-            let masterPokemon = await MasterPokemon.getUnique({ pokemonId: pokemon.toUpperCase(), form: form });
+            let masterPokemon = await MasterPokemon.getUnique({
+                pokemonId: pokemon.toUpperCase(),
+                form: form,
+            });
 
             // See if we can find it by removing dashes
             if (!masterPokemon) {
                 const pokemonAltCheck = pokemon.replace('-', '');
-                masterPokemon = await MasterPokemon.getUnique({ pokemonId: pokemonAltCheck.toUpperCase(), form: form });
+                masterPokemon = await MasterPokemon.getUnique({
+                    pokemonId: pokemonAltCheck.toUpperCase(),
+                    form: form,
+                });
                 if (masterPokemon) {
                     pokemon = pokemonAltCheck;
                 }
@@ -284,7 +293,10 @@ const WikiLinkCmd = {
             // See if we can find it by replacing dashes with underscores
             if (!masterPokemon) {
                 const pokemonAltCheck = pokemon.replace('-', '_');
-                masterPokemon = await MasterPokemon.getUnique({ pokemonId: pokemonAltCheck.toUpperCase(), form: form });
+                masterPokemon = await MasterPokemon.getUnique({
+                    pokemonId: pokemonAltCheck.toUpperCase(),
+                    form: form,
+                });
 
                 if (masterPokemon) {
                     pokemon = pokemonAltCheck;
@@ -297,17 +309,17 @@ const WikiLinkCmd = {
                 loadedCount++;
 
                 const wikiLinkObj = {
-                    id:           code,
-                    pokemonId:    masterPokemon.pokemonId,
-                    pokedexId:    masterPokemon.pokedexId,
-                    isMega:       isMega,
-                    isShadow:     isShadow,
-                    isDynamax:    isDynamax,
+                    id: code,
+                    pokemonId: masterPokemon.pokemonId,
+                    pokedexId: masterPokemon.pokedexId,
+                    isMega: isMega,
+                    isShadow: isShadow,
+                    isDynamax: isDynamax,
                     isGigantamax: isGigantamax,
-                    page:         `https://pokemongo.gamepress.gg/c/pokemon/${code}`,
-                    image:        image,
-                    templateId:   masterPokemon.templateId,
-                    form:         form
+                    page: `https://pokemongo.gamepress.gg/c/pokemon/${code}`,
+                    image: image,
+                    templateId: masterPokemon.templateId,
+                    form: form,
                 };
 
                 client.logger.debug(`Wiki Link Object`);
@@ -319,16 +331,16 @@ const WikiLinkCmd = {
                     wikiLink = new WikiLink(wikiLinkObj);
                     await wikiLink.create();
                 } else {
-                    wikiLink.pokemonId    = wikiLinkObj.pokemonId;
-                    wikiLink.pokedexId    = wikiLinkObj.pokedexId;
-                    wikiLink.isMega       = wikiLinkObj.isMega;
-                    wikiLink.isShadow     = wikiLinkObj.isShadow;
-                    wikiLink.isDynamax    = wikiLinkObj.isDynamax;
+                    wikiLink.pokemonId = wikiLinkObj.pokemonId;
+                    wikiLink.pokedexId = wikiLinkObj.pokedexId;
+                    wikiLink.isMega = wikiLinkObj.isMega;
+                    wikiLink.isShadow = wikiLinkObj.isShadow;
+                    wikiLink.isDynamax = wikiLinkObj.isDynamax;
                     wikiLink.isGigantamax = wikiLinkObj.isGigantamax;
-                    wikiLink.page         = wikiLinkObj.page;
-                    wikiLink.image        = wikiLinkObj.image;
-                    wikiLink.templateId   = wikiLinkObj.templateId;
-                    wikiLink.form         = wikiLinkObj.form;
+                    wikiLink.page = wikiLinkObj.page;
+                    wikiLink.image = wikiLinkObj.image;
+                    wikiLink.templateId = wikiLinkObj.templateId;
+                    wikiLink.form = wikiLinkObj.form;
 
                     await wikiLink.update();
                 }
@@ -337,30 +349,30 @@ const WikiLinkCmd = {
             if (processedCount % InterimLoadUpdates == 0) {
                 await interaction.editReply({
                     message: followUpMsg,
-                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+                    content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
                 });
             }
         }
-        
+
         client.logger.debug(`Codes not found: ${codesNotProcessed.length}`);
         for (const codeNotFound of codesNotProcessed) {
             client.logger.dump(codeNotFound);
         }
         client.logger.dump('');
-        
+
         interaction.editReply({
             message: followUpMsg,
-            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`
+            content: `Processed ${processedCount} ${table} records, loaded ${loadedCount} records, skipped ${processedCount - loadedCount} records`,
         });
 
         interaction.followUp({
-            content: `Records skipped: ${codesNotProcessed.join(', ')}`
+            content: `Records skipped: ${codesNotProcessed.join(', ')}`,
         });
 
         interaction.followUp({
-            content: `Load of ${table} table complete`
+            content: `Load of ${table} table complete`,
         });
-    }
+    },
 };
 
 export default WikiLinkCmd;

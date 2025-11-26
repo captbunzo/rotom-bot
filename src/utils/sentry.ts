@@ -1,22 +1,22 @@
 import { init as SentryInit } from '@sentry/node';
+import { config } from '@/config';
 
 // TODO - Turn this into a dross package
 // TODO - Create a config file
 
-export default class Sentry {
-    static init(config: any) {
+export const Sentry = {
+    init() {
         SentryInit({
             dsn: config.sentry.dsn,
-            environment: config.environment,
+            environment: config.app.environment,
             release: config.sentry.release,
-            
-            
+
             // Set tracesSampleRate to 1.0 to capture 100%
             // of transactions for performance monitoring.
             // We recommend adjusting this value in production
             tracesSampleRate: config.sentry.tracesSampleRate,
         });
-    
+
         /*
         if (config.sentry.triggerSampleAlerts) {
             const transaction = Sentry.startTransaction({
@@ -36,5 +36,5 @@ export default class Sentry {
             }, 99);
         }
         */
-    }
-}
+    },
+};

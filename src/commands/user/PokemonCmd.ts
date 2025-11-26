@@ -2,10 +2,10 @@ import {
     AutocompleteInteraction,
     ChatInputCommandInteraction,
     MessageFlags,
-    SlashCommandBuilder
- } from 'discord.js';
+    SlashCommandBuilder,
+} from 'discord.js';
 
-import Client from '#src/Client.js';
+import Client from '@root/src/client.js';
 
 import {
     MaxAutoCompleteChoices,
@@ -14,135 +14,181 @@ import {
     SearchStringBuddyKmName,
     SearchStringBuddyKmValue,
     SearchStringPurifyStardustName,
-    SearchStringPurifyStardustValue
-} from '#src/Constants.js';
+    SearchStringPurifyStardustValue,
+} from '@root/src/constants.js';
 
-import type {
-    MasterPokemonConditions
-} from '#src/types/ModelTypes.js';
+import type { MasterPokemonConditions } from '@/types/ModelTypes.js';
 
-import MasterCPM     from '#src/models/MasterCPM.js';
-import MasterPokemon from '#src/models/MasterPokemon.js';
+import MasterCPM from '@/models/MasterCPM.js';
+import MasterPokemon from '@/models/MasterPokemon.js';
 
 // TODO - Think about framework for moving all command, subcommand, and option names to constants in the command objects
 // TODO - Think about turning these into proper classes
 
 const PokemonCmd = {
     global: true,
-	data: new SlashCommandBuilder()
-		.setName('pokemon')
-		.setDescription('Get Pokémon information')
-        .addSubcommand(subCommand => subCommand
-            .setName('cp')
-            .setDescription('Show CPs for a Pokémon')
-            .addStringOption(option => option
-                .setName('name')
-                .setDescription('Pokémon Name')
-                .setRequired(true)
-                .setAutocomplete(true)
-            )
-            .addStringOption(option => option
-                .setName('form')
-                .setDescription('Pokémon Form')
-                .setRequired(false)
-                .setAutocomplete(true)
-            )
-            .addIntegerOption(option => option
-                .setName('attack')
-                .setDescription('Attack IV')
-                .setMinValue(1)
-                .setMaxValue(15)
-                .setRequired(false)
-            )
-            .addIntegerOption(option => option
-                .setName('defense')
-                .setDescription('Defense IV')
-                .setMinValue(1)
-                .setMaxValue(15)
-                .setRequired(false)
-            )
-            .addIntegerOption(option => option
-                .setName('stamina')
-                .setDescription('Stamina IV')
-                .setMinValue(1)
-                .setMaxValue(15)
-                .setRequired(false)
-            )
-            .addIntegerOption(option => option
-                .setName('level')
-                .setDescription('Level')
-                .setMinValue(1)
-                .setMaxValue(50)
-                .setRequired(false)
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName(SearchStringCode.buddyKm)
-            .setDescription('Get Pokémon buddy km search strings')
-            .addStringOption(option => option
-                .setName('value')
-                .setDescription('Buddy walking distance')
-                .setRequired(true)
-                .addChoices(
-                    { name: SearchStringBuddyKmName.distance1k, value: `${SearchStringBuddyKmValue.distance1k}` },
-                    { name: SearchStringBuddyKmName.distance3k, value: `${SearchStringBuddyKmValue.distance3k}` },
-                    { name: SearchStringBuddyKmName.distance5k, value: `${SearchStringBuddyKmValue.distance5k}` },
-                    { name: SearchStringBuddyKmName.distance20k, value: `${SearchStringBuddyKmValue.distance20k}` }
+    data: new SlashCommandBuilder()
+        .setName('pokemon')
+        .setDescription('Get Pokémon information')
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('cp')
+                .setDescription('Show CPs for a Pokémon')
+                .addStringOption((option) =>
+                    option
+                        .setName('name')
+                        .setDescription('Pokémon Name')
+                        .setRequired(true)
+                        .setAutocomplete(true)
                 )
-            )
-        )
-        .addSubcommand(subCommand => subCommand
-            .setName(SearchStringCode.purifyStardust)
-            .setDescription('Get Pokémon purification stardust search strings')
-            .addStringOption(option => option
-                .setName('value')
-                .setDescription('Stardust amount')
-                .setRequired(true)
-                .addChoices(
-                    { name: SearchStringPurifyStardustName.stardust1k, value: `${SearchStringPurifyStardustValue.stardust1k}` },
-                    { name: SearchStringPurifyStardustName.stardust3k, value: `${SearchStringPurifyStardustValue.stardust3k}` },
-                    { name: SearchStringPurifyStardustName.stardust5k, value: `${SearchStringPurifyStardustValue.stardust5k}` },
-                    { name: SearchStringPurifyStardustName.stardust20k, value: `${SearchStringPurifyStardustValue.stardust20k}` }
+                .addStringOption((option) =>
+                    option
+                        .setName('form')
+                        .setDescription('Pokémon Form')
+                        .setRequired(false)
+                        .setAutocomplete(true)
                 )
-            )
+                .addIntegerOption((option) =>
+                    option
+                        .setName('attack')
+                        .setDescription('Attack IV')
+                        .setMinValue(1)
+                        .setMaxValue(15)
+                        .setRequired(false)
+                )
+                .addIntegerOption((option) =>
+                    option
+                        .setName('defense')
+                        .setDescription('Defense IV')
+                        .setMinValue(1)
+                        .setMaxValue(15)
+                        .setRequired(false)
+                )
+                .addIntegerOption((option) =>
+                    option
+                        .setName('stamina')
+                        .setDescription('Stamina IV')
+                        .setMinValue(1)
+                        .setMaxValue(15)
+                        .setRequired(false)
+                )
+                .addIntegerOption((option) =>
+                    option
+                        .setName('level')
+                        .setDescription('Level')
+                        .setMinValue(1)
+                        .setMaxValue(50)
+                        .setRequired(false)
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName(SearchStringCode.buddyKm)
+                .setDescription('Get Pokémon buddy km search strings')
+                .addStringOption((option) =>
+                    option
+                        .setName('value')
+                        .setDescription('Buddy walking distance')
+                        .setRequired(true)
+                        .addChoices(
+                            {
+                                name: SearchStringBuddyKmName.distance1k,
+                                value: `${SearchStringBuddyKmValue.distance1k}`,
+                            },
+                            {
+                                name: SearchStringBuddyKmName.distance3k,
+                                value: `${SearchStringBuddyKmValue.distance3k}`,
+                            },
+                            {
+                                name: SearchStringBuddyKmName.distance5k,
+                                value: `${SearchStringBuddyKmValue.distance5k}`,
+                            },
+                            {
+                                name: SearchStringBuddyKmName.distance20k,
+                                value: `${SearchStringBuddyKmValue.distance20k}`,
+                            }
+                        )
+                )
+        )
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName(SearchStringCode.purifyStardust)
+                .setDescription('Get Pokémon purification stardust search strings')
+                .addStringOption((option) =>
+                    option
+                        .setName('value')
+                        .setDescription('Stardust amount')
+                        .setRequired(true)
+                        .addChoices(
+                            {
+                                name: SearchStringPurifyStardustName.stardust1k,
+                                value: `${SearchStringPurifyStardustValue.stardust1k}`,
+                            },
+                            {
+                                name: SearchStringPurifyStardustName.stardust3k,
+                                value: `${SearchStringPurifyStardustValue.stardust3k}`,
+                            },
+                            {
+                                name: SearchStringPurifyStardustName.stardust5k,
+                                value: `${SearchStringPurifyStardustValue.stardust5k}`,
+                            },
+                            {
+                                name: SearchStringPurifyStardustName.stardust20k,
+                                value: `${SearchStringPurifyStardustValue.stardust20k}`,
+                            }
+                        )
+                )
         ),
-    
+
     async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'cp' : this.executeCP(interaction); break;
-            case SearchStringCode.buddyKm        : this.executeSearch(interaction, subCommand); break;
-            case SearchStringCode.purifyStardust : this.executeSearch(interaction, subCommand); break;
-            default :
-                await interaction.reply({ content: `Pokémon command execution not yet implemented for subcommand -- ${subCommand}`, flags: MessageFlags.Ephemeral }); 
+            case 'cp':
+                this.executeCP(interaction);
+                break;
+            case SearchStringCode.buddyKm:
+                this.executeSearch(interaction, subCommand);
+                break;
+            case SearchStringCode.purifyStardust:
+                this.executeSearch(interaction, subCommand);
+                break;
+            default:
+                await interaction.reply({
+                    content: `Pokémon command execution not yet implemented for subcommand -- ${subCommand}`,
+                    flags: MessageFlags.Ephemeral,
+                });
         }
     },
 
     async autocomplete(interaction: AutocompleteInteraction) {
-        const client  = interaction.client as Client;
+        const client = interaction.client as Client;
         const subCommand = interaction.options.getSubcommand();
 
         switch (subCommand) {
-            case 'cp' : this.autocompleteCP(interaction); break;
-            default :
-                client.logger.error(`Pokémon command autocomplete not yet implemented for subcommand -- ${subCommand}`);
+            case 'cp':
+                this.autocompleteCP(interaction);
+                break;
+            default:
+                client.logger.error(
+                    `Pokémon command autocomplete not yet implemented for subcommand -- ${subCommand}`
+                );
         }
     },
-    
+
     /********************/
     /* Subcommand :: CP */
     /********************/
 
     async executeCP(interaction: ChatInputCommandInteraction) {
-        const client  = interaction.client as Client;
+        const client = interaction.client as Client;
 
-        const name    = interaction.options.getString('name');
-        const form    = interaction.options.getString('form');
-        let   attack  = interaction.options.getInteger('attack');
-        let   defense = interaction.options.getInteger('defense');
-        let   stamina = interaction.options.getInteger('stamina');
-        let   level   = interaction.options.getInteger('level');
+        const name = interaction.options.getString('name');
+        const form = interaction.options.getString('form');
+        let attack = interaction.options.getInteger('attack');
+        let defense = interaction.options.getInteger('defense');
+        let stamina = interaction.options.getInteger('stamina');
+        let level = interaction.options.getInteger('level');
 
         if (!name) {
             throw new Error('Required option pokemon does not have a value');
@@ -152,25 +198,24 @@ const PokemonCmd = {
         const formSearchValue = form ? form.toUpperCase() : null;
         const masterPokemons = await MasterPokemon.get({
             pokemonId: nameSearchValue,
-            form: formSearchValue
+            form: formSearchValue,
         });
 
         if (masterPokemons.length === 0) {
             return await interaction.reply({
                 content: `No Pokémon found for name = ${nameSearchValue}, form = ${formSearchValue}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
-        
         } else if (masterPokemons.length > 1) {
             await interaction.reply({
                 content: `Multiple Pokémon found for name = ${nameSearchValue}, form = ${formSearchValue}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
 
             for (let masterPokemon of masterPokemons) {
                 await interaction.reply({
                     content: `Pokémon: ${masterPokemon.pokemonId}, Form: ${masterPokemon.form}, Type: ${masterPokemon.type}, Type2: ${masterPokemon.type2}`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             }
 
@@ -184,20 +229,27 @@ const PokemonCmd = {
         if (!masterPokemon) {
             throw new Error('Master Pokémon not found');
         }
-        
+
         if (attack != null || defense != null || stamina != null) {
             if (attack == null || defense == null || stamina == null) {
                 await interaction.reply({
                     content: `All or none of Attack, Defense, and Stamina must be provided`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
 
-            if (attack < 0 || attack > 15 || defense < 0 || defense > 15 || stamina < 0 || stamina > 15) {
+            if (
+                attack < 0 ||
+                attack > 15 ||
+                defense < 0 ||
+                defense > 15 ||
+                stamina < 0 ||
+                stamina > 15
+            ) {
                 await interaction.reply({
                     content: `Attack, Defense, and Stamina must be between 0 and 15`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
@@ -214,17 +266,22 @@ const PokemonCmd = {
         let embed = await masterPokemon.buildEmbed();
 
         if (level != null) {
-            const cp = await MasterCPM.getCombatPower(masterPokemon, attack, defense, stamina, level);
+            const cp = await MasterCPM.getCombatPower(
+                masterPokemon,
+                attack,
+                defense,
+                stamina,
+                level
+            );
 
             client.logger.debug(`IVs: ${attack} / ${defense} / ${stamina}`);
             client.logger.debug(`CP Level ${level}: ${cp}`);
 
-            embed = embed
-                .addFields(
-                    { name: 'IVs', value: `${attack} / ${defense} / ${stamina}` },
-                    { name: 'Level', value: `${level}`, inline: true },
-                    { name: 'CP', value: `${cp}`, inline: true }
-                );
+            embed = embed.addFields(
+                { name: 'IVs', value: `${attack} / ${defense} / ${stamina}` },
+                { name: 'Level', value: `${level}`, inline: true },
+                { name: 'CP', value: `${cp}`, inline: true }
+            );
         } else {
             const cpLevel15 = await masterPokemon.getCombatPower(attack, defense, stamina, 15);
             const cpLevel20 = await masterPokemon.getCombatPower(attack, defense, stamina, 20);
@@ -236,29 +293,27 @@ const PokemonCmd = {
             client.logger.debug(`CP Level 20: ${cpLevel20}`);
             client.logger.debug(`CP Level 25: ${cpLevel25}`);
 
-            embed = embed
-                .addFields(
-                    { name: 'IVs', value: `${attack} / ${defense} / ${stamina}` }
-                );
-            
-            embed = embed
-                .addFields(
-                    { name: 'CP Level 15\n(Research)', value: `${cpLevel15}`, inline: true },
-                    { name: 'CP Level 20\n(Battle)', value: `${cpLevel20}`, inline: true },
-                    { name: 'CP Level 25\n(Battle WB)', value: `${cpLevel25}`, inline: true }
-                );
+            embed = embed.addFields({ name: 'IVs', value: `${attack} / ${defense} / ${stamina}` });
+
+            embed = embed.addFields(
+                { name: 'CP Level 15\n(Research)', value: `${cpLevel15}`, inline: true },
+                { name: 'CP Level 20\n(Battle)', value: `${cpLevel20}`, inline: true },
+                { name: 'CP Level 25\n(Battle WB)', value: `${cpLevel25}`, inline: true }
+            );
         }
 
         return await interaction.reply({
-            embeds: [embed]
+            embeds: [embed],
         });
-	},
+    },
 
     async autocompleteCP(interaction: AutocompleteInteraction) {
         const client = interaction.client as Client;
 
         const focusedOption = interaction.options.getFocused(true);
-        client.logger.debug(`Initiating autocomplete for ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`);
+        client.logger.debug(
+            `Initiating autocomplete for ${this.data.name} :: ${focusedOption.name} :: ${focusedOption.value}`
+        );
 
         let choices: string[] = [];
         switch (focusedOption.name) {
@@ -267,12 +322,14 @@ const PokemonCmd = {
                 break;
             case 'form':
                 const pokemonId = interaction.options.getString('name');
-                
+
                 if (!pokemonId) {
                     throw new Error('Required option pokemon does not have a value');
                 }
 
-                choices = await MasterPokemon.getFormChoices(focusedOption.value, { pokemonId: pokemonId });
+                choices = await MasterPokemon.getFormChoices(focusedOption.value, {
+                    pokemonId: pokemonId,
+                });
                 break;
         }
 
@@ -281,13 +338,11 @@ const PokemonCmd = {
         client.logger.dump(focusedOption);
         client.logger.debug('choices');
         client.logger.dump(choices);
-        
-		//const filtered = choices.filter(choice => choice.startsWith(focusedOption.value));
+
+        //const filtered = choices.filter(choice => choice.startsWith(focusedOption.value));
 
         if (choices.length <= MaxAutoCompleteChoices) {
-            await interaction.respond(
-                choices.map(choice => ({ name: choice, value: choice })),
-            );
+            await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
         } else {
             await interaction.respond([]);
         }
@@ -299,7 +354,7 @@ const PokemonCmd = {
 
     async executeSearch(interaction: ChatInputCommandInteraction, subCommand: string) {
         const client = interaction.client as Client;
-        const value  = interaction.options.getString('value');
+        const value = interaction.options.getString('value');
 
         if (!value) {
             throw new Error('Required option value does not have a value');
@@ -321,7 +376,7 @@ const PokemonCmd = {
             default:
                 await interaction.reply({
                     content: `Pokémon command search not yet implemented for subcommand -- ${subCommand}`,
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
         }
@@ -330,7 +385,7 @@ const PokemonCmd = {
         if (pokedexIds.length === 0) {
             await interaction.reply({
                 content: `No Pokémon found for ${subCommand} with value = ${value}`,
-                flags: MessageFlags.Ephemeral
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
@@ -354,18 +409,18 @@ const PokemonCmd = {
         }
 
         let pokedexRangesString = pokedexIdRanges.join(',');
-        
+
         if (subCommand == SearchStringCode.purifyStardust) {
-          pokedexRangesString += ' & shadow';
+            pokedexRangesString += ' & shadow';
         }
         client.logger.debug(`Pokédex IDs: ${pokedexRangesString}`);
         await interaction.reply({
-            content: title
+            content: title,
         });
         await interaction.followUp({
-            content: pokedexRangesString
+            content: pokedexRangesString,
         });
-    }
+    },
 };
 
 export default PokemonCmd;
