@@ -115,13 +115,15 @@ describe('TrainerService', () => {
             );
         });
 
-        it('should return general setup message for fully setup trainer', () => {
+        it('should return general setup message when trainer has both name and code', () => {
+            // Note: This function is intended to be called when trainer setup is incomplete.
+            // When called with a fully setup trainer, it returns the generic message.
+            // Callers should use isSetupComplete() to check if setup is needed.
             const trainer = createMockTrainer({
                 trainerName: 'TestTrainer',
                 code: '123456789012',
             });
             const result = TrainerService.getSetupTrainerFirstMessage(trainer);
-            // When trainer is fully setup, this message is returned (the function logic)
             expect(result.content).toBe('Please setup your profile first with /setup-profile');
         });
     });
