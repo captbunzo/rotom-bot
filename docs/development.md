@@ -178,6 +178,21 @@ pnpm run dev
 
 ## Testing
 
+For comprehensive testing documentation, see the **[Testing Guide](./testing.md)**.
+
+### Quick Start
+
+```bash
+# Run all tests
+pnpm run test
+
+# Run tests in watch mode
+pnpm run test:watch
+
+# Run tests with coverage
+pnpm run test:coverage
+```
+
 ### Manual Testing
 
 1. **Deploy commands** to your test guild:

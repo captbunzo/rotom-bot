@@ -21,6 +21,7 @@ Comprehensive documentation for Rotom Bot - a Discord bot for Pokémon GO commun
 ### Development
 
 - **[Development Guide](./development.md)** - Setup, standards, and contribution guidelines
+- **[Testing Guide](./testing.md)** - Testing framework, conventions, and best practices
 - **[TypeORM Migration](./typeorm-migration.md)** - Database migration documentation
 - **[API Reference](./api-reference.md)** - Code API documentation _(coming soon)_
 
@@ -51,6 +52,7 @@ Comprehensive documentation for Rotom Bot - a Discord bot for Pokémon GO commun
 ### For Developers
 
 - **Want to contribute?** Read the [Development Guide](./development.md)
+- **Writing tests?** Check the [Testing Guide](./testing.md)
 - **Working on database changes?** See [TypeORM Migration](./typeorm-migration.md)
 - **Looking for TODOs?** Check the [Roadmap](./roadmap.md)
 
@@ -67,6 +69,7 @@ Comprehensive documentation for Rotom Bot - a Discord bot for Pokémon GO commun
 | Getting Started   | ✅ Complete | Current      |
 | Configuration     | ✅ Complete | Current      |
 | Development Guide | ✅ Complete | Current      |
+| Testing Guide     | ✅ Complete | Current      |
 | TypeORM Migration | ✅ Complete | Current      |
 | Roadmap           | ✅ Complete | Current      |
 | Commands Overview | 🚧 Planned  | -            |
@@ -82,6 +85,7 @@ Comprehensive documentation for Rotom Bot - a Discord bot for Pokémon GO commun
 - **Configuration** → [Configuration Reference](./configuration.md)
 - **Database** → [TypeORM Migration](./typeorm-migration.md), Database Schema
 - **Development** → [Development Guide](./development.md)
+- **Testing** → [Testing Guide](./testing.md)
 - **Features & Commands** → Commands Overview, User Guides
 - **Future Plans** → [Roadmap](./roadmap.md)
 
@@ -89,7 +93,7 @@ Comprehensive documentation for Rotom Bot - a Discord bot for Pokémon GO commun
 
 - **New Users** → Getting Started, Configuration, Commands
 - **Server Admins** → Getting Started, Configuration, Deployment
-- **Developers** → Development Guide, API Reference, TypeORM Migration
+- **Developers** → Development Guide, Testing Guide, API Reference, TypeORM Migration
 - **Contributors** → Development Guide, Roadmap, Contributing Guidelines
 
 ## 💡 Contributing to Documentation
