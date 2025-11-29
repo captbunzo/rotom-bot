@@ -1,7 +1,14 @@
+import { EmbedBuilder } from 'discord.js';
+
 import { bossRepository } from '@/database/repositories.js';
 import { Boss, type BossUpdate, type BossDelete } from '@/database/entities/boss.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
 import { TranslationUtils } from '@/utils/translation.utils.js';
+import { StringUtils } from '@/utils/string.utils.js';
+import { MasterPokemonService } from '@/services/master-pokemon.service.js';
+import { WikiLinkService } from '@/services/wiki-link.service.js';
+import { PogoHubLinkService } from '@/services/pogo-hub-link.service.js';
+import { MasterCPMService } from '@/services/master-cpm.service.js';
 
 /**
  * Service layer for boss-related business logic
@@ -134,5 +141,114 @@ export const BossService = {
      */
     getBattleTypeName(boss: Boss): string {
         return TranslationUtils.getBattleTypeName(boss.bossType);
+    },
+
+    // ===== BUILD EMBED METHODS =====
+
+    /**
+     * Build a Discord embed for a boss
+     * @param boss The boss entity
+     * @returns Discord embed builder
+     */
+    async buildEmbed(boss: Boss): Promise<EmbedBuilder> {
+        const masterPokemon = await MasterPokemonService.get(boss.templateId);
+
+        if (!masterPokemon) {
+            throw new Error(`Master Pokémon with templateId ${boss.templateId} not found`);
+        }
+
+        const bossTypeName = this.getBossTypeName(boss);
+        const pokemonName = await MasterPokemonService.getName(masterPokemon);
+
+        let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
+
+        // Handle Mega and Shadow
+        if (boss.isMega) {
+            title += `${TranslationUtils.getMegaName()} `;
+        }
+
+        if (boss.isShadow) {
+            title += `${TranslationUtils.getShadowName()} `;
+        }
+
+        title += pokemonName;
+
+        if (masterPokemon.form !== null) {
+            title += ` (${StringUtils.titleCase(masterPokemon.form)})`;
+        }
+
+        const typeColor = MasterPokemonService.getTypeColor(masterPokemon);
+        let pokemonType = await MasterPokemonService.getTypeName(masterPokemon);
+
+        const wikiLink = await WikiLinkService.getForBoss(boss);
+        const pogoHubLink = await PogoHubLinkService.getForBoss(boss);
+
+        let link = null;
+        let thumbnail = null;
+
+        if (wikiLink) {
+            link = wikiLink.page;
+            thumbnail = wikiLink.image;
+        }
+
+        if (pogoHubLink) {
+            link = pogoHubLink.page;
+        }
+
+        if (masterPokemon.type2 != null) {
+            pokemonType += ` / ${await MasterPokemonService.getType2Name(masterPokemon)}`;
+        }
+
+        const pokemonForm =
+            masterPokemon.form != null
+                ? StringUtils.titleCase(masterPokemon.form)
+                : 'No Form';
+
+        if (!pokemonType) {
+            throw new Error(`No Pokémon type found for Pokémon ID ${boss.pokemonId}`);
+        }
+
+        // Calculate CP ranges
+        const cpL20Min = await MasterCPMService.getCombatPower(masterPokemon, 10, 10, 10, 20);
+        const cpL20Max = await MasterCPMService.getCombatPower(masterPokemon, 15, 15, 15, 20);
+        const cpL25Min = await MasterCPMService.getCombatPower(masterPokemon, 10, 10, 10, 25);
+        const cpL25Max = await MasterCPMService.getCombatPower(masterPokemon, 15, 15, 15, 25);
+
+        const cpReg = `${cpL20Min} - ${cpL20Max}`;
+        const cpWb = `${cpL25Min} - ${cpL25Max}`;
+
+        let embed = new EmbedBuilder()
+            .setColor(typeColor)
+            .setTitle(title)
+            .setURL(link)
+            .setThumbnail(thumbnail);
+
+        embed = embed.addFields(
+            { name: 'Boss ID', value: boss.id },
+            { name: 'Pokémon Type', value: pokemonType },
+            { name: 'Pokémon Form', value: pokemonForm }
+        );
+
+        embed = embed.addFields(
+            { name: 'Tier', value: `${boss.tier}`, inline: true },
+            {
+                name: 'Shiny',
+                value: `${boss.isShinyable ? 'Can be Shiny' : 'Cannot be Shiny'}`,
+                inline: true,
+            },
+            { name: 'Status', value: `${boss.isActive ? 'Active' : 'Inactive'}`, inline: true },
+            { name: 'Mega', value: `${boss.isMega ? 'Yes' : 'No'}`, inline: true },
+            { name: 'Shadow', value: `${boss.isShadow ? 'Yes' : 'No'}`, inline: true }
+        );
+
+        embed = embed.addFields(
+            { name: 'CP Range', value: '10/10/10 - 15/15/15' },
+            { name: 'CP L20', value: cpReg, inline: true },
+            { name: 'CP L25 (WB)', value: cpWb, inline: true }
+        );
+
+        embed = embed.setTimestamp();
+
+        return embed;
     },
 };

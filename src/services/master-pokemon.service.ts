@@ -1,3 +1,5 @@
+import { EmbedBuilder } from 'discord.js';
+
 import { masterPokemonRepository } from '@/database/repositories.js';
 import {
     MasterPokemon,
@@ -8,6 +10,9 @@ import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
 import { PokemonTypeColor } from '@/constants.js';
 import { translationRepository } from '@/database/repositories.js';
 import { MasterCPMService } from '@/services/master-cpm.service.js';
+import { WikiLinkService } from '@/services/wiki-link.service.js';
+import { PogoHubLinkService } from '@/services/pogo-hub-link.service.js';
+import { StringUtils } from '@/utils/string.utils.js';
 
 /**
  * Service layer for master pokemon-related business logic
@@ -31,6 +36,19 @@ export const MasterPokemonService = {
      */
     async getByPokedexId(pokedexId: number): Promise<MasterPokemon[]> {
         return await masterPokemonRepository.findBy({ pokedexId });
+    },
+
+    /**
+     * Get master pokémon by pokédex ID and form
+     * @param pokedexId The pokédex ID
+     * @param form The form (or null for default form)
+     * @returns MasterPokemon entity or null if not found
+     */
+    async getByPokedexIdAndForm(
+        pokedexId: number,
+        form: string | null
+    ): Promise<MasterPokemon | null> {
+        return await masterPokemonRepository.findOneBy({ pokedexId, form });
     },
 
     /**
@@ -372,5 +390,88 @@ export const MasterPokemonService = {
         }
 
         return typeColor;
+    },
+
+    // ===== BUILD EMBED METHODS =====
+
+    /**
+     * Build a Discord embed for a master pokémon
+     * @param pokemon The master pokémon entity
+     * @param full Whether to include full details (description, evolution info)
+     * @returns Discord embed builder
+     */
+    async buildEmbed(pokemon: MasterPokemon, full: boolean = true): Promise<EmbedBuilder> {
+        const pokemonName = await this.getName(pokemon);
+        let title = `#${pokemon.pokedexId} - ${pokemonName}`;
+
+        if (pokemon.form !== null) {
+            title += ` (${StringUtils.titleCase(pokemon.form)})`;
+        }
+
+        const description = full
+            ? (await this.getDescription(pokemon)) ?? 'Description not available'
+            : null;
+        const wikiLink = await WikiLinkService.getForMasterPokemon(pokemon);
+        const pogoHubLink = await PogoHubLinkService.getForMasterPokemon(pokemon);
+
+        let link = null;
+        let thumbnail = null;
+
+        if (wikiLink) {
+            link = wikiLink.page;
+            thumbnail = wikiLink.image;
+        }
+
+        if (pogoHubLink) {
+            link = pogoHubLink.page;
+        }
+
+        const typeColor = this.getTypeColor(pokemon);
+        let pokemonType = await this.getTypeName(pokemon);
+
+        if (pokemon.type2 != null) {
+            pokemonType += ` / ${await this.getType2Name(pokemon)}`;
+        }
+
+        const pokemonForm = pokemon.form != null ? StringUtils.titleCase(pokemon.form) : 'No Form';
+
+        if (!pokemonType) {
+            throw new Error(`Unknown Pokémon type: ${pokemon.type}`);
+        }
+
+        let embed = new EmbedBuilder()
+            .setColor(typeColor)
+            .setTitle(title)
+            .setURL(link)
+            .setThumbnail(thumbnail);
+
+        if (full && description) {
+            embed = embed.setDescription(description);
+        }
+
+        embed = embed.addFields(
+            { name: 'Pokémon Type', value: pokemonType, inline: true },
+            { name: 'Pokémon Form', value: pokemonForm, inline: true }
+        );
+
+        if (full) {
+            const candyToEvolve = pokemon.candyToEvolve
+                ? pokemon.candyToEvolve.toString()
+                : 'Does not evolve';
+            const buddyDistanceKm = pokemon.buddyDistanceKm
+                ? `${pokemon.buddyDistanceKm.toString()} km`
+                : 'Unknown';
+            const purifyStardust = pokemon.purifyStardust
+                ? pokemon.purifyStardust.toLocaleString()
+                : 'Unknown';
+
+            embed = embed.addFields(
+                { name: 'Candy to Evolve', value: candyToEvolve, inline: true },
+                { name: 'Buddy Distance', value: buddyDistanceKm, inline: true },
+                { name: 'Purification Stardust', value: purifyStardust, inline: true }
+            );
+        }
+
+        return embed;
     },
 };
