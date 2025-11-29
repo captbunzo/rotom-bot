@@ -85,7 +85,10 @@ describe('TranslationUtils', () => {
         });
 
         it('should throw error for invalid boss type', () => {
-            expect(() => TranslationUtils.getBossTypeName('INVALID')).toThrow(
+            // Test runtime behavior with invalid value that bypasses type checking
+            // This simulates receiving invalid data at runtime (e.g., from external source)
+            const invalidBossType = 'INVALID' as unknown as string;
+            expect(() => TranslationUtils.getBossTypeName(invalidBossType)).toThrow(
                 'Invalid boss type: INVALID'
             );
         });
@@ -107,7 +110,10 @@ describe('TranslationUtils', () => {
         });
 
         it('should throw error for invalid boss type', () => {
-            expect(() => TranslationUtils.getBattleTypeName('INVALID')).toThrow(
+            // Test runtime behavior with invalid value that bypasses type checking
+            // This simulates receiving invalid data at runtime (e.g., from external source)
+            const invalidBossType = 'INVALID' as unknown as string;
+            expect(() => TranslationUtils.getBattleTypeName(invalidBossType)).toThrow(
                 'Invalid boss type: INVALID'
             );
         });
