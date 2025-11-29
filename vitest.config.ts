@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -20,19 +21,24 @@ export default defineConfig({
             reporter: ['text', 'json', 'html'],
             include: ['src/**/*.ts'],
             exclude: [
+                // Entity files - TypeORM data models with minimal business logic
                 'src/**/*.entity.ts',
+                // Type definitions - No runtime code to test
                 'src/types/**/*.ts',
+                // Entry points - Bootstrap code with external dependencies
                 'src/app.ts',
                 'src/bot.ts',
                 'src/client.ts',
+                // Database configuration - Runtime configuration, not testable in isolation
                 'src/database/data-source.ts',
             ],
         },
 
         // Alias resolution (matches tsconfig paths)
+        // Using fileURLToPath for cross-platform compatibility (Windows/Unix)
         alias: {
-            '@/': new URL('./src/', import.meta.url).pathname,
-            '@root/': new URL('./', import.meta.url).pathname,
+            '@/': fileURLToPath(new URL('./src/', import.meta.url)),
+            '@root/': fileURLToPath(new URL('./', import.meta.url)),
         },
     },
 });

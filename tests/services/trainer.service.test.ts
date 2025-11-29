@@ -1,5 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { TrainerService } from '@/services/trainer.service.js';
+import type { Trainer } from '@/database/entities/trainer.entity.js';
+
+/**
+ * Creates a mock Trainer object for testing purposes.
+ * This avoids the need for 'as never' type assertions and provides type safety.
+ */
+function createMockTrainer(overrides: Partial<Trainer> = {}): Trainer {
+    return {
+        discordId: '123456789',
+        trainerName: null,
+        firstName: null,
+        code: null,
+        level: null,
+        team: null,
+        aboutMe: null,
+        favoritePokemon: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...overrides,
+    } as Trainer;
+}
 
 describe('TrainerService', () => {
     describe('formatTrainerCode', () => {
@@ -30,52 +51,27 @@ describe('TrainerService', () => {
 
     describe('isSetupComplete', () => {
         it('should return true when trainer has both name and code', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: 'TestTrainer',
                 code: '123456789012',
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            // Use type assertion since we're testing with a mock object
-            expect(TrainerService.isSetupComplete(trainer as never)).toBe(true);
+            });
+            expect(TrainerService.isSetupComplete(trainer)).toBe(true);
         });
 
         it('should return false when trainer has no name', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: null,
                 code: '123456789012',
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            expect(TrainerService.isSetupComplete(trainer as never)).toBe(false);
+            });
+            expect(TrainerService.isSetupComplete(trainer)).toBe(false);
         });
 
         it('should return false when trainer has no code', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: 'TestTrainer',
                 code: null,
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            expect(TrainerService.isSetupComplete(trainer as never)).toBe(false);
+            });
+            expect(TrainerService.isSetupComplete(trainer)).toBe(false);
         });
 
         it('should return false for null trainer', () => {
@@ -83,19 +79,11 @@ describe('TrainerService', () => {
         });
 
         it('should return false when trainer has neither name nor code', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: null,
                 code: null,
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            expect(TrainerService.isSetupComplete(trainer as never)).toBe(false);
+            });
+            expect(TrainerService.isSetupComplete(trainer)).toBe(false);
         });
     });
 
@@ -106,57 +94,33 @@ describe('TrainerService', () => {
         });
 
         it('should return specific message when trainer has partial setup (missing name)', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: null,
                 code: '123456789012',
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const result = TrainerService.getSetupTrainerFirstMessage(trainer as never);
+            });
+            const result = TrainerService.getSetupTrainerFirstMessage(trainer);
             expect(result.content).toBe(
                 'Please set your trainer name and code first with /setup-profile'
             );
         });
 
         it('should return specific message when trainer has partial setup (missing code)', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: 'TestTrainer',
                 code: null,
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const result = TrainerService.getSetupTrainerFirstMessage(trainer as never);
+            });
+            const result = TrainerService.getSetupTrainerFirstMessage(trainer);
             expect(result.content).toBe(
                 'Please set your trainer name and code first with /setup-profile'
             );
         });
 
         it('should return general setup message for fully setup trainer', () => {
-            const trainer = {
-                discordId: '123',
+            const trainer = createMockTrainer({
                 trainerName: 'TestTrainer',
                 code: '123456789012',
-                firstName: null,
-                level: null,
-                team: null,
-                aboutMe: null,
-                favoritePokemon: null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            };
-            const result = TrainerService.getSetupTrainerFirstMessage(trainer as never);
+            });
+            const result = TrainerService.getSetupTrainerFirstMessage(trainer);
             // When trainer is fully setup, this message is returned (the function logic)
             expect(result.content).toBe('Please setup your profile first with /setup-profile');
         });
