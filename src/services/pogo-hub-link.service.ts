@@ -128,6 +128,7 @@ export const PogoHubLinkService = {
     /**
      * Get Pogo Hub link for a boss entity with fallback logic.
      * Searches in order: exact match, pokemon name match, base record, pokemon name base.
+     * Note: PogoHubLink entity only supports isMega and isGigantamax flags (no isShadow/isDynamax)
      * @param boss The boss entity
      * @returns PogoHubLink entity or null if not found
      */
@@ -141,6 +142,7 @@ export const PogoHubLinkService = {
         }
 
         // First check for the pogo hub link record with the full search parameters
+        // Note: PogoHubLink only tracks isMega and isGigantamax (not isShadow/isDynamax like WikiLink)
         let pogoHubLinks = await pogoHubLinkRepository.findBy({
             templateId: masterPokemon.templateId,
             isMega: boss.isMega,
@@ -214,7 +216,9 @@ export const PogoHubLinkService = {
             return pogoHubLinks[0];
         }
 
-        // Try with id matching pokemon name
+        // Final fallback: try with id field matching pokemon name (lowercase)
+        // The id field is the primary key and may be set to the lowercased pokemon name
+        // for base pokemon records. We also include pokemonId to ensure we get the correct record.
         pogoHubLinks = await pogoHubLinkRepository.findBy({
             id: masterPokemon.pokemonId.toLowerCase(),
             pokemonId: masterPokemon.pokemonId,

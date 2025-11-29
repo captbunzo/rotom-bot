@@ -232,7 +232,9 @@ export const WikiLinkService = {
             return wikiLinks[0];
         }
 
-        // Try with id matching pokemon name
+        // Final fallback: try with id field matching pokemon name (lowercase)
+        // The id field is the primary key and may be set to the lowercased pokemon name
+        // for base pokemon records. We also include pokemonId to ensure we get the correct record.
         wikiLinks = await wikiLinkRepository.findBy({
             id: masterPokemon.pokemonId.toLowerCase(),
             pokemonId: masterPokemon.pokemonId,
