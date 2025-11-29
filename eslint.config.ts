@@ -69,6 +69,7 @@ export const eslintConfig = defineConfig([
                         '.prettierrc.ts',
                         'tsdown.config.ts',
                         'react-router.config.ts',
+                        'vitest.config.ts',
                     ],
                 },
                 tsconfigRootDir: import.meta.dirname,

@@ -10,6 +10,9 @@ export default defineConfig({
 
         // TypeScript support
         globals: true,
+        typecheck: {
+            tsconfig: './tsconfig.test.json',
+        },
 
         // Coverage configuration
         coverage: {
