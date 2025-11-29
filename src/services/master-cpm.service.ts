@@ -4,6 +4,7 @@ import {
     type MasterCPMUpdate,
     type MasterCPMDelete,
 } from '@/database/entities/master-cpm.entity.js';
+import { MasterPokemon } from '@/database/entities/master-pokemon.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
 
 /**
@@ -77,5 +78,64 @@ export const MasterCPMService = {
         }
 
         await masterCPMRepository.remove(masterCpmEntity);
+    },
+
+    // ===== HELPER / CALCULATION METHODS =====
+
+    /**
+     * Calculate combat power for a Pokémon with specific IVs and level
+     *
+     * Formula: CP = FLOOR(((Attack + Attack IV) * SQRT(Defense + Defense IV) * SQRT(Stamina + Stamina IV) * (CPM ^ 2)) / 10)
+     *
+     * @param masterPokemon The master pokémon entity
+     * @param attackIV Attack IV (0-15)
+     * @param defenseIV Defense IV (0-15)
+     * @param staminaIV Stamina IV (0-15)
+     * @param level Pokémon level
+     * @returns The calculated combat power
+     */
+    async getCombatPower(
+        masterPokemon: MasterPokemon,
+        attackIV: number,
+        defenseIV: number,
+        staminaIV: number,
+        level: number
+    ): Promise<number> {
+        const masterCPM = await this.get(level);
+
+        if (!masterCPM) {
+            throw new Error(`MasterCPM with level ${level} not found`);
+        }
+
+        if (!masterPokemon.baseAttack) {
+            throw new Error(
+                `MasterPokemon with templateId ${masterPokemon.templateId} does not have a baseAttack value`
+            );
+        }
+
+        if (!masterPokemon.baseDefense) {
+            throw new Error(
+                `MasterPokemon with templateId ${masterPokemon.templateId} does not have a baseDefense value`
+            );
+        }
+
+        if (!masterPokemon.baseStamina) {
+            throw new Error(
+                `MasterPokemon with templateId ${masterPokemon.templateId} does not have a baseStamina value`
+            );
+        }
+
+        const attackTotal = masterPokemon.baseAttack + attackIV;
+        const defenseTotal = masterPokemon.baseDefense + defenseIV;
+        const staminaTotal = masterPokemon.baseStamina + staminaIV;
+        const cp = Math.floor(
+            (attackTotal *
+                Math.sqrt(defenseTotal) *
+                Math.sqrt(staminaTotal) *
+                Math.pow(masterCPM.cpm, 2)) /
+                10
+        );
+
+        return cp;
     },
 };

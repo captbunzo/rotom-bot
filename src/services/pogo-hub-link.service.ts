@@ -4,7 +4,11 @@ import {
     type PogoHubLinkUpdate,
     type PogoHubLinkDelete,
 } from '@/database/entities/pogo-hub-link.entity.js';
+import { Boss } from '@/database/entities/boss.entity.js';
+import { MasterPokemon } from '@/database/entities/master-pokemon.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
+import { BossType } from '@/constants.js';
+import { masterPokemonRepository } from '@/database/repositories.js';
 
 /**
  * Service layer for pogo hub link-related business logic
@@ -117,5 +121,111 @@ export const PogoHubLinkService = {
         }
 
         await pogoHubLinkRepository.remove(pogoHubLinkEntity);
+    },
+
+    // ===== SMART LOOKUP METHODS =====
+
+    /**
+     * Get Pogo Hub link for a boss entity with fallback logic.
+     * Searches in order: exact match, pokemon name match, base record, pokemon name base.
+     * @param boss The boss entity
+     * @returns PogoHubLink entity or null if not found
+     */
+    async getForBoss(boss: Boss): Promise<PogoHubLink | null> {
+        const masterPokemon = await masterPokemonRepository.findOneBy({
+            templateId: boss.templateId,
+        });
+
+        if (!masterPokemon) {
+            throw new Error(`MasterPokemon not found for templateId: ${boss.templateId}`);
+        }
+
+        // First check for the pogo hub link record with the full search parameters
+        let pogoHubLinks = await pogoHubLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            isMega: boss.isMega,
+            isGigantamax: boss.bossType === BossType.Gigantamax,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        // Next check based on the pokemon name
+        pogoHubLinks = await pogoHubLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: boss.isMega,
+            isGigantamax: boss.bossType === BossType.Gigantamax,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        // Otherwise check for the base record
+        pogoHubLinks = await pogoHubLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            isMega: false,
+            isGigantamax: false,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        // And finally check for the base record with the pokemon name
+        pogoHubLinks = await pogoHubLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isGigantamax: false,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        return null;
+    },
+
+    /**
+     * Get Pogo Hub link for a master pokémon entity with fallback logic.
+     * Searches in order: base record with form, base record without form, id + pokemon name.
+     * @param masterPokemon The master pokémon entity
+     * @returns PogoHubLink entity or null if not found
+     */
+    async getForMasterPokemon(masterPokemon: MasterPokemon): Promise<PogoHubLink | null> {
+        // First check for the base record
+        let pogoHubLinks = await pogoHubLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            form: masterPokemon.form ?? undefined,
+            isMega: false,
+            isGigantamax: false,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        // Otherwise check for the base record without the form
+        pogoHubLinks = await pogoHubLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isGigantamax: false,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        // Try with id matching pokemon name
+        pogoHubLinks = await pogoHubLinkRepository.findBy({
+            id: masterPokemon.pokemonId.toLowerCase(),
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isGigantamax: false,
+        });
+        if (pogoHubLinks.length === 1) {
+            return pogoHubLinks[0];
+        }
+
+        return null;
     },
 };

@@ -107,7 +107,7 @@ export const BossService = {
      * @param boss Either a full entity or an object with primary keys
      */
     async delete(boss: Boss | BossDelete): Promise<void> {
-        const bossEntity = boss instanceof Boss ? boss : await this.getById(boss.id);
+        const bossEntity = boss instanceof Boss ? boss : await this.get(boss.id);
 
         if (!bossEntity) {
             throw new EntityNotFoundError('Boss', boss.id);

@@ -7,7 +7,7 @@ import {
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
 import { PokemonTypeColor } from '@/constants.js';
 import { translationRepository } from '@/database/repositories.js';
-import { MasterCPM } from '@/models/MasterCPM.js';
+import { MasterCPMService } from '@/services/master-cpm.service.js';
 
 /**
  * Service layer for master pokemon-related business logic
@@ -239,7 +239,7 @@ export const MasterPokemonService = {
         stamina: number,
         level: number
     ): Promise<number> {
-        return await MasterCPM.getCombatPower(pokemon, attack, defense, stamina, level);
+        return await MasterCPMService.getCombatPower(pokemon, attack, defense, stamina, level);
     },
 
     /**
@@ -249,7 +249,7 @@ export const MasterPokemonService = {
      * @returns The calculated combat power for perfect IVs
      */
     async getHundoCombatPower(pokemon: MasterPokemon, level: number): Promise<number> {
-        return await MasterCPM.getCombatPower(pokemon, 15, 15, 15, level);
+        return await MasterCPMService.getCombatPower(pokemon, 15, 15, 15, level);
     },
 
     // ===== HELPER METHODS =====
