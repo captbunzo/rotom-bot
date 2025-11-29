@@ -1,3 +1,5 @@
+import { ILike } from 'typeorm';
+
 import { pogoHubLinkRepository } from '@/database/repositories.js';
 import {
     PogoHubLink,
@@ -7,7 +9,7 @@ import {
 import { Boss } from '@/database/entities/boss.entity.js';
 import { MasterPokemon } from '@/database/entities/master-pokemon.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
-import { BossType } from '@/constants.js';
+import { BossType, MaxAutoCompleteChoices } from '@/constants.js';
 import { masterPokemonRepository } from '@/database/repositories.js';
 
 /**
@@ -231,5 +233,34 @@ export const PogoHubLinkService = {
         }
 
         return null;
+    },
+
+    // ===== AUTOCOMPLETE / CHOICE METHODS =====
+
+    /**
+     * Get pokemon ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of pokemon IDs matching the prefix
+     */
+    async getPokemonIdChoices(
+        prefix: string,
+        conditions: Partial<PogoHubLink> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            pokemonId: ILike(`${prefix}%`),
+        };
+
+        const pogoHubLinks = await pogoHubLinkRepository.find({
+            where: whereConditions,
+            select: ['pokemonId'],
+            order: { pokemonId: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values
+        const uniqueIds = [...new Set(pogoHubLinks.map((p) => p.pokemonId))];
+        return uniqueIds;
     },
 };

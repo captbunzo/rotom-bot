@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
+import { ILike } from 'typeorm';
 
 import { bossRepository } from '@/database/repositories.js';
 import { Boss, type BossUpdate, type BossDelete } from '@/database/entities/boss.entity.js';
@@ -9,6 +10,7 @@ import { MasterPokemonService } from '@/services/master-pokemon.service.js';
 import { WikiLinkService } from '@/services/wiki-link.service.js';
 import { PogoHubLinkService } from '@/services/pogo-hub-link.service.js';
 import { MasterCPMService } from '@/services/master-cpm.service.js';
+import { MaxAutoCompleteChoices } from '@/constants.js';
 
 /**
  * Service layer for boss-related business logic
@@ -250,5 +252,86 @@ export const BossService = {
         embed = embed.setTimestamp();
 
         return embed;
+    },
+
+    // ===== AUTOCOMPLETE / CHOICE METHODS =====
+
+    /**
+     * Get pokemon ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of pokemon IDs matching the prefix
+     */
+    async getPokemonIdChoices(
+        prefix: string,
+        conditions: Partial<Boss> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            pokemonId: ILike(`${prefix}%`),
+        };
+
+        const bosses = await bossRepository.find({
+            where: whereConditions,
+            select: ['pokemonId'],
+            order: { pokemonId: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values
+        const uniqueIds = [...new Set(bosses.map((b) => b.pokemonId))];
+        return uniqueIds;
+    },
+
+    /**
+     * Get form choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of forms matching the prefix
+     */
+    async getFormChoices(
+        prefix: string,
+        conditions: Partial<Boss> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            form: ILike(`${prefix}%`),
+        };
+
+        const bosses = await bossRepository.find({
+            where: whereConditions,
+            select: ['form'],
+            order: { form: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values, filter out nulls
+        const uniqueForms = [...new Set(bosses.filter((b) => b.form !== null).map((b) => b.form as string))];
+        return uniqueForms;
+    },
+
+    /**
+     * Get ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of IDs matching the prefix
+     */
+    async getIdChoices(
+        prefix: string,
+        conditions: Partial<Boss> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            id: ILike(`${prefix}%`),
+        };
+
+        const bosses = await bossRepository.find({
+            where: whereConditions,
+            select: ['id'],
+            order: { id: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        return bosses.map((b) => b.id);
     },
 };

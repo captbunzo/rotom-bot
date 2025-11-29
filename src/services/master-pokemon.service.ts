@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
+import { ILike } from 'typeorm';
 
 import { masterPokemonRepository } from '@/database/repositories.js';
 import {
@@ -7,7 +8,7 @@ import {
     type MasterPokemonDelete,
 } from '@/database/entities/master-pokemon.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
-import { PokemonTypeColor } from '@/constants.js';
+import { PokemonTypeColor, MaxAutoCompleteChoices } from '@/constants.js';
 import { translationRepository } from '@/database/repositories.js';
 import { MasterCPMService } from '@/services/master-cpm.service.js';
 import { WikiLinkService } from '@/services/wiki-link.service.js';
@@ -473,5 +474,86 @@ export const MasterPokemonService = {
         }
 
         return embed;
+    },
+
+    // ===== AUTOCOMPLETE / CHOICE METHODS =====
+
+    /**
+     * Get pokemon ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of pokemon IDs matching the prefix
+     */
+    async getPokemonIdChoices(
+        prefix: string,
+        conditions: Partial<MasterPokemon> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            pokemonId: ILike(`${prefix}%`),
+        };
+
+        const pokemon = await masterPokemonRepository.find({
+            where: whereConditions,
+            select: ['pokemonId'],
+            order: { pokemonId: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values
+        const uniqueIds = [...new Set(pokemon.map((p) => p.pokemonId))];
+        return uniqueIds;
+    },
+
+    /**
+     * Get template ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of template IDs matching the prefix
+     */
+    async getTemplateIdChoices(
+        prefix: string,
+        conditions: Partial<MasterPokemon> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            templateId: ILike(`${prefix}%`),
+        };
+
+        const pokemon = await masterPokemonRepository.find({
+            where: whereConditions,
+            select: ['templateId'],
+            order: { templateId: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        return pokemon.map((p) => p.templateId);
+    },
+
+    /**
+     * Get form choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of forms matching the prefix
+     */
+    async getFormChoices(
+        prefix: string,
+        conditions: Partial<MasterPokemon> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            form: ILike(`${prefix}%`),
+        };
+
+        const pokemon = await masterPokemonRepository.find({
+            where: whereConditions,
+            select: ['form'],
+            order: { form: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values, filter out nulls
+        const uniqueForms = [...new Set(pokemon.filter((p) => p.form !== null).map((p) => p.form as string))];
+        return uniqueForms;
     },
 };

@@ -1,6 +1,7 @@
 import { EmbedBuilder, type InteractionReplyOptions, MessageFlags } from 'discord.js';
+import { ILike } from 'typeorm';
 
-import { Team, TeamColor } from '@/constants.js';
+import { Team, TeamColor, MaxAutoCompleteChoices } from '@/constants.js';
 import { trainerRepository } from '@/database/repositories.js';
 import {
     Trainer,
@@ -218,5 +219,47 @@ export const TrainerService = {
         trainer = new Trainer();
         trainer.discordId = discordId;
         return await this.create(trainer);
+    },
+
+    // ===== AUTOCOMPLETE / CHOICE METHODS =====
+
+    /**
+     * Get trainer name choices for autocomplete
+     * @param prefix The prefix to search for
+     * @returns Array of trainer names matching the prefix
+     */
+    async getTrainerNameChoices(prefix: string): Promise<string[]> {
+        const trainers = await trainerRepository.find({
+            where: {
+                trainerName: ILike(`${prefix}%`),
+            },
+            select: ['trainerName'],
+            order: { trainerName: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        return trainers
+            .filter((t) => t.trainerName !== null)
+            .map((t) => t.trainerName as string);
+    },
+
+    /**
+     * Get first name choices for autocomplete
+     * @param prefix The prefix to search for
+     * @returns Array of first names matching the prefix
+     */
+    async getFirstNameChoices(prefix: string): Promise<string[]> {
+        const trainers = await trainerRepository.find({
+            where: {
+                firstName: ILike(`${prefix}%`),
+            },
+            select: ['firstName'],
+            order: { firstName: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        return trainers
+            .filter((t) => t.firstName !== null)
+            .map((t) => t.firstName as string);
     },
 };
