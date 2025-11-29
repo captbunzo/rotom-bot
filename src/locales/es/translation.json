@@ -1,0 +1,41 @@
+{
+    "bot": {
+        "ready": "¡Listo! Conectado como {{username}}",
+        "clientUserUndefined": "El usuario del cliente no está definido",
+        "starting": "Iniciando bot...",
+        "restarting": "Reiniciando bot Rotom",
+        "stopping": "Deteniendo bot Rotom",
+        "alive": "¡Rotom está vivo!",
+        "stillAlive": "¡Rotom sigue vivo!!"
+    },
+    "commands": {
+        "rotom": {
+            "description": "Administrar bot Rotom",
+            "restart": {
+                "description": "Reiniciar bot Rotom"
+            },
+            "stop": {
+                "description": "Detener bot Rotom"
+            },
+            "deployCommands": {
+                "description": "Desplegar comandos de Rotom",
+                "deploying": "Desplegando comandos",
+                "deployed": "Comandos desplegados"
+            },
+            "ping": {
+                "description": "Hacer ping al bot Rotom"
+            },
+            "notImplemented": "La ejecución del comando de administración de Rotom aún no está implementada para el subcomando -- {{subCommand}}"
+        },
+        "setupProfile": {
+            "description": "Configurar tu perfil de entrenador"
+        }
+    },
+    "errors": {
+        "commandExecution": "¡Hubo un error al ejecutar este comando!",
+        "buttonProcessing": "Error al procesar clic del botón",
+        "selectionProcessing": "Error al procesar selecciones",
+        "submissionProcessing": "Error al procesar envío",
+        "unknownCommand": "Comando desconocido: {{command}}"
+    }
+}
