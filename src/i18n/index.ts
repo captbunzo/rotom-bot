@@ -22,21 +22,71 @@ export type SupportedLanguage = (typeof SupportedLanguages)[keyof typeof Support
 export const DefaultLanguage: SupportedLanguage = SupportedLanguages.English;
 
 /**
- * Load translation resources from locale files
+ * Translation file names to load for each language.
+ * - translation.json: Manually managed translations
+ * - pokemon.json: Generated translations from Pokémon GO data
+ */
+const TranslationFiles = ['translation.json', 'pokemon.json'] as const;
+
+/**
+ * Deep merge two objects, with source values overwriting target values
+ */
+function deepMerge(
+    target: Record<string, unknown>,
+    source: Record<string, unknown>
+): Record<string, unknown> {
+    const result = { ...target };
+    for (const key of Object.keys(source)) {
+        const sourceValue = source[key];
+        const targetValue = result[key];
+        if (
+            sourceValue !== null &&
+            typeof sourceValue === 'object' &&
+            !Array.isArray(sourceValue) &&
+            targetValue !== null &&
+            typeof targetValue === 'object' &&
+            !Array.isArray(targetValue)
+        ) {
+            result[key] = deepMerge(
+                targetValue as Record<string, unknown>,
+                sourceValue as Record<string, unknown>
+            );
+        } else {
+            result[key] = sourceValue;
+        }
+    }
+    return result;
+}
+
+/**
+ * Load translation resources from locale files.
+ * Loads multiple translation files per language and merges them.
  */
 function loadResources(): Record<string, { translation: Record<string, unknown> }> {
     const resources: Record<string, { translation: Record<string, unknown> }> = {};
     const localesPath = path.join(__dirname, '..', 'locales');
 
     for (const lang of Object.values(SupportedLanguages)) {
-        const translationPath = path.join(localesPath, lang, 'translation.json');
-        if (fs.existsSync(translationPath)) {
-            try {
-                const content = fs.readFileSync(translationPath, 'utf8');
-                resources[lang] = { translation: JSON.parse(content) as Record<string, unknown> };
-            } catch (error) {
-                console.error(`Failed to parse translation file for language '${lang}':`, error);
+        let mergedTranslations: Record<string, unknown> = {};
+
+        for (const file of TranslationFiles) {
+            const translationPath = path.join(localesPath, lang, file);
+            if (fs.existsSync(translationPath)) {
+                try {
+                    const content = fs.readFileSync(translationPath, 'utf8');
+                    const translations = JSON.parse(content) as Record<string, unknown>;
+                    mergedTranslations = deepMerge(mergedTranslations, translations);
+                } catch (error) {
+                    console.error(
+                        `Failed to parse translation file '${file}' for language '${lang}':`,
+                        error
+                    );
+                }
             }
+        }
+
+        if (Object.keys(mergedTranslations).length > 0) {
+            resources[lang] = { translation: mergedTranslations };
         }
     }
 
