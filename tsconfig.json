@@ -38,8 +38,9 @@
         "isolatedModules": true,
         "esModuleInterop": true,
 
-        // Recommended Options
+        // Type Checking
         "strict": true,
+        "strictPropertyInitialization": false,
         "verbatimModuleSyntax": true,
         "noUncheckedSideEffectImports": true,
         "moduleDetection": "force",
@@ -49,8 +50,8 @@
         // "noEmit": true,
 
         "paths": {
-            "@root/*": ["./*"],
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@root/*": ["./*"]
         }
     },
     "include": ["src/**/*"],

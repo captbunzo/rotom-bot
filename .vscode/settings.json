@@ -1,0 +1,7 @@
+{
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "typescript.preferences.importModuleSpecifier": "shortest",
+    "javascript.preferences.importModuleSpecifier": "shortest",
+    "typescript.suggest.autoImports": true,
+    "javascript.suggest.autoImports": true
+}

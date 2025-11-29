@@ -187,5 +187,3 @@ const TrainerCmd = {
         await interaction.respond([]);
     },
 };
-
-export default TrainerCmd;

@@ -41,8 +41,8 @@ dataSourceOptions = {
     synchronize: true,
     logger: 'debug',
 
-    entities: ['src/database/entities/**/*.ts'],
-    subscribers: ['src/database/subscribers/**/*.ts'],
+    entities: ['src/database/entities/*.ts'],
+    subscribers: ['src/database/subscribers/*.ts'],
 
     // TODO - Add migrations later
     migrations: [],

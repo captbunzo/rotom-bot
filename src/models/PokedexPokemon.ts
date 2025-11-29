@@ -2,7 +2,7 @@ import { type Snowflake, EmbedBuilder } from 'discord.js';
 
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { PokedexEntry } from '@root/src/constants.js';
+import { PokedexEntry } from '@/constants.js';
 import MasterPokemon from './MasterPokemon.js';
 
 export interface PokedexPokemonData {
@@ -318,5 +318,3 @@ export class PokedexPokemon extends DrossDatabaseTable {
         this.purified = false;
     }
 }
-
-export default PokedexPokemon;

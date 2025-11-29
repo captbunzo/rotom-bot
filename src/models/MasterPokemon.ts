@@ -2,10 +2,10 @@ import { EmbedBuilder } from 'discord.js';
 
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { PokemonType, PokemonTypeColor } from '@root/src/constants.js';
+import { PokemonType, PokemonTypeColor } from '@/constants.js';
 
-import Client from '@root/src/client.js';
-import StringFunctions from '@/functions/StringFunctions.js';
+import Client from '@/client.js';
+import StringFunctions from '@/utils/string.utils.js';
 
 import MasterCPM from '@/models/MasterCPM.js';
 import PogoHubLink from '@/models/PogoHubLink.js';
@@ -425,5 +425,3 @@ export class MasterPokemon extends DrossDatabaseTable {
         return embed;
     }
 }
-
-export default MasterPokemon;

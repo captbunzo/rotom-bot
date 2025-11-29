@@ -2,11 +2,11 @@ import { type Snowflake, bold, EmbedBuilder, SnowflakeUtil } from 'discord.js';
 
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import Client from '@root/src/client.js';
+import Client from '@/client.js';
 const client = Client.getInstance();
 
-import StringFunctions from '@/functions/StringFunctions.js';
-import { BattleStatus } from '@root/src/constants.js';
+import StringFunctions from '@/utils/string.utils.js';
+import { BattleStatus } from '@/constants.js';
 
 import BattleMember from '@/models/BattleMember.js';
 import Boss from '@/models/Boss.js';
@@ -358,5 +358,3 @@ export class Battle extends DrossDatabaseTable {
         return embed;
     }
 }
-
-export default Battle;

@@ -1,4 +1,4 @@
-import BotConfig from '@root/config.json' with { type: 'json' };
+import { config } from '@/config';
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,12 +7,13 @@ import DrossLogger from '@drossjs/dross-logger';
 
 import {
     Client as DiscordClient,
+    Collection,
     REST as DiscordREST,
     GatewayIntentBits,
     Routes,
 } from 'discord.js';
 
-import { type Snowflake, Collection, Guild } from 'discord.js';
+import type{ Guild, Snowflake } from 'discord.js';
 
 // import ComponentIndex from '@/types/ComponentIndex.js';
 // import { PokedexRegisteryIndex } from '@/components/compound/PokedexRegisteryComponent.js';
@@ -23,14 +24,18 @@ import { type Snowflake, Collection, Guild } from 'discord.js';
 
 // TODO - If this singleton works, turn DrossLogger into a singleton
 
-export class Client extends DiscordClient {
-    /*********************
-     * Singleton Members *
-     *********************/
-    private static instance: Client;
+import type { EventModule } from '@/types/event';
+import type { Command, CommandModule } from '@/types/command';
 
-    // Private constructor to prevent direct instantiation
-    private constructor() {
+import type {
+    ButtonsComponent,
+    ModalComponent,
+    SelectComponent,
+    ComponentModule,
+} from '@/types/component';
+
+export class Client extends DiscordClient {
+    constructor() {
         super({
             // Intents to maybe user later:
             //  - GatewayIntentBits.Guilds
@@ -40,15 +45,7 @@ export class Client extends DiscordClient {
             intents: [GatewayIntentBits.Guilds],
         });
 
-        this.logger.log('Client singleton instance created');
-    }
-
-    // Static method to get the single instance
-    public static getInstance(): Client {
-        if (!Client.instance) {
-            Client.instance = new Client();
-        }
-        return Client.instance;
+        this.logger.log('Client instance created');
     }
 
     /*****************************
@@ -57,18 +54,17 @@ export class Client extends DiscordClient {
 
     // TODO - Check if these all work or if I need to move any of these into the constructor()
 
-    public config = BotConfig;
-    public logger: DrossLogger = new DrossLogger(this.config.logLevel, this.config.logSql);
+    public logger: DrossLogger = new DrossLogger(config.log.level, config.log.sql);
 
     public chalk = chalk;
     public colorizeCommand = this.chalk.green;
     public colorizeAlias = this.chalk.cyan;
     public colorizeAction = this.chalk.yellow;
 
-    public commands: Collection<string, any> = new Collection();
-    public buttons: Collection<string, any> = new Collection();
-    public modals: Collection<string, any> = new Collection();
-    public selects: Collection<string, any> = new Collection();
+    public commands: Collection<string, Command> = new Collection();
+    public buttons: Collection<string, ButtonsComponent> = new Collection();
+    public modals: Collection<string, ModalComponent> = new Collection();
+    public selects: Collection<string, SelectComponent> = new Collection();
 
     /*****************************
      * Initialize Discord Client *
@@ -82,7 +78,7 @@ export class Client extends DiscordClient {
 
         // Connect to discord
         this.logger.log('Starting bot');
-        await this.login(this.config.token);
+        await this.login(config.discord.token);
 
         // Launch the background scheduler
         // this.scheduler = require(`./Scheduler`);
@@ -115,46 +111,37 @@ export class Client extends DiscordClient {
         }
 
         // Construct and prepare an instance of the REST module
-        const discordREST = new DiscordREST().setToken(this.config.token);
+        const discordREST = new DiscordREST().setToken(config.discord.token);
 
         // Deploy global commands
-        (async () => {
-            try {
-                // Use the put method to fully refresh all global commands with the current set
-                this.logger.log(
-                    `Loading ${globalCommandsJSON.length} global application (/) commands`
-                );
+        try {
+            // Use the put method to fully refresh all global commands with the current set
+            this.logger.log(`Loading ${globalCommandsJSON.length} global application (/) commands`);
 
-                const globalCommandDeploymentResults: any = await discordREST.put(
-                    Routes.applicationCommands(this.config.client_id),
-                    { body: globalCommandsJSON }
-                );
+            const globalCommandDeploymentResults: any = await discordREST.put(
+                Routes.applicationCommands(config.discord.clientId),
+                { body: globalCommandsJSON }
+            );
 
-                this.logger.log(
-                    `Successfully loaded ${globalCommandDeploymentResults.length} global application (/) commands`
-                );
+            this.logger.log(
+                `Successfully loaded ${globalCommandDeploymentResults.length} global application (/) commands`
+            );
 
-                // Use the put method to fully refresh all guild commands with the current set
-                this.logger.log(
-                    `Loading ${guildCommandsJSON.length} guild application (/) commands`
-                );
+            // Use the put method to fully refresh all guild commands with the current set
+            this.logger.log(`Loading ${guildCommandsJSON.length} guild application (/) commands`);
 
-                const guildCommandDeploymentResults: any = await discordREST.put(
-                    Routes.applicationGuildCommands(
-                        this.config.client_id,
-                        this.config.bot_guild_id
-                    ),
-                    { body: guildCommandsJSON }
-                );
+            const guildCommandDeploymentResults: any = await discordREST.put(
+                Routes.applicationGuildCommands(config.discord.clientId, config.discord.botGuildId),
+                { body: guildCommandsJSON }
+            );
 
-                this.logger.log(
-                    `Successfully loaded ${guildCommandDeploymentResults.length} guild application (/) commands`
-                );
-            } catch (error) {
-                // And of course, make sure you catch and log any errors!
-                this.logger.error(error);
-            }
-        })();
+            this.logger.log(
+                `Successfully loaded ${guildCommandDeploymentResults.length} guild application (/) commands`
+            );
+        } catch (error) {
+            // And of course, make sure you catch and log any errors!
+            this.logger.error(error);
+        }
     }
 
     /*****************
@@ -177,17 +164,11 @@ export class Client extends DiscordClient {
             for (const file of commandFiles) {
                 const filePath = path.join(commandsPath, file);
                 const cmdFilePath = filePath.replace(/^(src\/)/, './');
-                const { default: command } = await import(cmdFilePath);
+                const { command } = (await import(cmdFilePath)) as CommandModule;
 
                 // Set a new item in the Collection with the key as the command name and the value as the exported module
-                if ('data' in command && 'execute' in command) {
-                    this.logger.log(`  -> ${command.data.name}`);
-                    this.commands.set(command.data.name, command);
-                } else {
-                    this.logger.error(
-                        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-                    );
-                }
+                this.logger.log(`  -> ${command.data.name}`);
+                this.commands.set(command.data.name, command);
             }
         }
     }
@@ -205,7 +186,7 @@ export class Client extends DiscordClient {
         for (const file of eventFiles) {
             const filePath = path.join(eventsPath, file);
             const eventFilePath = filePath.replace(/^(src\/)/, './');
-            const { default: event } = await import(eventFilePath);
+            const { event } = (await import(eventFilePath)) as EventModule;
 
             if (event.once) {
                 this.logger.log(`  -> ${event.name} (once)`);
@@ -229,7 +210,7 @@ export class Client extends DiscordClient {
         this.selects = new Collection();
 
         const componentPaths = [
-            './src/components/compound',
+            './src/components',
             './src/components/buttons',
             './src/components/selects',
             './src/components/modals',
@@ -243,21 +224,21 @@ export class Client extends DiscordClient {
             for (const file of theseComponentFiles) {
                 const filePath = path.join(componentsPath, file);
                 const componentFilePath = filePath.replace(/^(src\/)/, './');
-                const { default: component } = await import(componentFilePath);
+                const { component } = (await import(componentFilePath)) as ComponentModule;
 
-                if (component.handleButton) {
+                if ('handleButton' in component) {
                     this.logger.log(`  -> button -> ${component.name}`);
-                    this.buttons.set(component.name, component);
+                    this.buttons.set(component.name, component as ButtonsComponent);
                 }
 
-                if (component.handleModalSubmit) {
+                if ('handleModalSubmit' in component) {
                     this.logger.log(`  -> modal  -> ${component.name}`);
-                    this.modals.set(component.name, component);
+                    this.modals.set(component.name, component as ModalComponent);
                 }
 
-                if (component.handleStringSelectMenu) {
+                if ('handleStringSelectMenu' in component) {
                     this.logger.log(`  -> select -> ${component.name}`);
-                    this.selects.set(component.name, component);
+                    this.selects.set(component.name, component as SelectComponent);
                 }
             }
         }
@@ -279,3 +260,5 @@ export class Client extends DiscordClient {
         return guild;
     }
 }
+
+export const client = new Client();

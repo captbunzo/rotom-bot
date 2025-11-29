@@ -2,14 +2,16 @@ import { EmbedBuilder } from 'discord.js';
 
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import Client from '@root/src/client.js';
-import StringFunctions from '@/functions/StringFunctions.js';
+import Client from '@/client.js';
+import StringFunctions from '@/utils/string.utils.js';
 
 import MasterCPM from '@/models/MasterCPM.js';
 import MasterPokemon from '@/models/MasterPokemon.js';
 import PogoHubLink from '@/models/PogoHubLink.js';
 import WikiLink from '@/models/WikiLink.js';
-import Translation from '@/models/Translation.js';
+
+import { BossService } from '@/services/boss.service.js';
+import { TranslationUtils } from '@/utils/translation.utils.js';
 
 export interface BossData {
     id: string;
@@ -182,14 +184,6 @@ export class Boss extends DrossDatabaseTable {
      * Instance Methods *
      ********************/
 
-    async getBossTypeName() {
-        return await Translation.getBossTypeName(this.bossType);
-    }
-
-    async getBattleTypeName() {
-        return await Translation.getBattleTypeName(this.bossType);
-    }
-
     // TODO - Add icon to indicate if the raid boss is shinyable
     // TODO - Add icon to indicate if the raid boss is shadow
     // TODO - Add icon to indicate if the raid boss is mega
@@ -211,18 +205,18 @@ export class Boss extends DrossDatabaseTable {
         this.database.logger.debug(`Master Pokémon Record =`);
         this.database.logger.dump(masterPokemon);
 
-        let bossTypeName = await this.getBossTypeName();
+        let bossTypeName = BossService.getBossTypeName(this.bossType);
         let pokemonName = await masterPokemon.getName();
 
         let title = `#${masterPokemon.pokedexId} - ${bossTypeName} `;
 
         // TODO - Handle Primal Groudon and Kyogre
         if (this.isMega) {
-            title += `${await Translation.getMegaName()} `;
+            title += `${TranslationUtils.getMegaName()} `;
         }
 
         if (this.isShadow) {
-            title += `${await Translation.getShadowName()} `;
+            title += `${TranslationUtils.getShadowName()} `;
         }
 
         title += pokemonName;
@@ -322,5 +316,3 @@ export class Boss extends DrossDatabaseTable {
         return embed;
     }
 }
-
-export default Boss;

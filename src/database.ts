@@ -31,7 +31,7 @@ const TableClasses = [
     WikiLink,
 ];
 
-export default class DatabaseConnection {
+export class DatabaseConnection {
     /*********************
      * Singleton Members *
      *********************/

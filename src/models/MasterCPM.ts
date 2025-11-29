@@ -129,5 +129,3 @@ export class MasterCPM extends DrossDatabaseTable {
         return cp;
     }
 }
-
-export default MasterCPM;

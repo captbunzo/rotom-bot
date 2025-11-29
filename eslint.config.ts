@@ -8,7 +8,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
-export default defineConfig([
+export const eslintConfig = defineConfig([
     globalIgnores(['.react-router/']),
 
     // Import recommended configs from plugins
@@ -75,6 +75,7 @@ export default defineConfig([
             },
         },
         rules: {
+            'unicorn/no-null': 'off',
             'unicorn/filename-case': [
                 'error',
                 {
@@ -82,10 +83,20 @@ export default defineConfig([
                     multipleFileExtensions: false,
                 },
             ],
+            'unicorn/consistent-function-scoping': [
+                'error',
+                {
+                    checkArrowFunctions: false,
+                },
+            ],
             'unicorn/prevent-abbreviations': [
                 'error',
                 {
-                    allowList: {},
+                    allowList: {
+                        args: true,
+                        utils: true,
+                        Utils: true,
+                    },
                 },
             ],
             '@typescript-eslint/no-unused-vars': [

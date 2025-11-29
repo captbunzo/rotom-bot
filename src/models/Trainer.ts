@@ -1,13 +1,8 @@
-import {
-    type Snowflake,
-    type InteractionReplyOptions,
-    EmbedBuilder,
-    MessageFlags,
-} from 'discord.js';
+import { type Snowflake, EmbedBuilder } from 'discord.js';
 
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { Team, TeamColor } from '@root/src/constants.js';
+import { Team, TeamColor } from '@/constants.js';
 
 export interface TrainerData {
     discordId: Snowflake;
@@ -188,20 +183,6 @@ export class Trainer extends DrossDatabaseTable {
         return await this.getChoices('firstName', firstNamePrefix, conditions);
     }
 
-    static getSetupTrainerFirstMessage(trainer: Trainer | null): InteractionReplyOptions {
-        if (trainer && (!trainer.trainerName || !trainer.code)) {
-            return {
-                content: `Please set your trainer name and code first with /setup-profile`,
-                flags: MessageFlags.Ephemeral,
-            };
-        }
-
-        return {
-            content: `Please setup your profile first with /setup-profile`,
-            flags: MessageFlags.Ephemeral,
-        };
-    }
-
     /********************
      * Instance Methods *
      ********************/
@@ -233,5 +214,3 @@ export class Trainer extends DrossDatabaseTable {
         return embed;
     }
 }
-
-export default Trainer;

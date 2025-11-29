@@ -1,6 +1,6 @@
 import { DrossDatabaseTable, DrossFieldType } from '@drossjs/dross-database';
 
-import { BossType } from '@root/src/constants.js';
+import { BossType } from '@/constants.js';
 import Boss from '@/models/Boss.js';
 import MasterPokemon from '@/models/MasterPokemon.js';
 
@@ -271,5 +271,3 @@ export class PogoHubLink extends DrossDatabaseTable {
         return await this.getChoices('pokemonId', pokemonIdPrefix, conditions);
     }
 }
-
-export default PogoHubLink;

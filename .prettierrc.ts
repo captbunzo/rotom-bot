@@ -10,4 +10,4 @@ const config: Config = {
     arrowParens: 'always',
 };
 
-export default config;
+export { config as prettierConfig };

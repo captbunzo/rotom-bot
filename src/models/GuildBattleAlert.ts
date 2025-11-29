@@ -192,5 +192,3 @@ export class GuildBattleAlert extends DrossDatabaseTable {
         return embed;
     }
 }
-
-export default GuildBattleAlert;
