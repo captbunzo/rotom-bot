@@ -3,6 +3,8 @@ import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from '
 import type { Command } from '@/types/command';
 import type { Client } from '@/client.js';
 import { BotReturnCode } from '@/constants.js';
+// Note: i18n is initialized synchronously on import before this module loads,
+// so t() can be used safely in command data definitions
 import { t } from '@/i18n/index.js';
 
 async function sleep(ms: number) {

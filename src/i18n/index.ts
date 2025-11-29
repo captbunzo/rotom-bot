@@ -31,8 +31,12 @@ function loadResources(): Record<string, { translation: Record<string, unknown> 
     for (const lang of Object.values(SupportedLanguages)) {
         const translationPath = path.join(localesPath, lang, 'translation.json');
         if (fs.existsSync(translationPath)) {
-            const content = fs.readFileSync(translationPath, 'utf8');
-            resources[lang] = { translation: JSON.parse(content) as Record<string, unknown> };
+            try {
+                const content = fs.readFileSync(translationPath, 'utf8');
+                resources[lang] = { translation: JSON.parse(content) as Record<string, unknown> };
+            } catch (error) {
+                console.error(`Failed to parse translation file for language '${lang}':`, error);
+            }
         }
     }
 
@@ -42,11 +46,14 @@ function loadResources(): Record<string, { translation: Record<string, unknown> 
 /**
  * Initialize i18next synchronously with the loaded resources.
  * This is called immediately when the module is loaded.
+ * Using initImmediate: false ensures synchronous initialization.
  */
 function initI18nSync(): void {
     const resources = loadResources();
 
-    i18next.init({
+    // With initImmediate: false, i18next.init() completes synchronously
+    // The returned promise resolves immediately, so we can safely ignore it
+    void i18next.init({
         lng: DefaultLanguage,
         fallbackLng: DefaultLanguage,
         resources,
