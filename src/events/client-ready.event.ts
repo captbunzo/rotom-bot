@@ -1,6 +1,7 @@
 import { Events } from 'discord.js';
 import type { Client } from '@/client.js';
 import type { Event } from '@/types/event';
+import { t } from '@/i18n/index.js';
 
 export class ClientReadyEvent implements Event {
     name = Events.ClientReady;
@@ -11,9 +12,9 @@ export class ClientReadyEvent implements Event {
      */
     execute(client: Client) {
         if (client.user) {
-            client.logger.log(`Ready! Logged in as ${client.user.tag}`);
+            client.logger.log(t('bot.ready', { username: client.user.tag }));
         } else {
-            client.logger.error('Client user is not defined');
+            client.logger.error(t('bot.clientUserUndefined'));
         }
     }
 }

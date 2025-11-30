@@ -3,6 +3,9 @@ import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from '
 import type { Command } from '@/types/command';
 import type { Client } from '@/client.js';
 import { BotReturnCode } from '@/constants.js';
+// Note: i18n is initialized synchronously on import before this module loads,
+// so t() can be used safely in command data definitions
+import { t } from '@/i18n/index.js';
 
 async function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,15 +16,23 @@ class RotomCmd implements Command {
 
     data = new SlashCommandBuilder()
         .setName('rotom')
-        .setDescription('Manage Rotom bot')
+        .setDescription(t('commands.rotom.description'))
         .addSubcommand((subCommand) =>
-            subCommand.setName('restart').setDescription('Restart Rotom bot')
+            subCommand
+                .setName('restart')
+                .setDescription(t('commands.rotom.restart.description'))
         )
-        .addSubcommand((subCommand) => subCommand.setName('stop').setDescription('Stop Rotom bot'))
         .addSubcommand((subCommand) =>
-            subCommand.setName('deploy-commands').setDescription('Deploy Rotom commands')
+            subCommand.setName('stop').setDescription(t('commands.rotom.stop.description'))
         )
-        .addSubcommand((subCommand) => subCommand.setName('ping').setDescription('Ping Rotom bot'));
+        .addSubcommand((subCommand) =>
+            subCommand
+                .setName('deploy-commands')
+                .setDescription(t('commands.rotom.deployCommands.description'))
+        )
+        .addSubcommand((subCommand) =>
+            subCommand.setName('ping').setDescription(t('commands.rotom.ping.description'))
+        );
 
     async execute(interaction: ChatInputCommandInteraction) {
         const subCommand = interaction.options.getSubcommand();
@@ -45,7 +56,7 @@ class RotomCmd implements Command {
             }
             default: {
                 await interaction.reply({
-                    content: `Rotom management command execution not yet implemented for subcommand -- ${subCommand}`,
+                    content: t('commands.rotom.notImplemented', { subCommand }),
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -58,7 +69,7 @@ class RotomCmd implements Command {
 
     async executeRestartStop(interaction: ChatInputCommandInteraction, subCommand: string) {
         await interaction.reply({
-            content: `${subCommand === 'restart' ? 'Restarting' : 'Stopping'} Rotom bot`,
+            content: subCommand === 'restart' ? t('bot.restarting') : t('bot.stopping'),
             flags: MessageFlags.Ephemeral,
         });
 
@@ -75,9 +86,15 @@ class RotomCmd implements Command {
     async executeDeployCommands(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as Client;
 
-        await interaction.reply({ content: `Deploying commands`, flags: MessageFlags.Ephemeral });
+        await interaction.reply({
+            content: t('commands.rotom.deployCommands.deploying'),
+            flags: MessageFlags.Ephemeral,
+        });
         await client.deployCommands();
-        await interaction.followUp({ content: `Commands deployed`, flags: MessageFlags.Ephemeral });
+        await interaction.followUp({
+            content: t('commands.rotom.deployCommands.deployed'),
+            flags: MessageFlags.Ephemeral,
+        });
     }
 
     /*******************************/
@@ -85,9 +102,9 @@ class RotomCmd implements Command {
     /*******************************/
 
     async executePing(interaction: ChatInputCommandInteraction) {
-        await interaction.reply({ content: 'Rotom is alive!' });
+        await interaction.reply({ content: t('bot.alive') });
         await sleep(2000);
-        await interaction.editReply({ content: 'Rotom is still alive!!' });
+        await interaction.editReply({ content: t('bot.stillAlive') });
     }
 }
 

@@ -13,6 +13,7 @@ import {
 import type { Event } from '@/types/event';
 import type { Client } from '@/client';
 import { ComponentIndex } from '@/types/component-index.js';
+import { t } from '@/i18n/index.js';
 
 export class InteractionCreateEvent implements Event {
     name = Events.InteractionCreate;
@@ -69,11 +70,11 @@ export class InteractionCreateEvent implements Event {
 
             await (interaction.replied || interaction.deferred
                 ? interaction.followUp({
-                      content: 'There was an error while executing this command!',
+                      content: t('errors.commandExecution'),
                       flags: MessageFlags.Ephemeral,
                   })
                 : interaction.reply({
-                      content: 'There was an error while executing this command!',
+                      content: t('errors.commandExecution'),
                       flags: MessageFlags.Ephemeral,
                   }));
         }
@@ -122,11 +123,11 @@ export class InteractionCreateEvent implements Event {
 
             await (!interaction.replied && !interaction.deferred
                 ? interaction.reply({
-                      content: 'Error processing button click',
+                      content: t('errors.buttonProcessing'),
                       flags: MessageFlags.Ephemeral,
                   })
                 : interaction.followUp({
-                      content: 'Error processing button click',
+                      content: t('errors.buttonProcessing'),
                       flags: MessageFlags.Ephemeral,
                   }));
         }
@@ -151,11 +152,11 @@ export class InteractionCreateEvent implements Event {
 
             await (!interaction.replied && !interaction.deferred
                 ? interaction.reply({
-                      content: 'Error processing selections',
+                      content: t('errors.selectionProcessing'),
                       flags: MessageFlags.Ephemeral,
                   })
                 : interaction.followUp({
-                      content: 'Error processing selections',
+                      content: t('errors.selectionProcessing'),
                       flags: MessageFlags.Ephemeral,
                   }));
         }
@@ -180,11 +181,11 @@ export class InteractionCreateEvent implements Event {
 
             await (!interaction.replied && !interaction.deferred
                 ? interaction.reply({
-                      content: 'Error processing submission',
+                      content: t('errors.submissionProcessing'),
                       flags: MessageFlags.Ephemeral,
                   })
                 : interaction.followUp({
-                      content: 'Error processing submission',
+                      content: t('errors.submissionProcessing'),
                       flags: MessageFlags.Ephemeral,
                   }));
         }
