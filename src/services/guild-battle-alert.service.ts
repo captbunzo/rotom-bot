@@ -1,3 +1,5 @@
+import { EmbedBuilder, channelMention, roleMention } from 'discord.js';
+
 import { guildBattleAlertRepository } from '@/database/repositories.js';
 import {
     GuildBattleAlert,
@@ -5,6 +7,7 @@ import {
     type GuildBattleAlertDelete,
 } from '@/database/entities/guild-battle-alert.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
+import { TranslationUtils } from '@/utils/translation.utils.js';
 
 /**
  * Service layer for guild battle alert-related business logic
@@ -113,5 +116,53 @@ export const GuildBattleAlertService = {
         }
 
         await guildBattleAlertRepository.remove(guildBattleAlertEntity);
+    },
+
+    // ===== BUILD EMBED METHODS =====
+
+    /**
+     * Build a Discord embed for a guild battle alert
+     * @param guildBattleAlert The guild battle alert entity
+     * @returns Discord embed builder
+     */
+    buildEmbed(guildBattleAlert: GuildBattleAlert): EmbedBuilder {
+        const color = 0x59_57_61;
+        const bossTypeText =
+            guildBattleAlert.bossType !== null
+                ? TranslationUtils.getBossTypeName(guildBattleAlert.bossType)
+                : 'All';
+        const tierText = guildBattleAlert.tier !== null ? `${guildBattleAlert.tier}` : 'All';
+        const megaText =
+            guildBattleAlert.isMega !== null ? (guildBattleAlert.isMega ? 'Yes' : 'No') : 'N/A';
+        const shadowText =
+            guildBattleAlert.isShadow !== null ? (guildBattleAlert.isShadow ? 'Yes' : 'No') : 'N/A';
+
+        const embed = new EmbedBuilder()
+            .setColor(color)
+            .setTitle(`Battle Alert ID: ${guildBattleAlert.id}`)
+            .setDescription(
+                `The following role will be alerted for battles meeting these criteria:`
+            )
+            .addFields(
+                { name: 'Role', value: roleMention(guildBattleAlert.roleId), inline: true },
+                {
+                    name: 'Channel',
+                    value:
+                        guildBattleAlert.channelId !== null
+                            ? channelMention(guildBattleAlert.channelId)
+                            : 'None',
+                    inline: true,
+                }
+            )
+            .addFields(
+                { name: 'Boss Type', value: bossTypeText, inline: true },
+                { name: 'Tier', value: tierText, inline: true }
+            )
+            .addFields(
+                { name: 'Mega', value: megaText, inline: true },
+                { name: 'Shadow', value: shadowText, inline: true }
+            );
+
+        return embed;
     },
 };

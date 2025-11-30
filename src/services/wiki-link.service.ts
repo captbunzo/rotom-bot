@@ -1,10 +1,16 @@
+import { ILike } from 'typeorm';
+
 import { wikiLinkRepository } from '@/database/repositories.js';
 import {
     WikiLink,
     type WikiLinkUpdate,
     type WikiLinkDelete,
 } from '@/database/entities/wiki-link.entity.js';
+import { Boss } from '@/database/entities/boss.entity.js';
+import { MasterPokemon } from '@/database/entities/master-pokemon.entity.js';
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
+import { BossType, MaxAutoCompleteChoices } from '@/constants.js';
+import { masterPokemonRepository } from '@/database/repositories.js';
 
 /**
  * Service layer for wiki link-related business logic
@@ -123,5 +129,156 @@ export const WikiLinkService = {
         }
 
         await wikiLinkRepository.remove(wikiLinkEntity);
+    },
+
+    // ===== SMART LOOKUP METHODS =====
+
+    /**
+     * Get wiki link for a boss entity with fallback logic.
+     * Searches in order: exact match, pokemon name match, base record, pokemon name base.
+     * @param boss The boss entity
+     * @returns WikiLink entity or null if not found
+     */
+    async getForBoss(boss: Boss): Promise<WikiLink | null> {
+        const masterPokemon = await masterPokemonRepository.findOneBy({
+            templateId: boss.templateId,
+        });
+
+        if (!masterPokemon) {
+            throw new Error(`MasterPokemon not found for templateId: ${boss.templateId}`);
+        }
+
+        // First check for the wiki link record with the full search parameters
+        let wikiLinks = await wikiLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            isMega: boss.isMega,
+            isShadow: boss.isShadow,
+            isDynamax: boss.bossType === BossType.Dynamax,
+            isGigantamax: boss.bossType === BossType.Gigantamax,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        // Next check based on the pokemon name
+        wikiLinks = await wikiLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: boss.isMega,
+            isShadow: boss.isShadow,
+            isDynamax: boss.bossType === BossType.Dynamax,
+            isGigantamax: boss.bossType === BossType.Gigantamax,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        // Otherwise check for the base record
+        wikiLinks = await wikiLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            isMega: false,
+            isShadow: false,
+            isDynamax: false,
+            isGigantamax: false,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        // And finally check for the base record with the pokemon name
+        wikiLinks = await wikiLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isShadow: false,
+            isDynamax: false,
+            isGigantamax: false,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        return null;
+    },
+
+    /**
+     * Get wiki link for a master pokémon entity with fallback logic.
+     * Searches in order: base record with form, base record without form, id + pokemon name.
+     * @param masterPokemon The master pokémon entity
+     * @returns WikiLink entity or null if not found
+     */
+    async getForMasterPokemon(masterPokemon: MasterPokemon): Promise<WikiLink | null> {
+        // First check for the base record
+        let wikiLinks = await wikiLinkRepository.findBy({
+            templateId: masterPokemon.templateId,
+            form: masterPokemon.form ?? undefined,
+            isMega: false,
+            isShadow: false,
+            isDynamax: false,
+            isGigantamax: false,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        // Otherwise check for the base record without the form
+        wikiLinks = await wikiLinkRepository.findBy({
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isShadow: false,
+            isDynamax: false,
+            isGigantamax: false,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        // Final fallback: try with id field matching pokemon name (lowercase)
+        // The id field is the primary key and may be set to the lowercased pokemon name
+        // for base pokemon records. We also include pokemonId to ensure we get the correct record.
+        wikiLinks = await wikiLinkRepository.findBy({
+            id: masterPokemon.pokemonId.toLowerCase(),
+            pokemonId: masterPokemon.pokemonId,
+            form: undefined,
+            isMega: false,
+            isShadow: false,
+            isDynamax: false,
+            isGigantamax: false,
+        });
+        if (wikiLinks.length === 1) {
+            return wikiLinks[0];
+        }
+
+        return null;
+    },
+
+    // ===== AUTOCOMPLETE / CHOICE METHODS =====
+
+    /**
+     * Get pokemon ID choices for autocomplete
+     * @param prefix The prefix to search for
+     * @param conditions Optional additional conditions
+     * @returns Array of pokemon IDs matching the prefix
+     */
+    async getPokemonIdChoices(
+        prefix: string,
+        conditions: Partial<WikiLink> = {}
+    ): Promise<string[]> {
+        const whereConditions: Record<string, unknown> = {
+            ...conditions,
+            pokemonId: ILike(`${prefix}%`),
+        };
+
+        const wikiLinks = await wikiLinkRepository.find({
+            where: whereConditions,
+            select: ['pokemonId'],
+            order: { pokemonId: 'ASC' },
+            take: MaxAutoCompleteChoices,
+        });
+
+        // Get unique values
+        const uniqueIds = [...new Set(wikiLinks.map((w) => w.pokemonId))];
+        return uniqueIds;
     },
 };

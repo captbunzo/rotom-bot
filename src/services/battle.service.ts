@@ -15,6 +15,8 @@ import { BattleMemberService } from '@/services/battle-member.service';
 import { BossService } from '@/services/boss.service';
 import { MasterPokemonService } from '@/services/master-pokemon.service';
 import { TrainerService } from '@/services/trainer.service';
+import { WikiLinkService } from '@/services/wiki-link.service';
+import { PogoHubLinkService } from '@/services/pogo-hub-link.service';
 
 import { EntityNotFoundError } from '@/types/errors/entity-not-found.error';
 
@@ -213,9 +215,9 @@ export const BattleService = {
 
         const typeColor = MasterPokemonService.getTypeColor(masterPokemon);
 
-        // Get links (TODO: Convert to TypeORM when migrated)
-        const wikiLink = await WikiLink.getUnique(boss);
-        const pogoHubLink = await PogoHubLink.getUnique(boss);
+        // Get links using service methods
+        const wikiLink = await WikiLinkService.getForBoss(boss);
+        const pogoHubLink = await PogoHubLinkService.getForBoss(boss);
 
         let link = null;
         let thumbnail = null;
